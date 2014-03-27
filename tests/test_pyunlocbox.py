@@ -10,7 +10,7 @@ Tests for `pyunlocbox` module.
 
 import unittest
 
-from pyunlocbox import pyunlocbox
+#from pyunlocbox import pyunlocbox
 
 
 class TestPyunlocbox(unittest.TestCase):
