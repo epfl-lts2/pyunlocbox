@@ -31,6 +31,7 @@ setup(
     package_dir={'pyunlocbox': 'pyunlocbox'},
     include_package_data=True,
     install_requires=[
+        'numpy',
     ],
     license="BSD",
     zip_safe=False,
