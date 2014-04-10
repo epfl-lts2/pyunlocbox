@@ -9,7 +9,7 @@ who inherit from it implement the methods. Theses classes include :
 * :class:`norm_l2`: L2-norm which implements ``eval``, ``prox`` and ``grad``
 """
 
-from numpy import linalg
+import numpy as np
 
 
 class func:
@@ -52,12 +52,13 @@ class norm_l2(func):
     Parameters :
 
     * *lamb* : regularization parameter :math:`\lambda`
-    * *weights* : weights for a weighted L2-norm
-    * *y* : measurements
-    * *A* : forward operator
-    * *At* : adjoint operator
-    * *tight* : ``True`` if A is a tight frame, ``False`` otherwise
-    * *nu* : bound on the norm of the operator A,
+    * *weights* : weights for a weighted L2-norm (default 1)
+    * *y* : measurements (default 0)
+    * *A* : forward operator (default identity)
+    * *At* : adjoint operator (default A)
+    * *tight* : ``True`` if A is a tight frame,
+      ``False`` otherwise (default True)
+    * *nu* : bound on the norm of the operator A (default 1),
       i.e. :math:`||A x||^2 \leq \\nu ||x||^2`
 
     Usage example :
@@ -69,8 +70,14 @@ class norm_l2(func):
         self.lamb = lamb
         self.weights = weights
         self.y = y
-        self.A = A
-        self.At = At
+        if A:
+            self.A = A
+        else:
+            self.A = lambda x: x
+        if At:
+            self.At = At
+        else:
+            At = A
         self.tight = tight
         self.nu = nu
 
@@ -78,16 +85,17 @@ class norm_l2(func):
         """
         Return :math:`\lambda ||A(x)-y||`
         """
-        return self.lamb * linalg.norm(self.A(self.x) - self.y)
+        return self.lamb * np.linalg.norm(self.A(np.array(x)) - self.y)
 
     def prox(self, x, T):
         """
         L2-norm proximal operator. Return
         :math:`\min_{z} \\frac{1}{2} ||x - z||_2^2 + \gamma ||w(A z-y)||_2^2`
+        where :math:`\gamma = \lambda \cdot T`
         """
         gamma = self.lamb * T
         if self.tight:
-            sol = x + gamma * 2 * self.At(self.y * self.weights**2)
+            sol = np.array(x) + gamma * 2 * self.At(self.y * self.weights**2)
             sol /= 1 + gamma * 2 * self.nu * self.weights**2
         else:
             raise NotImplementedError('Not implemented for non tight frame')
@@ -97,4 +105,4 @@ class norm_l2(func):
         """
         Return :math:`2 \lambda A( A(x) - y )`
         """
-        return 2 * self.lamb * self.A(self.A(x) - self.y)
+        return 2 * self.lamb * self.A(self.A(np.array(x)) - self.y)
