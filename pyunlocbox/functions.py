@@ -32,7 +32,8 @@ class func:
 
     def prox(self, x, T):
         """
-        Proximal operator evaluated at x.
+        Proximal operator evaluated at x :
+        :math:`prox_{f,\gamma}(x)=\min_z \\frac{1}{2} ||x-z||_2^2 +\gamma f(z)`
         This method is used by all proximal solvers.
         """
         raise NotImplementedError("Class user should define this method")
@@ -51,25 +52,25 @@ class norm_l2(func):
 
     Parameters :
 
-    * *lamb* : regularization parameter :math:`\lambda`
-    * *weights* : weights for a weighted L2-norm (default 1)
-    * *y* : measurements (default 0)
-    * *A* : forward operator (default identity)
-    * *At* : adjoint operator (default A)
-    * *tight* : ``True`` if A is a tight frame,
-      ``False`` otherwise (default True)
-    * *nu* : bound on the norm of the operator A (default 1),
-      i.e. :math:`||A x||^2 \leq \\nu ||x||^2`
+    * *lamb*  : regularization parameter :math:`\lambda`
+    * *w*     : weights for a weighted L2-norm (default :math:`w=1`)
+    * *y*     : measurements (default :math:`y=0`)
+    * *A*     : forward operator (default identity :math:`A(x)=x`)
+    * *At*    : adjoint operator (default :math:`At(x)=A(x)`)
+    * *tight* : ``True`` if :math:`A` is a tight frame,
+      ``False`` otherwise (default ``True``)
+    * *nu*    : bound on the norm of the operator :math:`A`,
+      i.e. :math:`||A(x)||^2 \leq \\nu ||x||^2` (default :math:`\\nu=1`)
 
     Usage example :
     TODO (using doctest)
     """
 
-    def __init__(self, lamb, weights=1, y=0, A=None, At=None,
+    def __init__(self, lamb, w=1, y=0, A=None, At=None,
                  tight=True, nu=1):
         self.lamb = lamb
-        self.weights = weights
-        self.y = y
+        self.w = np.array(w)
+        self.y = np.array(y)
         if A:
             self.A = A
         else:
@@ -77,32 +78,35 @@ class norm_l2(func):
         if At:
             self.At = At
         else:
-            At = A
+            self.At = self.A
         self.tight = tight
         self.nu = nu
 
     def eval(self, x):
         """
-        Return :math:`\lambda ||A(x)-y||`
+        Return :math:`\lambda ||w\cdot(A(x)-y)||_2`
         """
-        return self.lamb * np.linalg.norm(self.A(np.array(x)) - self.y)
+        sol = self.A(np.array(x)) - self.y
+        sol = np.linalg.norm(self.w * sol)
+        return self.lamb * sol
 
     def prox(self, x, T):
         """
-        L2-norm proximal operator. Return
-        :math:`\min_{z} \\frac{1}{2} ||x - z||_2^2 + \gamma ||w(A z-y)||_2^2`
+        Return
+        :math:`\min_z \\frac{1}{2} ||x-z||_2^2 + \gamma ||w\cdot(A(z)-y)||_2`
         where :math:`\gamma = \lambda \cdot T`
         """
         gamma = self.lamb * T
         if self.tight:
-            sol = np.array(x) + gamma * 2 * self.At(self.y * self.weights**2)
-            sol /= 1 + gamma * 2 * self.nu * self.weights**2
+            sol = np.array(x) + 2. * gamma * self.At(self.y * self.w**2)
+            sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
             raise NotImplementedError('Not implemented for non tight frame')
         return sol
 
     def grad(self, x):
         """
-        Return :math:`2 \lambda A( A(x) - y )`
+        Return :math:`2 \lambda \cdot At( w\cdot(A(x)-y) )`
         """
-        return 2 * self.lamb * self.A(self.A(np.array(x)) - self.y)
+        sol = self.A(np.array(x)) - self.y
+        return 2 * self.lamb * self.w * self.At(sol)
