@@ -46,9 +46,9 @@ class func:
         raise NotImplementedError("Class user should define this method")
 
 
-class norm_l2(func):
+class norm(func):
     """
-    This class defines the L2-norm function object to be passed to solvers.
+    Base class which defines the attributes of the norm objects.
 
     Parameters :
 
@@ -61,9 +61,6 @@ class norm_l2(func):
       ``False`` otherwise (default ``True``)
     * *nu*    : bound on the norm of the operator :math:`A`,
       i.e. :math:`||A(x)||^2 \leq \\nu ||x||^2` (default :math:`\\nu=1`)
-
-    Usage example :
-    TODO (using doctest)
     """
 
     def __init__(self, lamb, w=1, y=0, A=None, At=None,
@@ -81,6 +78,12 @@ class norm_l2(func):
             self.At = self.A
         self.tight = tight
         self.nu = nu
+
+
+class norm_l2(norm):
+    """
+    L2-norm function, object to be passed to solvers.
+    """
 
     def eval(self, x):
         """
