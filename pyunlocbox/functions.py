@@ -4,9 +4,10 @@
 """
 This module implements function objects which are then passed to solvers.
 The *func* base class implements the interface whereas specialised classes
-who inherit from it implement the methods. Theses classes include :
+who inherit from it implement the methods. These classes include :
 
 * :class:`norm_l2`: L2-norm which implements ``eval``, ``prox`` and ``grad``
+* :class:`norm_l1`: L1-norm which implements ``eval`` and ``prox``
 """
 
 import numpy as np
@@ -133,7 +134,7 @@ class norm_l2(norm):
         Return :math:`\lambda ||w\cdot(A(x)-y)||_2^2`
         """
         sol = self.A(np.array(x)) - self.y
-        sol = np.sum( (self.w * sol)**2 )
+        sol = np.sum((self.w * sol)**2)
         return self.lamb * sol
 
     def prox(self, x, T):

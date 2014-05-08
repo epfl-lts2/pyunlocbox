@@ -56,8 +56,8 @@ class TestPyunlocbox(unittest.TestCase):
         f = functions.norm_l2(lamb=3)
         self.assertEqual(f.eval([10, 0]), 300)
         self.assertEqual(f.eval(np.array([-10, 0])), 300)
-        nptest.assert_allclose(f.grad([10, 0]), [60,0])
-        nptest.assert_allclose(f.grad([-10, 0]), [-60,0])
+        nptest.assert_allclose(f.grad([10, 0]), [60, 0])
+        nptest.assert_allclose(f.grad([-10, 0]), [-60, 0])
         self.assertEqual(f.eval([3, 4]), 3*5**2)
         self.assertEqual(f.eval(np.array([-3, 4])), 3*5**2)
         nptest.assert_allclose(f.grad([3, 4]), [18, 24])
@@ -96,7 +96,6 @@ class TestPyunlocbox(unittest.TestCase):
         y = functions._soft_threshold(x, .8)
         nptest.assert_allclose(y, [.0, .2, .4, .6, .8])
 
-
     def test_norm_l1(self):
         """
         Test the norm_l1 derived class.
@@ -108,9 +107,6 @@ class TestPyunlocbox(unittest.TestCase):
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
         self.assertEqual(f.eval([3, 4]), 21)
         self.assertEqual(f.eval(np.array([-3, 4])), 21)
-
-
-
 
 
 if __name__ == '__main__':
