@@ -12,6 +12,20 @@ who inherit from it implement the methods. Theses classes include :
 import numpy as np
 
 
+def _soft_threshold(z, T):
+    """
+    Return the soft thresholded signal.
+
+    Parameters :
+    * *z* : input signal (real or complex)
+    * *T* : threshold on the absolute value of ``z``
+    """
+    z = np.array(z)
+    sol = np.maximum(abs(z)-T*abs(z), 0) * z
+    sol /= np.maximum(abs(z)-T*abs(z), 0) + T*abs(z) + (abs(z) == 0)
+    return sol
+
+
 class func:
     """
     This class defines a function object to be passed to solvers. It is
@@ -80,6 +94,35 @@ class norm(func):
         self.nu = nu
 
 
+class norm_l1(norm):
+    """
+    L1-norm function, object to be passed to solvers.
+    """
+
+    def eval(self, x):
+        """
+        Return :math:`\lambda ||w\cdot(A(x)-y)||_1`
+        """
+        sol = self.A(np.array(x)) - self.y
+        sol = sum(abs(self.w * sol))
+        return self.lamb * sol
+
+    def prox(self, x, T):
+        """
+        Return
+        :math:`\min_z \\frac{1}{2} ||x-z||_2^2 + \gamma ||w\cdot(A(z)-y)||_1`
+        where :math:`\gamma = \lambda \cdot T`
+        """
+        gamma = self.lamb * T
+        if self.tight:
+            sol = self.A(x)
+            sol = self.At(_solf_threshold(sol, gamma*self.nu*self.w) - sol)
+            sol = x + sol / self.nu
+        else:
+            raise NotImplementedError('Not implemented for non tight frame')
+        return sol
+
+
 class norm_l2(norm):
     """
     L2-norm function, object to be passed to solvers.
@@ -87,16 +130,16 @@ class norm_l2(norm):
 
     def eval(self, x):
         """
-        Return :math:`\lambda ||w\cdot(A(x)-y)||_2`
+        Return :math:`\lambda ||w\cdot(A(x)-y)||_2^2`
         """
         sol = self.A(np.array(x)) - self.y
-        sol = np.linalg.norm(self.w * sol)
+        sol = np.sum( (self.w * sol)**2 )
         return self.lamb * sol
 
     def prox(self, x, T):
         """
         Return
-        :math:`\min_z \\frac{1}{2} ||x-z||_2^2 + \gamma ||w\cdot(A(z)-y)||_2`
+        :math:`\min_z \\frac{1}{2} ||x-z||_2^2 + \gamma ||w\cdot(A(z)-y)||_2^2`
         where :math:`\gamma = \lambda \cdot T`
         """
         gamma = self.lamb * T
