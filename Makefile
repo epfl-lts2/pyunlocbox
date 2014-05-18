@@ -40,9 +40,7 @@ coverage:
 	open htmlcov/index.html
 
 docs:
-	rm -f docs/pyunlocbox.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ pyunlocbox
+#	sphinx-apidoc --no-toc --separate --force -o docs/ pyunlocbox
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 
