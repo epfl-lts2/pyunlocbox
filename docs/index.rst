@@ -6,6 +6,9 @@
 Welcome to pyunlocbox's documentation!
 ======================================
 
+PyUNLockBox is a convex optimization toolbox using proximal splitting methods.
+It is a port of the Matlab UNLocBox toolbox.
+
 Contents:
 
 .. toctree::
@@ -14,7 +17,6 @@ Contents:
    readme
    installation
    usage
-   api
    contributing
    authors
    history
