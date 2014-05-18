@@ -30,6 +30,21 @@ sys.path.insert(0, project_root)
 
 import pyunlocbox
 
+# -- Library requirements ------------------------------------------------------
+
+# This happens because our build system doesn’t have the dependencies for
+# building your project. This happens with things like libevent and mysql, and
+# other python things that depend on C libraries. We can’t support installing
+# random C binaries on our system, so there is another way to fix these
+# imports.
+
+import mock
+
+mock_modules = ['numpy']
+for mod_name in mock_modules:
+    sys.modules[mod_name] = mock.Mock()
+
+
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -37,7 +52,8 @@ import pyunlocbox
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',
+              'sphinx.ext.autosummary', 'sphinx.ext.mathjax', 'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -135,7 +151,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -258,3 +274,9 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+
+# -- numpydoc configuration ----------------------------------------------------
+
+numpydoc_show_class_members = False
+
