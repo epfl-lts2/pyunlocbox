@@ -169,10 +169,11 @@ class solver(object):
     This class defines the solver object interface.
 
     This class defines the interface of a solver object intended to be passed
-    to :func:`solve`. It is intended to be a base class for standard solvers
-    which will implement the required methods. It can also be instantiated by
-    user code and dynamically modified for rapid testing. This class also
-    defines the generic attributes of all solver objects.
+    to the :func:`pyunlocbox.solvers.solve` solving function. It is intended to
+    be a base class for standard solvers which will implement the required
+    methods. It can also be instantiated by user code and dynamically modified
+    for rapid testing. This class also defines the generic attributes of all
+    solver objects.
 
     Parameters
     ----------
@@ -213,7 +214,8 @@ class forward_backward(solver):
     r"""
     Forward-backward proximal splitting algorithm.
 
-    See generic attributes descriptions of the base class :class:`solver`.
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.solvers.solver` base class.
 
     Parameters
     ----------

@@ -32,9 +32,9 @@ import pyunlocbox
 
 # -- Library requirements ------------------------------------------------------
 
-# This happens because our build system doesn’t have the dependencies for
+# RTD : This happens because our build system doesn't have the dependencies for
 # building your project. This happens with things like libevent and mysql, and
-# other python things that depend on C libraries. We can’t support installing
+# other python things that depend on C libraries. We can't support installing
 # random C binaries on our system, so there is another way to fix these
 # imports.
 

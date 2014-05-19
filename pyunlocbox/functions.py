@@ -136,10 +136,10 @@ class norm(func):
     A : function, optional
         forward operator. Default is the identity, :math:`A(x)=x`.
     At : function, optional
-        adjoint operator. Default is A, :math:`At(x)=A(x)`.
+        adjoint operator. Default is `A`, :math:`At(x)=A(x)`.
     tight : bool, optional
         ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
-        `True`.
+        ``True``.
     nu : float, optional
         bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
         ||x||^2`. Default is 1.
