@@ -1,4 +1,3 @@
-pyunlocbox
 wheel==0.22.0
 numpydoc==0.4
 mock==1.0.1
