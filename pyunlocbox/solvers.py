@@ -31,23 +31,27 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=0, maxIter=200,
     ----------
     solver : solver object
         the solver algorithm. It is an object who must implement the
-        :func:`pre`, :func:`algo` and :func:`post` methods.
+        :meth:`pyunlocbox.solvers.solver.pre`,
+        :meth:`pyunlocbox.solvers.solver.algo` and
+        :meth:`pyunlocbox.solvers.solver.post` methods.
     f1 : func object
         first convex function to minimize. It is an object who must implement
-        the :func:`eval` method. The :func:`grad` and / or :func:`prox` methods
-        are required by some solvers. Please refer to the documentation of the
-        considered solver.
+        the :meth:`pyunlocbox.functions.func.eval` method. The
+        :meth:`pyunlocbox.functions.func.grad` and / or
+        :meth:`pyunlocbox.functions.func.prox` methods are required by some
+        solvers. Please refer to the documentation of the considered solver.
     f2 : func object
-        second convex function to minimize, with a :math:`\\beta`
-        Lipschitz continuous gradient. It is an object who must implement the
-        :func:`eval` method. The :func:`grad` and / or :func:`prox` methods are
-        required by some solvers. Please refer to the documentation of
-        the considered solver.
+        second convex function to minimize, with a :math:`\beta` Lipschitz
+        continuous gradient. It is an object who must implement the
+        :meth:`pyunlocbox.functions.func.eval` method. The
+        :meth:`pyunlocbox.functions.func.grad` and / or
+        :meth:`pyunlocbox.functions.func.prox` methods are required by some
+        solvers. Please refer to the documentation of the considered solver.
     x0 : array_like
         starting point of the algorithm, :math:`x_0 \in \mathbb{R}^N`
     relTol : float, optional
         the relative tolerance stopping criterion. The algorithm stops when
-        :math:`\\frac{n(k)-n(k-1)}{n(k)}<reltol` where
+        :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
         :math:`n(k)=f(x)=f_1(x)+f_2(x)` is the objective function at iteration
         :math:`k`. Default is :math:`10^{-3}`.
     absTol : float, optional
@@ -73,9 +77,9 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=0, maxIter=200,
         final evaluation of the objective function :math:`f(x)`
     crit : {'max_it', 'abs_tol', 'rel_tol'}
         used stopping criterion. 'max_it' if the maximum number of iterations
-        is reached, 'abs_tol' if the objective function value is smaller than
-        `absTol`, 'rel_tol' if the relative objective function improvement was
-        smaller than `relTol`
+        `maxIter` is reached, 'abs_tol' if the objective function value is
+        smaller than `absTol`, 'rel_tol' if the relative objective function
+        improvement was smaller than `relTol`
     rel : float
         relative objective improvement at convergence
     objective : ndarray
@@ -228,8 +232,9 @@ class forward_backward(solver):
 
     Notes
     -----
-    This algorithm requires `f1` to implement the :meth:`prox` method and `f2`
-    to implement the :meth:`grad` method.
+    This algorithm requires `f1` to implement the
+    :meth:`pyunlocbox.functions.func.prox` method and `f2` to implement the
+    :meth:`pyunlocbox.functions.func.grad` method.
 
     Examples
     --------
