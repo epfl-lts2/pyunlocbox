@@ -14,7 +14,7 @@ import numpy as np
 import time
 
 
-def solve(solver, f1, f2, x0, relTol=10**-3, absTol=0, maxIter=200,
+def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
           verbosity='low'):
     r"""
     This function solves an optimization problem whose objective function is
@@ -56,7 +56,7 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=0, maxIter=200,
         :math:`k`. Default is :math:`10^{-3}`.
     absTol : float, optional
         the absolute tolerance stopping criterion. The algorithm stops when
-        :math:`n(k)<abstol`. Default is 0.
+        :math:`n(k)<abstol`. Default is minus infinity.
     maxIter : int, optional
         the maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
