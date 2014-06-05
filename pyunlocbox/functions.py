@@ -134,10 +134,12 @@ class norm(func):
         measurements. Default is 0.
     w : array_like, optional
         weights for a weighted norm. Default is 1.
-    A : function, optional
-        forward operator. Default is the identity, :math:`A(x)=x`.
-    At : function, optional
-        adjoint operator. Default is `A`, :math:`At(x)=A(x)`.
+    A : function or ndarray, optional
+        The forward operator. Default is the identity, :math:`A(x)=x`. If `A`
+        is an ndarray, it will be converted to the operator form.
+    At : function or ndarray, optional
+        The adjoint operator. If `A` is an ndarray, default is the transpose of
+        `A`. If `A` is a function, default is `A`, :math:`At(x)=A(x)`.
     tight : bool, optional
         ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
         ``True``.
@@ -151,14 +153,25 @@ class norm(func):
         self.lambda_ = lambda_
         self.y = np.array(y)
         self.w = np.array(w)
-        if A:
-            self.A = A
-        else:
+        if A is None:
             self.A = lambda x: x
-        if At:
-            self.At = At
         else:
-            self.At = self.A
+            if type(A) is np.ndarray:
+                # Transform matrix form to operator.
+                self.A = lambda x: np.dot(A, x)
+            else:
+                self.A = A
+        if At is None:
+            if type(A) is np.ndarray:
+                self.At = lambda x: np.dot(np.transpose(A), x)
+            else:
+                self.At = self.A
+        else:
+            if type(At) is np.ndarray:
+                # Transform matrix form to operator.
+                self.At = lambda x: np.dot(At, x)
+            else:
+                self.At = At
         self.tight = tight
         self.nu = nu
 

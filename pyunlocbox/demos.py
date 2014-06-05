@@ -43,14 +43,17 @@ def compressed_sensing_1():
 
     # Set the two convex function objects.
     f1 = functions.norm_l1(lambda_=tau)
+    f2 = functions.norm_l2(y=y, A=A)
+
+    # Alternative 1 (same results) : pass operators instead of matrices.
     A_ = lambda x: np.dot(A, x)
     At_ = lambda x: np.dot(np.transpose(A), x)
-    f2 = functions.norm_l2(y=y, A=A_, At=At_)
+    f3 = functions.norm_l2(y=y, A=A_, At=At_)
 
-    # Manual definition of the L2 norm (alternative method, same results).
-    f3 = functions.func()
-    f3.grad = lambda x: 2.0 * np.dot(np.transpose(A), np.dot(A, x) - y)
-    f3.eval = lambda x: np.linalg.norm(np.dot(A, x) - y)**2
+    # Alternative 2 (same results) : manual definition of the L2 norm.
+    f4 = functions.func()
+    f4.grad = lambda x: 2.0 * np.dot(np.transpose(A), np.dot(A, x) - y)
+    f4.eval = lambda x: np.linalg.norm(np.dot(A, x) - y)**2
 
     # Set the solver object.
     gamma = 0.5 / np.linalg.norm(A)**2  # Step size (beta = 2*norm(A)^2).
