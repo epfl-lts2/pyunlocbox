@@ -38,11 +38,14 @@ import pyunlocbox
 # random C binaries on our system, so there is another way to fix these
 # imports.
 
-import mock
+# Other solution for RTD : give the virtual environment access to the
+# global site-packages dir.
 
-mock_modules = ['numpy']
-for mod_name in mock_modules:
-    sys.modules[mod_name] = mock.Mock()
+#import mock
+
+#mock_modules = ['numpy']
+#for mod_name in mock_modules:
+#    sys.modules[mod_name] = mock.Mock()
 
 
 # -- General configuration -----------------------------------------------------
