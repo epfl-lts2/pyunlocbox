@@ -6,9 +6,9 @@ This module implements function objects which are then passed to solvers.  The
 inherit from it implement the methods. These classes include :
 
 * :class:`norm_l1`: L1-norm which implements the :meth:`eval` and :meth:`prox`
-  methods
+  methods.
 * :class:`norm_l2`: L2-norm which implements the :meth:`eval`, :meth:`prox`
-  and :meth:`grad` methods
+  and :meth:`grad` methods.
 """
 
 import pyunlocbox

@@ -7,11 +7,8 @@ Toolbox overview
 
 .. automodule:: pyunlocbox
 
-API documentation
------------------
-
 Functions module
-^^^^^^^^^^^^^^^^
+----------------
 
 .. toctree::
     :maxdepth: 2
@@ -22,7 +19,7 @@ Functions module
 .. automodule:: pyunlocbox.functions
 
 Solvers module
-^^^^^^^^^^^^^^
+--------------
 
 .. toctree::
     :maxdepth: 2
@@ -33,7 +30,12 @@ Solvers module
 .. automodule:: pyunlocbox.solvers
 
 Demos module
-^^^^^^^^^^^^
+------------
 
-To be done.
+.. toctree::
+    :maxdepth: 2
+
+    compressed_sensing_1
+
+.. automodule:: pyunlocbox.demos
 

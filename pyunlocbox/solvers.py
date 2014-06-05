@@ -7,7 +7,7 @@ solver and functions objects. The :class:`solver` base class defines the
 interface of all solver object. The specialized solver objects inherit from it
 and implement the class methods. The following solvers are included :
 
-* :class:`forward_backward`: forward-backward proximal splitting algorithm
+* :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 """
 
 import pyunlocbox
