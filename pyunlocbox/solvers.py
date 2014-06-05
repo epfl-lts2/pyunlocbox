@@ -14,53 +14,48 @@ import numpy as np
 import time
 
 
-def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
+def solve(solver, functions, x0, relTol=10**-3, absTol=float('-inf'),
           convergence_speed=float('-inf'), maxIter=200, verbosity='low'):
     r"""
-    This function solves an optimization problem whose objective function is
-    the sum of two convex functions.
+    Solve an optimization problem whose objective function is the sum of some
+    convex functions.
 
-    This function minimizes the objective function :math:`f(x) = f_1(x) +
-    f_2(x)`, i.e. solves :math:`\arg\!\min_x f_1(x) + f_2(x)` for :math:`x \in
-    \mathbb{R}^N` using whatever algorithm.  Returns a dictionary with the
-    solution and some informations about the algorithm execution.
+    This function minimizes the objective function :math:`f(x) =
+    \sum\limits_{k=0}^{k=M} f_k(x)`, i.e. solves :math:`\arg\!\min_x
+    \sum\limits_{k=0}^{k=M} f_k(x)` for :math:`x \in \mathbb{R}^N` using
+    whatever algorithm. It returns a dictionary with the found solution and
+    some informations about the algorithm execution.
 
     Parameters
     ----------
-    solver : solver object
-        the solver algorithm. It is an object who must implement the
-        :meth:`pyunlocbox.solvers.solver.pre`,
-        :meth:`pyunlocbox.solvers.solver.algo` and
-        :meth:`pyunlocbox.solvers.solver.post` methods.
-    f1 : func class instance
-        first convex function to minimize. It is an object who must implement
-        the :meth:`pyunlocbox.functions.func.eval` method. The
+    solver : solver class instance
+        The solver algorithm. It is an object who must inherit from
+        :class:`pyunlocbox.solvers.solver`, and implement the :meth:`_pre`
+        :meth:`_algo` and :meth:`_post` methods.
+    functions : list of objects
+        A list of convex functions to minimize. These are objects who must
+        implement the :meth:`pyunlocbox.functions.func.eval` method. The
         :meth:`pyunlocbox.functions.func.grad` and / or
         :meth:`pyunlocbox.functions.func.prox` methods are required by some
-        solvers. Please refer to the documentation of the considered solver.
-    f2 : func class instance
-        second convex function to minimize, with a :math:`\beta` Lipschitz
-        continuous gradient. It is an object who must implement the
-        :meth:`pyunlocbox.functions.func.eval` method. The
-        :meth:`pyunlocbox.functions.func.grad` and / or
-        :meth:`pyunlocbox.functions.func.prox` methods are required by some
-        solvers. Please refer to the documentation of the considered solver.
+        solvers. Note also that some solvers can only handle two convex
+        functions while others may handle more. Please refer to the
+        documentation of the considered solver.
     x0 : array_like
-        starting point of the algorithm, :math:`x_0 \in \mathbb{R}^N`
+        Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^N`.
     relTol : float, optional
         The convergence (relative tolerance) stopping criterion. The algorithm
         stops if :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
         :math:`n(k)=f(x)=f_1(x)+f_2(x)` is the objective function at iteration
         :math:`k`. Default is :math:`10^{-3}`.
     absTol : float, optional
-        the absolute tolerance stopping criterion. The algorithm stops if
+        The absolute tolerance stopping criterion. The algorithm stops if
         :math:`n(k)<abstol`. Default is minus infinity.
     convergence_speed : float, optional
         The minimum tolerable convergence speed of the objective function. The
         algorithm stops if n(k-1) - n(k) < `convergence_speed`. Default is
         minus infinity (i.e. the objective function may even increase).
     maxIter : int, optional
-        the maximum number of iterations. Default is 200.
+        The maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
         The log level : 'none' for no log, 'low' to print main steps, 'high' to
         print all steps. Default is 'low'.
@@ -99,7 +94,7 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
     >>> f1 = None
     >>> f2 = None
     >>> x0 = None
-    >>> sol, info, objective = pyunlocbox.solvers.solve(solver1, f1, f2, x0)
+    >>> sol, info, objective = pyunlocbox.solvers.solve(solver1, [f1, f2], x0)
     0
     """
 
@@ -110,7 +105,7 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
         raise ValueError('Verbosity should be either none, low or high.')
 
     startTime = time.time()
-    objective = [f1.eval(x0) + f2.eval(x0)]
+    objective = sum([f.eval(x0) for f in functions])
     stopCrit = None
     nIter = 0
 
@@ -122,9 +117,9 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
         nIter += 1
 
         # Solver iterative algorithm.
-        solver.algo(f1, f2, verbosity, objective, nIter)
+        solver.algo(functions, verbosity, objective, nIter)
 
-        objective.append(f1.eval(solver.sol) + f2.eval(solver.sol))
+        objective.append(sum([f.eval(solver.sol) for f in functions]))
 
         # Prevent division by 0.
         if objective[-1] == 0:
@@ -187,8 +182,8 @@ class solver(object):
     ----------
     gamma : float
         The step size. This parameter is upper bounded by
-        :math:`\frac{1}{\beta}` where :math:`f_2` is :math:`\beta` Lipschitz
-        continuous. Default is 1.
+        :math:`\frac{1}{\beta}` where the second convex function (gradient ?)
+        is :math:`\beta` Lipschitz continuous. Default is 1.
     post_gamma : function
         User defined function to post-process the step size. This function is
         called every iteration and permits the user to alter the solver
@@ -229,18 +224,18 @@ class solver(object):
     def _pre(self, x0, verbosity):
         raise NotImplementedError("Class user should define this method.")
 
-    def algo(self, f1, f2, verbosity, objective, niter):
+    def algo(self, functions, verbosity, objective, niter):
         """
         Call the solver iterative algorithm while allowing the user to alter
         it. This makes it possible to dynamically change the `gamma` step size
         while the algorithm is running.  See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._algo(f1, f2, verbosity)
+        self._algo(functions, verbosity)
         self.gamma = self.post_gamma(self.gamma, self.sol, objective, niter)
         self.sol = self.post_sol(self.gamma, self.sol, objective, niter)
 
-    def _algo(self, f1, f2, verbosity):
+    def _algo(self, functions, verbosity):
         raise NotImplementedError("Class user should define this method.")
 
     def post(self, verbosity):
@@ -257,7 +252,10 @@ class solver(object):
 
 class forward_backward(solver):
     r"""
-    Forward-backward proximal splitting algorithm.
+    Forward-backward splitting algorithm.
+
+    This algorithm solves convex optimization problems composed of the sum of
+    two objective functions.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
@@ -273,9 +271,9 @@ class forward_backward(solver):
 
     Notes
     -----
-    This algorithm requires `f1` to implement the
-    :meth:`pyunlocbox.functions.func.prox` method and `f2` to implement the
-    :meth:`pyunlocbox.functions.func.grad` method.
+    This algorithm requires the first function to implement the
+    :meth:`pyunlocbox.functions.func.prox` method and the second to implement
+    the :meth:`pyunlocbox.functions.func.grad` method.
 
     Examples
     --------
@@ -284,7 +282,7 @@ class forward_backward(solver):
     >>> f1 = None
     >>> f2 = None
     >>> x0 = None
-    >>> sol = pyunlocbox.solvers.solve(solver1, f1, f2, x0)
+    >>> sol = pyunlocbox.solvers.solve(solver1, [f1, f2], x0)
     0
     """
 
@@ -311,7 +309,11 @@ class forward_backward(solver):
         self.un = np.array(x0)
         self.tn = 1.
 
-    def _algo(self, f1, f2, verbosity):
+    def _algo(self, functions, verbosity):
+        if len(functions) != 2:
+            raise ValueError('Forward-backward requires two functions.')
+        f1 = functions[0]
+        f2 = functions[1]
         if self.method == 'ISTA':
             yn = self.sol - self.gamma * f2.grad(self.sol)
             self.sol += self.lambda_ * (f1.prox(yn, self.gamma) - self.sol)

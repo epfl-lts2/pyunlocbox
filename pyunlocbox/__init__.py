@@ -30,7 +30,7 @@ by a call to the solving algorithm.
 >>> f2 = pyunlocbox.functions.norm_l2(lamb=1, y=y)
 >>> solver = pyunlocbox.solvers.forward_backward()
 >>> x0 = [0, 0, 0, 0]
->>> sol, info, objective = pyunlocbox.solvers.solve(solver, f1, f2, x0)
+>>> sol, info, objective = pyunlocbox.solvers.solve(solver, [f1, f2], x0)
 """
 
 __author__ = 'EPFL LTS2'
