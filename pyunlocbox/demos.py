@@ -8,9 +8,9 @@ real problems. The following demonstrations are included :
   forward-backward proximal splitting algorithm.
 """
 
-from pyunlocbox.functions import norm_l1, norm_l2
-from pyunlocbox.solvers import solve, forward_backward
+from pyunlocbox import functions, solvers
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def compressed_sensing_1():
@@ -25,7 +25,9 @@ def compressed_sensing_1():
     R = max(4, np.ceil(np.log(N)))
     M = K * R    # Number of measurements.
 
-    print('The compression ratio is %f' % (N/M,))
+    txt = ('Compression ratio of %f (%d measurements for a signal size of %d)'
+           % (N/M, M, N))
+    print(txt)
 
     # Measurements matrix.
     A = np.random.standard_normal((M, N))
@@ -40,15 +42,31 @@ def compressed_sensing_1():
     y = np.dot(A, x)
 
     # Set the two convex function objects.
-    f1 = norm_l1(lambda_=tau)
+    f1 = functions.norm_l1(lambda_=tau)
     A_ = lambda x: np.dot(A, x)
     At_ = lambda x: np.dot(np.transpose(A), x)
-    f2 = norm_l2(y=y, A=A_, At=At_)
+    f2 = functions.norm_l2(y=y, A=A_, At=At_)
+
+    # Manual definition of the L2 norm (alternative method, same results).
+    f3 = functions.func()
+    f3.grad = lambda x: 2.0 * np.dot(np.transpose(A), np.dot(A, x) - y)
+    f3.eval = lambda x: np.linalg.norm(np.dot(A, x) - y)**2
 
     # Set the solver object.
-    gamma = 0.5 / np.linalg.norm(A)**2  # Step size (beta = 2*norm(A)^2)
-    solver = forward_backward(method='ISTA', gamma=gamma)
+    gamma = 0.5 / np.linalg.norm(A)**2  # Step size (beta = 2*norm(A)^2).
+    solver = solvers.forward_backward(method='FISTA', gamma=gamma)
 
     # Solve the problem.
-    ret = solve([f1, f2], np.zeros(N), solver, relTol=10**-4, maxIter=300,
-                verbosity='high')
+    x0 = np.zeros(N)
+    ret = solvers.solve([f1, f3], x0, solver, relTol=1e-4, maxIter=300,
+                        verbosity='high')
+
+    # Display the results.
+    plt.figure()
+    plt.plot(x, 'o')
+    plt.plot(ret['sol'], 'xr')
+    plt.title(txt)
+    plt.legend(('Original', 'Reconstructed'))
+    plt.xlabel('Signal dimension number')
+    plt.ylabel('Signal value')
+    plt.show()
