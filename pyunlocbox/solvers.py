@@ -20,12 +20,10 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
     This function solves an optimization problem whose objective function is
     the sum of two convex functions.
 
-    This function minimizes the objective function
-    :math:`f(x) = f_1(x) + f_2(x)`, i.e. solves
-    :math:`\arg\!\min_x f_1(x) + f_2(x)` for
-    :math:`x \in \mathbb{R}^N` using whatever algorithm.
-    Returns a dictionary with the solution and some informations about
-    the algorithm execution.
+    This function minimizes the objective function :math:`f(x) = f_1(x) +
+    f_2(x)`, i.e. solves :math:`\arg\!\min_x f_1(x) + f_2(x)` for :math:`x \in
+    \mathbb{R}^N` using whatever algorithm.  Returns a dictionary with the
+    solution and some informations about the algorithm execution.
 
     Parameters
     ----------
@@ -70,7 +68,7 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
     Returns
     -------
     sol : ndarray
-        solution
+        problem solution
     algo : str
         used algorithm
     niter : int
@@ -124,10 +122,11 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
         nIter += 1
 
         # Solver iterative algorithm.
-        solver.algo(f1, f2, verbosity)
+        solver.algo(f1, f2, verbosity, objective, nIter)
 
         objective.append(f1.eval(solver.sol) + f2.eval(solver.sol))
 
+        # Prevent division by 0.
         if objective[-1] == 0:
             if verbosity in ['low', 'high']:
                 print('WARNING: objective function is equal to 0 ! '
@@ -147,7 +146,6 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
         elif objective[-2] - objective[-1] < convergence_speed:
             stopCrit = 'CONV_SPEED'
 
-# post process
         if verbosity == 'high':
             print('Iteration %d : objective = %f, relative = %f'
                   % (nIter, objective[-1], relative))
@@ -176,7 +174,7 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
 
 class solver(object):
     r"""
-    This class defines the solver object interface.
+    Defines the solver object interface.
 
     This class defines the interface of a solver object intended to be passed
     to the :func:`pyunlocbox.solvers.solve` solving function. It is intended to
@@ -188,28 +186,61 @@ class solver(object):
     Parameters
     ----------
     gamma : float
-        the step size. This parameter is upper bounded by
+        The step size. This parameter is upper bounded by
         :math:`\frac{1}{\beta}` where :math:`f_2` is :math:`\beta` Lipschitz
         continuous. Default is 1.
+    post_gamma : function
+        User defined function to post-process the step size. This function is
+        called every iteration and permits the user to alter the solver
+        algorithm. The user may start with a high step size and progressively
+        lower it while the algorithm runs to accelerate the convergence. The
+        function parameters are the following : `gamma` (current step size),
+        `sol` (current problem solution), `objective` (list of successive
+        evaluations of the objective function), `niter` (current iteration
+        number). The function should return a new value for `gamma`. Default is
+        to return an unchanged value.
+    post_sol : function
+        User defined function to post-process the problem solution. This
+        function is called every iteration and permits the user to alter the
+        solver algorithm. Same parameter as :func:`post_gamma`. Default is to
+        return an unchanged value.
     """
 
-    def __init__(self, gamma=1):
+    def __init__(self, gamma=1, post_gamma=None, post_sol=None):
         if gamma < 0:
             raise ValueError('Gamma should be a positive number.')
         self.gamma = gamma
+        if post_gamma:
+            self.post_gamma = post_gamma
+        else:
+            self.post_gamma = lambda gamma, sol, objective, niter: gamma
+        if post_sol:
+            self.post_sol = post_sol
+        else:
+            self.post_sol = lambda gamma, sol, objective, niter: sol
 
     def pre(self, x0, verbosity):
         """
         Solver specific initialization. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
+        self._pre(x0, verbosity)
+
+    def _pre(self, x0, verbosity):
         raise NotImplementedError("Class user should define this method.")
 
-    def algo(self, f1, f2, verbosity):
+    def algo(self, f1, f2, verbosity, objective, niter):
         """
-        Solver iterative algorithm. See parameters documentation in
+        Call the solver iterative algorithm while allowing the user to alter
+        it. This makes it possible to dynamically change the `gamma` step size
+        while the algorithm is running.  See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
+        self._algo(f1, f2, verbosity)
+        self.gamma = self.post_gamma(self.gamma, self.sol, objective, niter)
+        self.sol = self.post_sol(self.gamma, self.sol, objective, niter)
+
+    def _algo(self, f1, f2, verbosity):
         raise NotImplementedError("Class user should define this method.")
 
     def post(self, verbosity):
@@ -217,7 +248,11 @@ class solver(object):
         Solver specific post-processing. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        raise NotImplementedError("Class user should define this method.")
+        self._post(verbosity)
+
+    def _post(self, verbosity):
+        # Do not need to be necessarily implemented by class user.
+        pass
 
 
 class forward_backward(solver):
@@ -232,7 +267,7 @@ class forward_backward(solver):
     method : {'FISTA', 'ISTA'}, optional
         the method used to solve the problem.  It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
-    lamb : float, optional
+    lambda_ : float, optional
         the update term weight for ISTA.  It should be between 0 and 1. Default
         is 1.
 
@@ -253,7 +288,7 @@ class forward_backward(solver):
     0
     """
 
-    def __init__(self, method='FISTA', lamb=1, *args, **kwargs):
+    def __init__(self, method='FISTA', lambda_=1, *args, **kwargs):
 
         solver.__init__(self, *args, **kwargs)
 
@@ -261,14 +296,11 @@ class forward_backward(solver):
             raise ValueError('The method should be FISTA or ISTA.')
         self.method = method
 
-        if lamb < 0 or lamb > 1:
+        if lambda_ < 0 or lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
-        self.lamb = lamb
+        self.lambda_ = lambda_
 
-    def pre(self, x0, verbosity):
-        """
-        Algorithm initialization.
-        """
+    def _pre(self, x0, verbosity):
         if verbosity == 'high':
             print('Selected algorithm : %s' % (self.method))
 
@@ -279,13 +311,10 @@ class forward_backward(solver):
         self.un = np.array(x0)
         self.tn = 1.
 
-    def algo(self, f1, f2, verbosity):
-        """
-        Iterative ISTA or FISTA algorithm.
-        """
+    def _algo(self, f1, f2, verbosity):
         if self.method == 'ISTA':
             yn = self.sol - self.gamma * f2.grad(self.sol)
-            self.sol += self.lamb * (f1.prox(yn, self.gamma) - self.sol)
+            self.sol += self.lambda_ * (f1.prox(yn, self.gamma) - self.sol)
         elif self.method == 'FISTA':
             xn = f1.prox(self.un - self.gamma * f2.grad(self.un), self.gamma)
             tn1 = (1. + np.sqrt(1.+4.*self.tn**2.)) / 2.
@@ -294,9 +323,3 @@ class forward_backward(solver):
             self.tn = tn1
         else:
             raise ValueError('The method should be FISTA or ISTA.')
-
-    def post(self, verbosity):
-        """
-        No post-processing.
-        """
-        pass
