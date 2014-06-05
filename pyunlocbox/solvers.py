@@ -14,8 +14,8 @@ import numpy as np
 import time
 
 
-def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
-          verbosity='low'):
+def solve(solver, f1, f2, x0, relTol=10**-3, absTol=float('-inf'),
+          convergence_speed=float('-inf'), maxIter=200, verbosity='low'):
     r"""
     This function solves an optimization problem whose objective function is
     the sum of two convex functions.
@@ -34,13 +34,13 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
         :meth:`pyunlocbox.solvers.solver.pre`,
         :meth:`pyunlocbox.solvers.solver.algo` and
         :meth:`pyunlocbox.solvers.solver.post` methods.
-    f1 : func object
+    f1 : func class instance
         first convex function to minimize. It is an object who must implement
         the :meth:`pyunlocbox.functions.func.eval` method. The
         :meth:`pyunlocbox.functions.func.grad` and / or
         :meth:`pyunlocbox.functions.func.prox` methods are required by some
         solvers. Please refer to the documentation of the considered solver.
-    f2 : func object
+    f2 : func class instance
         second convex function to minimize, with a :math:`\beta` Lipschitz
         continuous gradient. It is an object who must implement the
         :meth:`pyunlocbox.functions.func.eval` method. The
@@ -50,18 +50,22 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
     x0 : array_like
         starting point of the algorithm, :math:`x_0 \in \mathbb{R}^N`
     relTol : float, optional
-        the relative tolerance stopping criterion. The algorithm stops when
-        :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
+        The convergence (relative tolerance) stopping criterion. The algorithm
+        stops if :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
         :math:`n(k)=f(x)=f_1(x)+f_2(x)` is the objective function at iteration
         :math:`k`. Default is :math:`10^{-3}`.
     absTol : float, optional
-        the absolute tolerance stopping criterion. The algorithm stops when
+        the absolute tolerance stopping criterion. The algorithm stops if
         :math:`n(k)<abstol`. Default is minus infinity.
+    convergence_speed : float, optional
+        The minimum tolerable convergence speed of the objective function. The
+        algorithm stops if n(k-1) - n(k) < `convergence_speed`. Default is
+        minus infinity (i.e. the objective function may even increase).
     maxIter : int, optional
         the maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
-        'none' for no log, 'low' to print main steps, 'high' to print all
-        steps. Default is 'low'.
+        The log level : 'none' for no log, 'low' to print main steps, 'high' to
+        print all steps. Default is 'low'.
 
     Returns
     -------
@@ -75,11 +79,13 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
         execution time in seconds
     eval : float
         final evaluation of the objective function :math:`f(x)`
-    crit : {'max_it', 'abs_tol', 'rel_tol'}
-        used stopping criterion. 'max_it' if the maximum number of iterations
-        `maxIter` is reached, 'abs_tol' if the objective function value is
-        smaller than `absTol`, 'rel_tol' if the relative objective function
-        improvement was smaller than `relTol`
+    crit : {'MAX_IT', 'ABS_TOL', 'REL_TOL', 'CONV_SPEED'}
+        Used stopping criterion. 'MAX_IT' if the maximum number of iterations
+        `maxIter` is reached, 'ABS_TOL' if the objective function value is
+        smaller than `absTol`, 'REL_TOL' if the relative objective function
+        improvement was smaller than `relTol` (i.e. the algorithm converged),
+        'CONV_SPEED' if the objective function improvement is smaller than
+        `convergence_speed`.
     rel : float
         relative objective improvement at convergence
     objective : ndarray
@@ -138,8 +144,8 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
             stopCrit = 'REL_TOL'
         elif nIter >= maxIter:
             stopCrit = 'MAX_IT'
-        elif objective[-1] > objective[-2]:
-            stopCrit = 'OBJ_INC'
+        elif objective[-2] - objective[-1] < convergence_speed:
+            stopCrit = 'CONV_SPEED'
 
 # post process
         if verbosity == 'high':
