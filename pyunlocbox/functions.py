@@ -128,8 +128,8 @@ class norm(func):
 
     Parameters
     ----------
-    lambda_ : float
-        regularization parameter :math:`\lambda`
+    lambda_ : float, optional
+        regularization parameter :math:`\lambda`. Default is 1.
     y : array_like, optional
         measurements. Default is 0.
     w : array_like, optional
@@ -146,7 +146,7 @@ class norm(func):
         ||x||^2`. Default is 1.
     """
 
-    def __init__(self, lambda_, y=0, w=1, A=None, At=None,
+    def __init__(self, lambda_=1, y=0, w=1, A=None, At=None,
                  tight=True, nu=1):
         self.lambda_ = lambda_
         self.y = np.array(y)

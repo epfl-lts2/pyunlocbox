@@ -100,13 +100,13 @@ def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
     0
     """
 
-    if relTol < 0 or absTol < 0 or maxIter < 0:
+    if relTol < 0 or maxIter < 0:
         raise ValueError('Parameters should be positive numbers.')
     if verbosity not in ['none', 'low', 'high']:
         raise ValueError('Verbosity should be either none, low or high.')
 
     startTime = time.time()
-    objective = sum([f.eval(x0) for f in functions])
+    objective = [sum([f.eval(x0) for f in functions])]
     stopCrit = None
     nIter = 0
 
@@ -299,7 +299,7 @@ class forward_backward(solver):
 
     def __init__(self, method='FISTA', lambda_=1, *args, **kwargs):
 
-        solver.__init__(self, *args, **kwargs)
+        super(forward_backward, self).__init__(*args, **kwargs)
 
         if method not in ['FISTA', 'ISTA']:
             raise ValueError('The method should be FISTA or ISTA.')
