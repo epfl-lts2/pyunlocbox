@@ -10,11 +10,12 @@ and implement the class methods. The following solvers are included :
 * :class:`forward_backward`: forward-backward proximal splitting algorithm
 """
 
+import pyunlocbox
 import numpy as np
 import time
 
 
-def solve(solver, functions, x0, relTol=10**-3, absTol=float('-inf'),
+def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
           convergence_speed=float('-inf'), maxIter=200, verbosity='low'):
     r"""
     Solve an optimization problem whose objective function is the sum of some
@@ -28,10 +29,6 @@ def solve(solver, functions, x0, relTol=10**-3, absTol=float('-inf'),
 
     Parameters
     ----------
-    solver : solver class instance
-        The solver algorithm. It is an object who must inherit from
-        :class:`pyunlocbox.solvers.solver`, and implement the :meth:`_pre`
-        :meth:`_algo` and :meth:`_post` methods.
     functions : list of objects
         A list of convex functions to minimize. These are objects who must
         implement the :meth:`pyunlocbox.functions.func.eval` method. The
@@ -42,6 +39,12 @@ def solve(solver, functions, x0, relTol=10**-3, absTol=float('-inf'),
         documentation of the considered solver.
     x0 : array_like
         Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^N`.
+    solver : solver class instance, optional
+        The solver algorithm. It is an object who must inherit from
+        :class:`pyunlocbox.solvers.solver` and implement the :meth:`_pre`,
+        :meth:`_algo` and :meth:`_post` methods. If no solver object are
+        provided, a standard one will be chosen given the number of convex
+        function objects and their implemented methods.
     relTol : float, optional
         The convergence (relative tolerance) stopping criterion. The algorithm
         stops if :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
@@ -98,7 +101,6 @@ def solve(solver, functions, x0, relTol=10**-3, absTol=float('-inf'),
     0
     """
 
-    # Common initialization.
     if relTol < 0 or absTol < 0 or maxIter < 0:
         raise ValueError('Parameters should be positive numbers.')
     if verbosity not in ['none', 'low', 'high']:
@@ -108,6 +110,16 @@ def solve(solver, functions, x0, relTol=10**-3, absTol=float('-inf'),
     objective = sum([f.eval(x0) for f in functions])
     stopCrit = None
     nIter = 0
+
+    # Choose a solver if none provided.
+    if not solver:
+        if len(functions) < 2:
+            raise ValueError('At least 2 convex functions should be passed.')
+        elif len(functions) == 2:
+            solver = pyunlocbox.solvers.forward_backward
+        else:
+            raise NotImplementedError('No solver able to minimize more than 2'
+                                      'functions for now.')
 
     # Solver specific initialization.
     solver.pre(x0, verbosity)
@@ -311,7 +323,7 @@ class forward_backward(solver):
 
     def _algo(self, functions, verbosity):
         if len(functions) != 2:
-            raise ValueError('Forward-backward requires two functions.')
+            raise ValueError('Forward-backward requires two convex functions.')
         f1 = functions[0]
         f2 = functions[1]
         if self.method == 'ISTA':
