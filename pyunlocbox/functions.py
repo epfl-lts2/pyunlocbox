@@ -66,12 +66,13 @@ class func(object):
 
         Returns
         -------
-        float
+        y : float
             The objective function evaluated at `x`.
 
         Notes
         -----
-        This method is required to compute the objective function.
+        This method is required by the :func:`pyunlocbox.solvers.solve` solving
+        function to evaluate the objective function.
         """
         raise NotImplementedError("Class user should define this method.")
 
@@ -88,7 +89,7 @@ class func(object):
 
         Returns
         -------
-        ndarray
+        y : ndarray
             The proximal operator evaluated at `x`.
 
         Notes
@@ -111,7 +112,7 @@ class func(object):
 
         Returns
         -------
-        ndarray
+        y : ndarray
             The function gradient evaluated at `x`.
 
         Notes
@@ -127,7 +128,7 @@ class norm(func):
 
     Parameters
     ----------
-    lamb : float
+    lambda_ : float
         regularization parameter :math:`\lambda`
     y : array_like, optional
         measurements. Default is 0.
@@ -145,9 +146,9 @@ class norm(func):
         ||x||^2`. Default is 1.
     """
 
-    def __init__(self, lamb, y=0, w=1, A=None, At=None,
+    def __init__(self, lambda_, y=0, w=1, A=None, At=None,
                  tight=True, nu=1):
-        self.lamb = lamb
+        self.lambda_ = lambda_
         self.y = np.array(y)
         self.w = np.array(w)
         if A:
@@ -178,9 +179,9 @@ class norm_l1(norm):
 
         Returns
         -------
-        float
+        y : float
              The L-1 norm of the vector `x` :
-             :math:`\lambda ||w\cdot(A(x)-y)||_1`
+             :math:`\lambda ||w \cdot (A(x)-y)||_1`
 
         Examples
         --------
@@ -191,7 +192,7 @@ class norm_l1(norm):
         """
         sol = self.A(np.array(x)) - self.y
         sol = sum(abs(self.w * sol))
-        return self.lamb * sol
+        return self.lambda_ * sol
 
     def prox(self, x, T):
         r"""
@@ -206,10 +207,10 @@ class norm_l1(norm):
 
         Returns
         -------
-        ndarray
+        y : ndarray
             The L1-norm proximal operator evaluated at `x` :
             :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma
-            ||w\cdot(A(z)-y)||_1` where :math:`\gamma = \lambda \cdot T`
+            ||w \cdot (A(z)-y)||_1` where :math:`\gamma = \lambda \cdot T`
 
         Examples
         --------
@@ -219,7 +220,7 @@ class norm_l1(norm):
         0
         """
         # Gamma is T in the matlab UNLocBox implementation.
-        gamma = self.lamb * T
+        gamma = self.lambda_ * T
         if self.tight:
             sol = self.A(x)
             sol = self.At(_solf_threshold(sol, gamma*self.nu*self.w) - sol)
@@ -245,9 +246,9 @@ class norm_l2(norm):
 
         Returns
         -------
-        float
+        y : float
             The squared L-2 norm of the vector `x` :
-            :math:`\lambda ||w\cdot(A(x)-y)||_2^2`
+            :math:`\lambda ||w \cdot (A(x)-y)||_2^2`
 
         Examples
         --------
@@ -258,7 +259,7 @@ class norm_l2(norm):
         """
         sol = self.A(np.array(x)) - self.y
         sol = np.sum((self.w * sol)**2)
-        return self.lamb * sol
+        return self.lambda_ * sol
 
     def prox(self, x, T):
         r"""
@@ -273,10 +274,10 @@ class norm_l2(norm):
 
         Returns
         -------
-        ndarray
+        y : ndarray
             The L2-norm proximal operator evaluated at `x` :
             :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma
-            ||w\cdot(A(z)-y)||_2^2` where :math:`\gamma = \lambda \cdot T`
+            ||w \cdot (A(z)-y)||_2^2` where :math:`\gamma = \lambda \cdot T`
 
         Examples
         --------
@@ -286,7 +287,7 @@ class norm_l2(norm):
         array([0.33333333, 0.66666667, 1., 1.33333333])
         """
         # Gamma is T in the matlab UNLocBox implementation.
-        gamma = self.lamb * T
+        gamma = self.lambda_ * T
         if self.tight:
             sol = np.array(x) + 2. * gamma * self.At(self.y * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
@@ -305,9 +306,9 @@ class norm_l2(norm):
 
         Returns
         -------
-        ndarray
+        y : ndarray
             The L2-norm gradient evaluated at `x` :
-            :math:`2 \lambda \cdot At( w\cdot(A(x)-y) )`
+            :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`
 
         Examples
         --------
@@ -317,4 +318,4 @@ class norm_l2(norm):
         array([2, 4, 6, 8])
         """
         sol = self.A(np.array(x)) - self.y
-        return 2 * self.lamb * self.w * self.At(sol)
+        return 2 * self.lambda_ * self.w * self.At(sol)
