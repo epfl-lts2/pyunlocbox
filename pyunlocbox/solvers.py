@@ -129,12 +129,12 @@ def solve(solver, f1, f2, x0, relTol=10**-3, absTol=-np.infty, maxIter=200,
             # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
             objective[-1] = np.spacing(1.0)
 
-        relative = (objective[-1] - objective[-2]) / objective[-1]
+        relative = abs((objective[-1] - objective[-2]) / objective[-1])
 
         # Verify stopping criteria.
         if objective[-1] < absTol:
             stopCrit = 'ABS_TOL'
-        elif abs(relative) < relTol:
+        elif relative < relTol:
             stopCrit = 'REL_TOL'
         elif nIter >= maxIter:
             stopCrit = 'MAX_IT'
