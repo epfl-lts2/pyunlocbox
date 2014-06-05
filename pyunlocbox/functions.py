@@ -11,7 +11,6 @@ inherit from it implement the methods. These classes include :
   and :meth:`grad` methods.
 """
 
-import pyunlocbox
 import numpy as np
 
 
@@ -44,6 +43,7 @@ class func(object):
 
     Examples
     --------
+    >>> import pyunlocbox
     >>> import numpy as np
     >>> f1 = pyunlocbox.functions.func()
     >>> f1.eval = lambda x : x**2
@@ -185,6 +185,7 @@ class norm_l1(norm):
 
         Examples
         --------
+        >>> import pyunlocbox
         >>> f1 = pyunlocbox.functions.norm_l1(1)
         >>> f1.eval([1, 2, 3, 4])
         10
@@ -213,6 +214,7 @@ class norm_l1(norm):
 
         Examples
         --------
+        >>> import pyunlocbox
         >>> f1 = pyunlocbox.functions.norm_l1(1)
         >>> f1.prox([1, 2, 3, 4], 1)
         0
@@ -221,7 +223,7 @@ class norm_l1(norm):
         gamma = self.lambda_ * T
         if self.tight:
             sol = self.A(x)
-            sol = self.At(pyunlocbox.functions._solf_threshold(
+            sol = self.At(_soft_threshold(
                           sol, gamma*self.nu*self.w) - sol)
             sol = x + sol / self.nu
         else:
@@ -251,6 +253,7 @@ class norm_l2(norm):
 
         Examples
         --------
+        >>> import pyunlocbox
         >>> f1 = pyunlocbox.functions.norm_l2(1)
         >>> f1.eval([1, 2, 3, 4])
         30
@@ -279,6 +282,7 @@ class norm_l2(norm):
 
         Examples
         --------
+        >>> import pyunlocbox
         >>> f1 = pyunlocbox.functions.norm_l2(1)
         >>> f1.prox([1, 2, 3, 4], 1)
         array([0.33333333, 0.66666667, 1., 1.33333333])
@@ -309,6 +313,7 @@ class norm_l2(norm):
 
         Examples
         --------
+        >>> import pyunlocbox
         >>> f1 = pyunlocbox.functions.norm_l2(1)
         >>> f1.grad([1, 2, 3, 4])
         array([2, 4, 6, 8])

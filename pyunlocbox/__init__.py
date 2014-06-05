@@ -33,6 +33,14 @@ by a call to the solving algorithm.
 >>> sol, info, objective = pyunlocbox.solvers.solve(solver, [f1, f2], x0)
 """
 
+# When importing the toolbox, you surely want these two modules.
+from . import functions
+from . import solvers
+
+# Silence the code checker warning about unused symbols.
+assert functions
+assert solvers
+
 __author__ = 'EPFL LTS2'
 __email__ = 'nathanael.perraudin@epfl.ch'
 __version__ = '0.1.0'

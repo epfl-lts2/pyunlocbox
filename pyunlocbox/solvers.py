@@ -10,7 +10,6 @@ and implement the class methods. The following solvers are included :
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 """
 
-import pyunlocbox
 import numpy as np
 import time
 
@@ -116,7 +115,7 @@ def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
         if len(functions) < 2:
             raise ValueError('At least 2 convex functions should be passed.')
         elif len(functions) == 2:
-            solver = pyunlocbox.solvers.forward_backward
+            solver = forward_backward
         else:
             raise NotImplementedError('No solver able to minimize more than 2'
                                       'functions for now.')
