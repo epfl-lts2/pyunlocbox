@@ -14,7 +14,7 @@ import numpy as np
 import time
 
 
-def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
+def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
           convergence_speed=float('-inf'), maxIter=200, verbosity='low'):
     r"""
     Solve an optimization problem whose objective function is the sum of some
@@ -59,8 +59,8 @@ def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
     maxIter : int, optional
         The maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
-        The log level : 'none' for no log, 'low' to print main steps, 'high' to
-        print all steps. Default is 'low'.
+        The log level : 'none' for no log, 'low' for resume at convergence,
+        'high' to for all steps. Default is 'low'.
 
     Returns
     -------
@@ -106,7 +106,7 @@ def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
         raise ValueError('Verbosity should be either none, low or high.')
 
     startTime = time.time()
-    objective = [sum([f.eval(x0) for f in functions])]
+    objective = [[f.eval(x0) for f in functions]]
     stopCrit = None
     nIter = 0
 
@@ -115,10 +115,12 @@ def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
         if len(functions) < 2:
             raise ValueError('At least 2 convex functions should be passed.')
         elif len(functions) == 2:
-            solver = forward_backward
+            solver = forward_backward()
         else:
             raise NotImplementedError('No solver able to minimize more than 2'
                                       'functions for now.')
+        if verbosity in ['low', 'high']:
+            print('Selected algorithm : %s' % (solver.__class__.__name__,))
 
     # Solver specific initialization.
     solver.pre(x0, verbosity)
@@ -130,47 +132,49 @@ def solve(functions, x0, solver=None, relTol=10**-3, absTol=float('-inf'),
         # Solver iterative algorithm.
         solver.algo(functions, verbosity, objective, nIter)
 
-        objective.append(sum([f.eval(solver.sol) for f in functions]))
+        objective.append([f.eval(solver.sol) for f in functions])
+        current = np.sum(objective[-1])
+        last = np.sum(objective[-2])
 
         # Prevent division by 0.
-        if objective[-1] == 0:
+        if current == 0:
             if verbosity in ['low', 'high']:
                 print('WARNING: objective function is equal to 0 ! '
                       'Adding some epsilon to continue.')
             # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
-            objective[-1] = np.spacing(1.0)
+            current = np.spacing(1.0)
 
-        relative = abs((objective[-1] - objective[-2]) / objective[-1])
+        relative = np.abs((current - last) / current)
 
         # Verify stopping criteria.
-        if objective[-1] < absTol:
+        if current < absTol:
             stopCrit = 'ABS_TOL'
         elif relative < relTol:
             stopCrit = 'REL_TOL'
         elif nIter >= maxIter:
             stopCrit = 'MAX_IT'
-        elif objective[-2] - objective[-1] < convergence_speed:
+        elif last - current < convergence_speed:
             stopCrit = 'CONV_SPEED'
 
         if verbosity == 'high':
-            print('Iteration %d : objective = %f, relative = %f'
-                  % (nIter, objective[-1], relative))
+            print('Iteration %3d : objective = %.2e, relative = %.2e'
+                  % (nIter, current, relative))
 
     # Solver specific post-processing.
     solver.post(verbosity)
 
-    if verbosity in ['high', 'low']:
-        print('Solution found in %d iterations :' % (nIter))
-        print('\tobjective function f(sol) = %f' % (objective[-1]))
-        print('\trelative objective last improvement : %f' % (relative))
-        print('\tstopping criterion : %s' % (stopCrit))
+    if verbosity in ['low', 'high']:
+        print('Solution found in %d iterations :' % (nIter,))
+        print('    objective function f(sol) = %e' % (current,))
+        print('    last relative objective improvement : %e' % (relative,))
+        print('    stopping criterion : %s' % (stopCrit,))
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
               'algo':      solver.__class__.__name__,
               'niter':     nIter,
               'time':      time.time() - startTime,
-              'eval':      objective[-1],
+              'eval':      current,
               'objective': objective,
               'crit':      stopCrit,
               'rel':       relative}
@@ -293,7 +297,7 @@ class forward_backward(solver):
     >>> f1 = None
     >>> f2 = None
     >>> x0 = None
-    >>> sol = pyunlocbox.solvers.solve(solver1, [f1, f2], x0)
+    >>> sol = pyunlocbox.solvers.solve([f1, f2], x0, solver1)
     0
     """
 
@@ -311,7 +315,7 @@ class forward_backward(solver):
 
     def _pre(self, x0, verbosity):
         if verbosity == 'high':
-            print('Selected algorithm : %s' % (self.method))
+            print('Forward-backward selected method : %s' % (self.method))
 
         # ISTA and FISTA initialization.
         self.sol = np.array(x0)
