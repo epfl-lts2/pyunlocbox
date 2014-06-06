@@ -23,7 +23,7 @@ def compressed_sensing_1(tau=1):
     N = 5000     # Signal size.
     K = 100      # Sparsity level.
     R = max(4, np.ceil(np.log(N)))
-    M = K * R * 2    # Number of measurements.
+    M = K * R    # Number of measurements.
 
     txt = ('Compression ratio of %f (%d measurements for a signal size of %d)'
            % (N/M, M, N))
@@ -58,7 +58,12 @@ def compressed_sensing_1(tau=1):
 
     # Set the solver object.
     gamma = 0.5 / np.linalg.norm(A,ord=2)**2  # Step size (beta = 2*norm(A)^2).
+    solver = solvers.forward_backward(method='FISTA', gamma=gamma)
 
+    # Solve the problem.
+    x0 = np.zeros(N)
+    ret = solvers.solve([f1, f4], x0, solver, relTol=1e-4, maxIter=500,
+                        verbosity='high')
 
     # Display the results.
     fig = plt.figure()
