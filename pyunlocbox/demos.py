@@ -23,7 +23,7 @@ def compressed_sensing_1():
     N = 5000     # Signal size.
     K = 100      # Sparsity level.
     R = max(4, np.ceil(np.log(N)))
-    M = K * R    # Number of measurements.
+    M = K * R * 2    # Number of measurements.
 
     print('The compression ratio is %f' % (N/M,))
 
