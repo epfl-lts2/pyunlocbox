@@ -49,6 +49,7 @@ def compressed_sensing_1():
     A_ = lambda x: np.dot(A, x)
     At_ = lambda x: np.dot(np.transpose(A), x)
     f3 = functions.norm_l2(y=y, A=A_, At=At_)
+    assert f3
 
     # Alternative 2 (same results) : manual definition of the L2 norm.
     f4 = functions.func()
@@ -61,7 +62,7 @@ def compressed_sensing_1():
 
     # Solve the problem.
     x0 = np.zeros(N)
-    ret = solvers.solve([f1, f3], x0, solver, relTol=1e-4, maxIter=300,
+    ret = solvers.solve([f1, f2], x0, solver, relTol=1e-4, maxIter=300,
                         verbosity='high')
 
     # Display the results.
@@ -72,4 +73,12 @@ def compressed_sensing_1():
     plt.legend(('Original', 'Reconstructed'))
     plt.xlabel('Signal dimension number')
     plt.ylabel('Signal value')
+
+    # Display the convergence
+    plt.figure()
+    plt.plot(ret['objective'])
+    plt.title('Convergence')
+    plt.xlabel('Iteration number')
+    plt.ylabel('Objective function value')
+
     plt.show()

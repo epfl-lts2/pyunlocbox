@@ -90,11 +90,17 @@ class TestPyunlocbox(unittest.TestCase):
         """
         Test the soft thresholding helper function.
         """
-        x = np.arange(0, 5, 1)
-        y = functions._soft_threshold(x, 3)
-        nptest.assert_allclose(y, np.zeros(5))
-        y = functions._soft_threshold(x, .8)
-        nptest.assert_allclose(y, [.0, .2, .4, .6, .8])
+        x = np.arange(-4, 5, 1)
+        # Test integer division for complex method.
+        Ts = [2]
+        y_gold = [[-2, -1, 0, 0, 0, 0, 0, 1, 2]]
+        # Test division by 0 for complex method.
+        Ts.append([.4, .3, .2, .1, 0, .1, .2, .3, .4])
+        y_gold.append([-3.6, -2.7, -1.8, -.9, 0, .9, 1.8, 2.7, 3.6])
+        for k,T in enumerate(Ts):
+            for cmplx in [False, True]:
+                y_test = functions._soft_threshold(x, T, cmplx)
+                nptest.assert_array_equal(y_test, y_gold[k])
 
     def test_norm_l1(self):
         """

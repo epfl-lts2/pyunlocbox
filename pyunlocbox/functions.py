@@ -14,21 +14,44 @@ inherit from it implement the methods. These classes include :
 import numpy as np
 
 
-def _soft_threshold(z, T):
+def _soft_threshold(z, T, handle_complex=True):
     r"""
     Return the soft thresholded signal.
 
     Parameters
     ----------
     z : array_like
-        input signal (real or complex)
-    T : float
-        threshold on the absolute value of `z`
+        Input signal (real or complex).
+    T : float or array_like
+        Threshold on the absolute value of `z`. There could be either a single
+        threshold for the entire signal `z` or one threshold per dimension.
+        Useful when you use weighted norms.
+    handle_complex : bool
+        Indicate that we should handle the thresholding of complex numbers,
+        which may be slower. Default is True.
+
+    Returns
+    -------
+    sz : ndarray
+        Soft thresholded signal.
     """
-    z = np.array(z)
-    sol = np.maximum(abs(z)-T*abs(z), 0) * z
-    sol /= np.maximum(abs(z)-T*abs(z), 0) + T*abs(z) + (abs(z) == 0)
-    return sol
+
+    sz = np.maximum(np.abs(z)-T, 0)
+
+    if not handle_complex :
+        # This soft thresholding method only supports real signal.
+        sz = np.sign(z) * sz
+
+    else:
+        # This soft thresholding method supports complex complex signal.
+        # Transform to float to avoid integer division.
+        # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
+        # It corresponds to 0 thresholded by 0, which is 0.
+        old_err_state = np.seterr(invalid='ignore')
+        sz = np.nan_to_num(np.float64(sz) / (sz+T) * z)
+        np.seterr(**old_err_state)
+
+    return sz
 
 
 class func(object):
@@ -203,8 +226,9 @@ class norm_l1(norm):
         >>> f1.eval([1, 2, 3, 4])
         10
         """
+        print('eval x: ',np.shape(x),', y: ',np.shape(self.y))
         sol = self.A(np.array(x)) - self.y
-        sol = sum(abs(self.w * sol))
+        sol = sum(abs(np.multiply(self.w, sol)))
         return self.lambda_ * sol
 
     def prox(self, x, T):
@@ -235,10 +259,10 @@ class norm_l1(norm):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
-            sol = self.A(x)
-            sol = self.At(_soft_threshold(
-                          sol, gamma*self.nu*self.w) - sol)
-            sol = x + sol / self.nu
+            print('prox x: ',np.shape(x),', y: ',np.shape(self.y))
+            sol = self.A(x - self.y)
+            sol = _soft_threshold(sol, gamma*self.nu*self.w) - sol
+            sol = x + self.At(sol) / self.nu
         else:
             raise NotImplementedError('Not implemented for non tight frame.')
         return sol
