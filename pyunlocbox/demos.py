@@ -57,13 +57,8 @@ def compressed_sensing_1(tau=1):
     f4.eval = lambda x: np.linalg.norm(np.dot(A, x) - y)**2
 
     # Set the solver object.
-    gamma = 0.5 / np.linalg.norm(A)**2  # Step size (beta = 2*norm(A)^2).
-    solver = solvers.forward_backward(method='FISTA', gamma=gamma)
+    gamma = 0.5 / np.linalg.norm(A,ord=2)**2  # Step size (beta = 2*norm(A)^2).
 
-    # Solve the problem.
-    x0 = np.zeros(N)
-    ret = solvers.solve([f1, f4], x0, solver, relTol=1e-4, maxIter=500,
-                        verbosity='high')
 
     # Display the results.
     fig = plt.figure()
