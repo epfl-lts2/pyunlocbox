@@ -106,7 +106,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         raise ValueError('Verbosity should be either none, low or high.')
 
     startTime = time.time()
-    objective = [np.sum([f.eval(x0) for f in functions])]
+    objective = [[f.eval(x0) for f in functions]]
     stopCrit = None
     nIter = 0
 
@@ -132,38 +132,40 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         # Solver iterative algorithm.
         solver.algo(functions, verbosity, objective, nIter)
 
-        objective.append(np.sum([f.eval(solver.sol) for f in functions]))
+        objective.append([f.eval(solver.sol) for f in functions])
+        current = np.sum(objective[-1])
+        last = np.sum(objective[-2])
 
         # Prevent division by 0.
-        if objective[-1] == 0:
+        if current == 0:
             if verbosity in ['low', 'high']:
                 print('WARNING: objective function is equal to 0 ! '
                       'Adding some epsilon to continue.')
             # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
-            objective[-1] = np.spacing(1.0)
+            current = np.spacing(1.0)
 
-        relative = np.abs((objective[-1] - objective[-2]) / objective[-1])
+        relative = np.abs((current - last) / current)
 
         # Verify stopping criteria.
-        if objective[-1] < absTol:
+        if current < absTol:
             stopCrit = 'ABS_TOL'
         elif relative < relTol:
             stopCrit = 'REL_TOL'
         elif nIter >= maxIter:
             stopCrit = 'MAX_IT'
-        elif objective[-2] - objective[-1] < convergence_speed:
+        elif last - current < convergence_speed:
             stopCrit = 'CONV_SPEED'
 
         if verbosity == 'high':
             print('Iteration %3d : objective = %.2e, relative = %.2e'
-                  % (nIter, objective[-1], relative))
+                  % (nIter, current, relative))
 
     # Solver specific post-processing.
     solver.post(verbosity)
 
     if verbosity in ['low', 'high']:
         print('Solution found in %d iterations :' % (nIter,))
-        print('    objective function f(sol) = %e' % (objective[-1],))
+        print('    objective function f(sol) = %e' % (current,))
         print('    last relative objective improvement : %e' % (relative,))
         print('    stopping criterion : %s' % (stopCrit,))
 
@@ -172,7 +174,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
               'algo':      solver.__class__.__name__,
               'niter':     nIter,
               'time':      time.time() - startTime,
-              'eval':      objective[-1],
+              'eval':      current,
               'objective': objective,
               'crit':      stopCrit,
               'rel':       relative}

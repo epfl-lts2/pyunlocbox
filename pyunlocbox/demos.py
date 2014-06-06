@@ -13,13 +13,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def compressed_sensing_1():
+def compressed_sensing_1(tau=1):
     r"""
     TODO
     """
 
     # Problem creation.
-    tau = 1      # Regularization parameter.
+#    tau = 50      # Regularization parameter.
     N = 5000     # Signal size.
     K = 100      # Sparsity level.
     R = max(4, np.ceil(np.log(N)))
@@ -62,23 +62,29 @@ def compressed_sensing_1():
 
     # Solve the problem.
     x0 = np.zeros(N)
-    ret = solvers.solve([f1, f2], x0, solver, relTol=1e-4, maxIter=300,
+    ret = solvers.solve([f1, f4], x0, solver, relTol=1e-4, maxIter=500,
                         verbosity='high')
 
     # Display the results.
-    plt.figure()
+    fig = plt.figure()
     plt.plot(x, 'o')
     plt.plot(ret['sol'], 'xr')
     plt.title(txt)
     plt.legend(('Original', 'Reconstructed'))
     plt.xlabel('Signal dimension number')
     plt.ylabel('Signal value')
+    fig.savefig('compressed_sensing_results_%d.png' % (tau,))
 
     # Display the convergence
-    plt.figure()
-    plt.plot(ret['objective'])
-    plt.title('Convergence')
+    fig = plt.figure()
+    objective = np.array(ret['objective'])
+    plt.plot(objective[:, 0])
+    plt.plot(objective[:, 1])
+    plt.plot(np.sum(objective, axis=1))
+    plt.title(r'Convergence with $\tau$ = %d' % tau)
+    plt.legend(('L1-norm', 'L2-norm', 'Global objective'))
     plt.xlabel('Iteration number')
     plt.ylabel('Objective function value')
+    fig.savefig('compressed_sensing_convergence_%d.png' % (tau,))
 
-    plt.show()
+#    plt.show()

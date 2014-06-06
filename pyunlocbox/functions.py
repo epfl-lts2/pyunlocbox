@@ -242,10 +242,10 @@ class norm_l1(norm):
         10
         """
         sol = self.A(np.array(x)) - self.y
-        sol = np.sum(np.abs(self.w * sol))
+        sol = self.lambda_ * np.sum(np.abs(self.w * sol))
         if self.verbosity in ['low', 'high']:
             print('L1-norm evaluation : %e' % (sol,))
-        return self.lambda_ * sol
+        return sol
 
     def prox(self, x, T):
         r"""
@@ -311,10 +311,10 @@ class norm_l2(norm):
         30
         """
         sol = self.A(np.array(x)) - self.y
-        sol = np.sum((self.w * sol)**2)
+        sol = self.lambda_ * np.sum((self.w * sol)**2)
         if self.verbosity in ['low', 'high']:
             print('L2-norm evaluation : %e' % (sol,))
-        return self.lambda_ * sol
+        return sol
 
     def prox(self, x, T):
         r"""
