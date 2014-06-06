@@ -34,11 +34,17 @@ def _soft_threshold(z, T, handle_complex=True):
     -------
     sz : ndarray
         Soft thresholded signal.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> pyunlocbox.functions._soft_threshold([-2, -1, 0, 1, 2], 1)
+    array([-1., -0.,  0.,  0.,  1.])
     """
 
     sz = np.maximum(np.abs(z)-T, 0)
 
-    if not handle_complex :
+    if not handle_complex:
         # This soft thresholding method only supports real signal.
         sz = np.sign(z) * sz
 
@@ -66,15 +72,17 @@ class func(object):
 
     Examples
     --------
+
+    Manual implementation of an L2 norm :
     >>> import pyunlocbox
     >>> import numpy as np
-    >>> f1 = pyunlocbox.functions.func()
-    >>> f1.eval = lambda x : x**2
-    >>> f1.grad = lambda x : 2*x
+    >>> f = pyunlocbox.functions.func()
+    >>> f.eval = lambda x : x**2
+    >>> f.grad = lambda x : 2*x
     >>> x = np.array([1, 2, 3, 4])
-    >>> f1.eval(x)
+    >>> f.eval(x)
     array([ 1,  4,  9, 16])
-    >>> f1.grad(x)
+    >>> f.grad(x)
     array([2, 4, 6, 8])
     """
 
@@ -169,10 +177,13 @@ class norm(func):
     nu : float, optional
         bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
         ||x||^2`. Default is 1.
+    verbosity : {'low', 'high', 'none'}, optional
+        The log level : 'none' for no log, 'low' for resume at convergence,
+        'high' to for all steps. Default is 'low'.
     """
 
     def __init__(self, lambda_=1, y=0, w=1, A=None, At=None,
-                 tight=True, nu=1):
+                 tight=True, nu=1, verbosity='low'):
         self.lambda_ = lambda_
         self.y = np.array(y)
         self.w = np.array(w)
@@ -197,6 +208,10 @@ class norm(func):
                 self.At = At
         self.tight = tight
         self.nu = nu
+        if verbosity not in ['none', 'low', 'high']:
+            raise ValueError('Verbosity should be either none, low or high.')
+        else:
+            self.verbosity = verbosity
 
 
 class norm_l1(norm):
@@ -222,13 +237,14 @@ class norm_l1(norm):
         Examples
         --------
         >>> import pyunlocbox
-        >>> f1 = pyunlocbox.functions.norm_l1(1)
-        >>> f1.eval([1, 2, 3, 4])
+        >>> f = pyunlocbox.functions.norm_l1()
+        >>> f.eval([1, 2, 3, 4])
         10
         """
-        print('eval x: ',np.shape(x),', y: ',np.shape(self.y))
         sol = self.A(np.array(x)) - self.y
-        sol = sum(abs(np.multiply(self.w, sol)))
+        sol = np.sum(np.abs(self.w * sol))
+        if self.verbosity in ['low', 'high']:
+            print('L1-norm evaluation : %e' % (sol,))
         return self.lambda_ * sol
 
     def prox(self, x, T):
@@ -252,15 +268,14 @@ class norm_l1(norm):
         Examples
         --------
         >>> import pyunlocbox
-        >>> f1 = pyunlocbox.functions.norm_l1(1)
-        >>> f1.prox([1, 2, 3, 4], 1)
-        0
+        >>> f = pyunlocbox.functions.norm_l1()
+        >>> f.prox([1, 2, 3, 4], 1)
+        array([ 0.,  1.,  2.,  3.])
         """
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
-            print('prox x: ',np.shape(x),', y: ',np.shape(self.y))
-            sol = self.A(x - self.y)
+            sol = self.A(x) - self.y
             sol = _soft_threshold(sol, gamma*self.nu*self.w) - sol
             sol = x + self.At(sol) / self.nu
         else:
@@ -291,12 +306,14 @@ class norm_l2(norm):
         Examples
         --------
         >>> import pyunlocbox
-        >>> f1 = pyunlocbox.functions.norm_l2(1)
-        >>> f1.eval([1, 2, 3, 4])
+        >>> f = pyunlocbox.functions.norm_l2()
+        >>> f.eval([1, 2, 3, 4])
         30
         """
         sol = self.A(np.array(x)) - self.y
         sol = np.sum((self.w * sol)**2)
+        if self.verbosity in ['low', 'high']:
+            print('L2-norm evaluation : %e' % (sol,))
         return self.lambda_ * sol
 
     def prox(self, x, T):
@@ -320,8 +337,8 @@ class norm_l2(norm):
         Examples
         --------
         >>> import pyunlocbox
-        >>> f1 = pyunlocbox.functions.norm_l2(1)
-        >>> f1.prox([1, 2, 3, 4], 1)
+        >>> f = pyunlocbox.functions.norm_l2()
+        >>> f.prox([1, 2, 3, 4], 1)
         array([0.33333333, 0.66666667, 1., 1.33333333])
         """
         # Gamma is T in the matlab UNLocBox implementation.
@@ -351,8 +368,8 @@ class norm_l2(norm):
         Examples
         --------
         >>> import pyunlocbox
-        >>> f1 = pyunlocbox.functions.norm_l2(1)
-        >>> f1.grad([1, 2, 3, 4])
+        >>> f = pyunlocbox.functions.norm_l2()
+        >>> f.grad([1, 2, 3, 4])
         array([2, 4, 6, 8])
         """
         sol = self.A(np.array(x)) - self.y

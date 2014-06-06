@@ -53,7 +53,7 @@ class TestPyunlocbox(unittest.TestCase):
         We test the three methods : eval, grad and prox.
         First with default class properties, then custom ones.
         """
-        f = functions.norm_l2(lambda_=3)
+        f = functions.norm_l2(lambda_=3, verbosity='none')
         self.assertEqual(f.eval([10, 0]), 300)
         self.assertEqual(f.eval(np.array([-10, 0])), 300)
         nptest.assert_allclose(f.grad([10, 0]), [60, 0])
@@ -64,10 +64,11 @@ class TestPyunlocbox(unittest.TestCase):
         nptest.assert_allclose(f.grad([3, -4]), [18, -24])
         self.assertEqual(f.prox(0, 1), 0)
         self.assertEqual(f.prox(7, 1./6), 3.5)
-        f = functions.norm_l2(lambda_=4)
+        f = functions.norm_l2(lambda_=4, verbosity='none')
         nptest.assert_allclose(f.prox([7, -22], .125), [3.5, -11])
 
-        f = functions.norm_l2(1, A=lambda x: 2*x, At=lambda x: x/2, y=[8, 12])
+        f = functions.norm_l2(1, A=lambda x: 2*x, At=lambda x: x/2, y=[8, 12],
+                              verbosity='none')
         self.assertEqual(f.eval([4, 6]), 0)
         self.assertEqual(f.eval([5, -2]), 256+4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
@@ -76,7 +77,8 @@ class TestPyunlocbox(unittest.TestCase):
 
         f = functions.norm_l2(2, y=np.fft.fft([2, 4])/np.sqrt(2),
                               A=lambda x: np.fft.fft(x)/np.sqrt(x.size),
-                              At=lambda x: np.fft.ifft(x)*np.sqrt(x.size))
+                              At=lambda x: np.fft.ifft(x)*np.sqrt(x.size),
+                              verbosity='none')
 #        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
 #        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
         nptest.assert_allclose(f.grad([2, 4]), 0)
@@ -97,7 +99,7 @@ class TestPyunlocbox(unittest.TestCase):
         # Test division by 0 for complex method.
         Ts.append([.4, .3, .2, .1, 0, .1, .2, .3, .4])
         y_gold.append([-3.6, -2.7, -1.8, -.9, 0, .9, 1.8, 2.7, 3.6])
-        for k,T in enumerate(Ts):
+        for k, T in enumerate(Ts):
             for cmplx in [False, True]:
                 y_test = functions._soft_threshold(x, T, cmplx)
                 nptest.assert_array_equal(y_test, y_gold[k])
@@ -108,7 +110,7 @@ class TestPyunlocbox(unittest.TestCase):
         We test the two methods : eval and prox.
         First with default class properties, then custom ones.
         """
-        f = functions.norm_l1(lambda_=3)
+        f = functions.norm_l1(lambda_=3, verbosity='none')
         self.assertEqual(f.eval([10, 0]), 30)
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
         self.assertEqual(f.eval([3, 4]), 21)

@@ -59,8 +59,8 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     maxIter : int, optional
         The maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
-        The log level : 'none' for no log, 'low' to print main steps, 'high' to
-        print all steps. Default is 'low'.
+        The log level : 'none' for no log, 'low' for resume at convergence,
+        'high' to for all steps. Default is 'low'.
 
     Returns
     -------
@@ -106,7 +106,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         raise ValueError('Verbosity should be either none, low or high.')
 
     startTime = time.time()
-    objective = [sum([f.eval(x0) for f in functions])]
+    objective = [np.sum([f.eval(x0) for f in functions])]
     stopCrit = None
     nIter = 0
 
@@ -132,7 +132,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         # Solver iterative algorithm.
         solver.algo(functions, verbosity, objective, nIter)
 
-        objective.append(sum([f.eval(solver.sol) for f in functions]))
+        objective.append(np.sum([f.eval(solver.sol) for f in functions]))
 
         # Prevent division by 0.
         if objective[-1] == 0:
@@ -142,7 +142,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
             # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
             objective[-1] = np.spacing(1.0)
 
-        relative = abs((objective[-1] - objective[-2]) / objective[-1])
+        relative = np.abs((objective[-1] - objective[-2]) / objective[-1])
 
         # Verify stopping criteria.
         if objective[-1] < absTol:
@@ -295,7 +295,7 @@ class forward_backward(solver):
     >>> f1 = None
     >>> f2 = None
     >>> x0 = None
-    >>> sol = pyunlocbox.solvers.solve(solver1, [f1, f2], x0)
+    >>> sol = pyunlocbox.solvers.solve([f1, f2], x0, solver1)
     0
     """
 
