@@ -2,10 +2,10 @@
 
 r"""
 This module implements solver objects who minimize an objective function. Call
-:func:`solve` to solve your convex optimization problem using your instanced
+:func:`solve` to solve your convex optimization problem using your instantiated
 solver and functions objects. The :class:`solver` base class defines the
-interface of all solver object. The specialized solver objects inherit from it
-and implement the class methods. The following solvers are included :
+interface of all solver objects. The specialized solver objects inherit from
+it and implement the class methods. The following solvers are included :
 
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 """

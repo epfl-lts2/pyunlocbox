@@ -4,11 +4,12 @@
 PyUNLocBoX is a convex optimization toolbox using proximal splitting methods.
 It is a port of the Matlab UNLocBoX toolbox.
 
-The toolbox is organized around two classes hierarchy : the functions and the
-solvers. Instanced functions represent convex functions to optimize. Instanced
-solvers represent solving algorithms. The :func:`pyunlocbox.solvers.solve`
-solving function takes as parameters a solver object and some function objects
-to actually solve the optimization problem.
+The toolbox is organized around two classes hierarchies : the functions and the
+solvers. Instantiated functions represent convex functions to optimize.
+Instantiated solvers represent solving algorithms. The
+:func:`pyunlocbox.solvers.solve` solving function takes as parameters a
+solver object and some function objects to actually solve the optimization
+problem.
 
 The :mod:`pyunlockbox` package is divided into the following modules :
 
