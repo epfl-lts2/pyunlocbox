@@ -11,7 +11,7 @@ Instantiated solvers represent solving algorithms. The
 solver object and some function objects to actually solve the optimization
 problem.
 
-The :mod:`pyunlockbox` package is divided into the following modules :
+The :mod:`pyunlocbox` package is divided into the following modules :
 
 * :mod:`pyunlocbox.solvers`: problem solvers, implement the solvers class
   hierarchy and the solving function
@@ -24,16 +24,11 @@ are first instantiated with the desired parameters. The problem is then solved
 by a call to the solving function.
 
 >>> import pyunlocbox
->>> y = [4, 5, 6, 7]
->>> f1 = pyunlocbox.functions.norm_l2(y=y)
->>> f1.eval([0, 0, 0, 0])
-126
->>> f1.grad([0, 0, 0, 0])
-array([ -8, -10, -12, -14])
+>>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
 >>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
 >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, absTol=1e-5)
-Solution found in 10 iterations :
+Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
     stopping criterion : ABS_TOL

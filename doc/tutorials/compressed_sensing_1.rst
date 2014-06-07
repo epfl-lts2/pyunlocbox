@@ -25,8 +25,8 @@ Number of measurements : 900
 >>> print('Compression ratio : %3.2f' % (N/M,))
 Compression ratio : 5.56
 
-With the above defined number of measurements, the algorithm is supposed to
-very often perform a perfect reconstruction.
+.. note:: With the above defined number of measurements, the algorithm is
+    supposed to very often perform a perfect reconstruction.
 
 We now generate a random measurement matrix :
 
@@ -75,9 +75,10 @@ or alternatively as follow :
 >>> At_ = lambda x: np.dot(np.transpose(A), x)
 >>> f3 = functions.norm_l2(y=y, A=A_, At=At_, verbosity='none')
 
-Note that in this case the forward and adjoint operators were passed as real
-operators not as matrices. A third alternative would be to define the function
-object by hand :
+.. note:: In this case the forward and adjoint operators were passed as real
+    operators not as matrices.
+
+A third alternative would be to define the function object by hand :
 
 >>> f4 = functions.func()
 >>> f4.grad = lambda x: 2.0 * np.dot(np.transpose(A), np.dot(A, x) - y)
@@ -107,7 +108,7 @@ after the setting of a starting point `x0` :
 
 >>> x0 = np.zeros(N)
 >>> ret = solvers.solve([f1, f2], x0, solver, relTol=1e-4, maxIter=300)
-Solution found in 176 iterations :
+Solution found after 176 iterations :
     objective function f(sol) = 8.221302e+00
     last relative objective improvement : 8.363264e-05
     stopping criterion : REL_TOL
@@ -133,7 +134,8 @@ Lets display the results :
 .. image:: compressed_sensing_1_results.*
 
 The above figure shows a good reconstruction which is both sparse (thanks to
-the L1-norm) and close to the measurements (thanks to the L2-norm).
+the L1-norm objective) and close to the measurements (thanks to the L2-norm
+objective).
 
 We can also display the convergence of the two objective functions :
 

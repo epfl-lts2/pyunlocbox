@@ -93,12 +93,11 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     Basic example :
 
     >>> import pyunlocbox
-    >>> y = [4, 5, 6, 7]
-    >>> f1 = pyunlocbox.functions.norm_l2(y=y)
+    >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
     >>> f2 = pyunlocbox.functions.dummy()
     >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], absTol=1e-5)
     Selected solver : forward_backward
-    Solution found in 10 iterations :
+    Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
         stopping criterion : ABS_TOL
@@ -119,8 +118,12 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
 
     # Choose a solver if none provided.
     if not solver:
-        if len(functions) < 2:
-            raise ValueError('At least 2 convex functions should be passed.')
+        if len(functions) < 1:
+            raise ValueError('At least 1 convex function should be passed.')
+        elif len(functions) == 1:
+            f1 = functions[0]
+            f2 = functions.dummy()
+            functions = [f1, f2]
         elif len(functions) == 2:
             solver = forward_backward()
         else:
@@ -172,7 +175,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     solver.post(verbosity)
 
     if verbosity in ['low', 'high']:
-        print('Solution found in %d iterations :' % (nIter,))
+        print('Solution found after %d iterations :' % (nIter,))
         print('    objective function f(sol) = %e' % (current,))
         print('    last relative objective improvement : %e' % (relative,))
         print('    stopping criterion : %s' % (stopCrit,))
@@ -300,15 +303,15 @@ class forward_backward(solver):
 
     Examples
     --------
-    >>> import pyunlocbox
+    >>> from pyunlocbox import functions, solvers
+    >>> import numpy as np
     >>> y = [4, 5, 6, 7]
-    >>> f1 = pyunlocbox.functions.norm_l2(y=y)
-    >>> f2 = pyunlocbox.functions.dummy()
-    >>> solver = pyunlocbox.solvers.forward_backward(method='FISTA', lambda_=1,
-    ...                                              gamma=1)
-    >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver,
-    ...                                absTol=1e-5)
-    Solution found in 10 iterations :
+    >>> x0 = np.zeros(len(y))
+    >>> f1 = functions.norm_l2(y=y)
+    >>> f2 = functions.dummy()
+    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, gamma=1)
+    >>> ret = solvers.solve([f1, f2], x0, solver, absTol=1e-5)
+    Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
         stopping criterion : ABS_TOL
