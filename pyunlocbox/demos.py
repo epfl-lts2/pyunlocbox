@@ -69,7 +69,7 @@ def compressed_sensing_1():
     plt.plot(x, 'o', label='Original')
     plt.plot(ret['sol'], 'xr', label='Reconstructed')
     plt.title('Achieved reconstruction')
-    plt.legend()
+    plt.legend(numpoints=1)
     plt.xlabel('Signal dimension number')
     plt.ylabel('Signal value')
     fig.savefig('compressed_sensing_results.png')
