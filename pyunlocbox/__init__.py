@@ -30,9 +30,7 @@ by a call to the solving function.
 126
 >>> f1.grad([0, 0, 0, 0])
 array([ -8, -10, -12, -14])
->>> f2 = pyunlocbox.functions.func()
->>> f2.eval = lambda x: 0
->>> f2.grad = lambda x: 0
+>>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
 >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, absTol=1e-5)
 Solution found in 10 iterations :

@@ -234,7 +234,7 @@ class dummy(func):
         array([ 0.,  0.,  0.,  0.])
 
         """
-        return np.zeros(len(x))
+        return np.zeros(np.shape(np.array(x)))
 
     def grad(self, x):
         r"""
@@ -258,7 +258,7 @@ class dummy(func):
         array([ 0.,  0.,  0.,  0.])
 
         """
-        return np.zeros(len(x))
+        return np.zeros(np.shape(np.array(x)))
 
 
 class norm(func):

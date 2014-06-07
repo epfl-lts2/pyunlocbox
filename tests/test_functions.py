@@ -47,6 +47,21 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.grad(x), self.grad(x))
         self.assertEqual(f.prox(x, T), self.prox(x, T))
 
+    def test_dummy(self):
+        """
+        Test the dummy derived class.
+        All the methods should return 0.
+        """
+        f = functions.dummy()
+        self.assertEqual(f.eval(34), 0)
+        nptest.assert_array_equal(f.grad(34), [0])
+        nptest.assert_array_equal(f.prox(34, 1), [0])
+        x = [34, 2, 1.0, -10.2]
+        y = np.zeros(len(x))
+        self.assertEqual(f.eval(x), 0)
+        nptest.assert_array_equal(f.grad(x), y)
+        nptest.assert_array_equal(f.prox(x, 1), y)
+
     def test_norm_l2(self):
         """
         Test the norm_l2 derived class.
