@@ -60,8 +60,8 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     maxIter : int, optional
         The maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
-        The log level : 'none' for no log, 'low' for resume at convergence,
-        'high' to for all steps. Default is 'low'.
+        The log level : ``'none'`` for no log, ``'low'`` for resume at
+        convergence, ``'high'`` to for all steps. Default is ``'low'``.
 
     Returns
     -------

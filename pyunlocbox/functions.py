@@ -5,15 +5,15 @@ This module implements function objects which are then passed to solvers.  The
 :class:`func` base class defines the interface whereas specialised classes who
 inherit from it implement the methods. These classes include :
 
-* :class:`dummy`: A dummy function object which returns 0 for the :meth:`eval`,
-  :meth:`prox` and :meth:`grad` methods.
+* :class:`dummy`: A dummy function object which returns 0 for the
+  :meth:`_eval`, :meth:`_prox` and :meth:`_grad` methods.
 
 * :class:`norm`: Norm base class.
 
-  * :class:`norm_l1`: L1-norm who implements the :meth:`eval` and :meth:`prox`
-    methods.
-  * :class:`norm_l2`: L2-norm who implements the :meth:`eval`, :meth:`prox`
-    and :meth:`grad` methods.
+  * :class:`norm_l1`: L1-norm who implements the :meth:`_eval` and
+    :meth:`_prox` methods.
+  * :class:`norm_l2`: L2-norm who implements the :meth:`_eval`, :meth:`_prox`
+    and :meth:`_grad` methods.
 """
 
 import numpy as np
@@ -79,21 +79,20 @@ class func(object):
     Parameters
     ----------
     verbosity : {'none', 'low', 'high'}, optional
-        The log level : 'none' for no log, 'low' for resume at convergence,
-        'high' to for all steps. Default is 'low'.
+        The log level : ``'none'`` for no log, ``'low'`` for resume at
+        convergence, ``'high'`` to for all steps. Default is ``'low'``.
 
     Examples
     --------
 
-    Lets define a parabola as an example of manual implementation of a function
-    object :
+    Lets define a parabola as an example of the manual implementation of a
+    function object :
 
     >>> import pyunlocbox
-    >>> import numpy as np
     >>> f = pyunlocbox.functions.func()
-    >>> f.eval = lambda x : x**2
-    >>> f.grad = lambda x : 2*x
-    >>> x = np.array([1, 2, 3, 4])
+    >>> f._eval = lambda x : x**2
+    >>> f._grad = lambda x : 2*x
+    >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
     array([ 1,  4,  9, 16])
     >>> f.grad(x)
@@ -118,7 +117,7 @@ class func(object):
 
         Returns
         -------
-        y : float
+        z : float
             The objective function evaluated at `x`.
 
         Notes
@@ -126,6 +125,12 @@ class func(object):
         This method is required by the :func:`pyunlocbox.solvers.solve` solving
         function to evaluate the objective function.
         """
+        sol = self._eval(np.array(x))
+        if self.verbosity in ['low', 'high']:
+            print('%s evaluation : %e' % (self.__class__.__name__, sol))
+        return sol
+
+    def _eval(self, x):
         raise NotImplementedError("Class user should define this method.")
 
     def prox(self, x, T):
@@ -141,16 +146,20 @@ class func(object):
 
         Returns
         -------
-        y : ndarray
+        z : ndarray
             The proximal operator evaluated at `x`.
 
         Notes
         -----
         This method is required by some solvers.
 
-        The proximal operator is defined by :math:`prox_{f,\gamma}(x) = \min_z
-        \frac{1}{2} ||x-z||_2^2 + \gamma f(z)`
+        The proximal operator is defined by
+        :math:`\operatorname{prox}_{f,\gamma}(x) = \min_z \frac{1}{2}
+        ||x-z||_2^2 + \gamma f(z)`
         """
+        return self._prox(np.array(x), T)
+
+    def _prox(self, x, T):
         raise NotImplementedError("Class user should define this method.")
 
     def grad(self, x):
@@ -164,101 +173,53 @@ class func(object):
 
         Returns
         -------
-        y : ndarray
-            The function gradient evaluated at `x`.
+        z : ndarray
+            The objective function gradient evaluated at `x`.
 
         Notes
         -----
         This method is required by some solvers.
         """
+        return self._grad(np.array(x))
+
+    def _grad(self, x):
         raise NotImplementedError("Class user should define this method.")
 
 
 class dummy(func):
     r"""
-    Dummy function object. Can be used as a second function object when there
-    is only one function to minimize.
+    Dummy function object.
+
+    This can be used as a second function object when there is only one
+    function to minimize. The :meth:`eval`, :meth:`prox` and :meth:`grad`
+    methods then all return 0.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.func` base class.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.dummy(verbosity='low')
+    >>> x = [1, 2, 3, 4]
+    >>> f.eval(x)
+    dummy evaluation : 0.000000e+00
+    0
+    >>> f.prox(x, 1)
+    array([ 0.,  0.,  0.,  0.])
+    >>> f.grad(x)
+    array([ 0.,  0.,  0.,  0.])
+
     """
 
-    def eval(self, x):
-        """
-        Dummy evaluation which returns 0.
+    def _eval(self, x):
+        return 0
 
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
+    def _prox(self, x, T):
+        return np.zeros(np.shape(x))
 
-        Returns
-        -------
-        y : float
-             Always 0.
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.dummy()
-        >>> f.eval([1, 2, 3, 4])
-        0
-
-        """
-        sol = 0
-        if self.verbosity in ['low', 'high']:
-            print('Dummy evaluation : %e' % (sol,))
-        return sol
-
-    def prox(self, x, T):
-        r"""
-        Dummy proximal operator which returns 0.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-        T : float
-            The regularization parameter.
-
-        Returns
-        -------
-        y : ndarray
-            Always 0.
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.dummy()
-        >>> f.prox([1, 2, 3, 4], 1)
-        array([ 0.,  0.,  0.,  0.])
-
-        """
-        return np.zeros(np.shape(np.array(x)))
-
-    def grad(self, x):
-        r"""
-        Dummy gradient which returns 0.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        Returns
-        -------
-        y : ndarray
-            Always 0.
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.dummy()
-        >>> f.grad([1, 2, 3, 4])
-        array([ 0.,  0.,  0.,  0.])
-
-        """
-        return np.zeros(np.shape(np.array(x)))
+    def _grad(self, x):
+        return np.zeros(np.shape(x))
 
 
 class norm(func):
@@ -271,22 +232,24 @@ class norm(func):
     Parameters
     ----------
     lambda_ : float, optional
-        regularization parameter :math:`\lambda`. Default is 1.
+        Regularization parameter :math:`\lambda`. Default is 1.
     y : array_like, optional
-        measurements. Default is 0.
+        Measurements. Default is 0.
     w : array_like, optional
-        weights for a weighted norm. Default is 1.
+        Weights for a weighted norm. Default is 1.
     A : function or ndarray, optional
         The forward operator. Default is the identity, :math:`A(x)=x`. If `A`
-        is an ndarray, it will be converted to the operator form.
+        is an ``ndarray``, it will be converted to the operator form.
     At : function or ndarray, optional
-        The adjoint operator. If `A` is an ndarray, default is the transpose of
-        `A`. If `A` is a function, default is `A`, :math:`At(x)=A(x)`.
+        The adjoint operator. If `At` is an ``ndarray``, it will be converted
+        to the operator form. If `A` is an ``ndarray``, default is the
+        transpose of `A`.  If `A` is a function, default is `A`,
+        :math:`At(x)=A(x)`.
     tight : bool, optional
         ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
         ``True``.
     nu : float, optional
-        bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
+        Bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
         ||x||^2`. Default is 1.
     """
 
@@ -303,7 +266,7 @@ class norm(func):
             self.A = lambda x: x
         else:
             if type(A) is np.ndarray:
-                # Transform matrix form to operator.
+                # Transform matrix form to operator form.
                 self.A = lambda x: np.dot(A, x)
             else:
                 self.A = A
@@ -315,7 +278,7 @@ class norm(func):
                 self.At = self.A
         else:
             if type(At) is np.ndarray:
-                # Transform matrix form to operator.
+                # Transform matrix form to operator form.
                 self.At = lambda x: np.dot(At, x)
             else:
                 self.At = At
@@ -330,64 +293,34 @@ class norm_l1(norm):
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.norm` base class.
+
+    Notes
+    -----
+    * The L-1 norm of the vector `x` is given by
+      :math:`\lambda ||w \cdot (A(x)-y)||_1`
+    * The L1-norm proximal operator evaluated at `x` is given by
+      :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma ||w \cdot (A(z)-y)||_1`
+      where :math:`\gamma = \lambda \cdot T`
+      This is simply a soft thresholding.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.norm_l1(verbosity='low')
+    >>> f.eval([1, 2, 3, 4])
+    norm_l1 evaluation : 1.000000e+01
+    10
+    >>> f.prox([1, 2, 3, 4], 1)
+    array([ 0.,  1.,  2.,  3.])
+
     """
 
-    def eval(self, x):
-        """
-        L-1 norm evaluation.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        Returns
-        -------
-        y : float
-             The L-1 norm of the vector `x` :
-             :math:`\lambda ||w \cdot (A(x)-y)||_1`
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.norm_l1()
-        >>> f.eval([1, 2, 3, 4])
-        10
-
-        """
+    def _eval(self, x):
         sol = self.A(np.array(x)) - self.y
         sol = self.lambda_ * np.sum(np.abs(self.w * sol))
-        if self.verbosity in ['low', 'high']:
-            print('L1-norm evaluation : %e' % (sol,))
         return sol
 
-    def prox(self, x, T):
-        r"""
-        L-1 norm proximal operator.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-        T : float
-            The regularization parameter.
-
-        Returns
-        -------
-        y : ndarray
-            The L1-norm proximal operator evaluated at `x` :
-            :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma
-            ||w \cdot (A(z)-y)||_1` where :math:`\gamma = \lambda \cdot T`
-            This is simply a soft thresholding.
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.norm_l1()
-        >>> f.prox([1, 2, 3, 4], 1)
-        array([ 0.,  1.,  2.,  3.])
-
-        """
+    def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
@@ -405,63 +338,38 @@ class norm_l2(norm):
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.norm` base class.
+
+    Notes
+    -----
+    * The squared L-2 norm of the vector `x` is given by
+      :math:`\lambda ||w \cdot (A(x)-y)||_2^2`
+    * The squared L2-norm proximal operator evaluated at `x` is given by
+      :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma ||w \cdot (A(z)-y)||_2^2`
+      where :math:`\gamma = \lambda \cdot T`
+    * The squared L2-norm gradient evaluated at `x` is given by
+      :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.norm_l2(verbosity='low')
+    >>> x = [1, 2, 3, 4]
+    >>> f.eval(x)
+    norm_l2 evaluation : 3.000000e+01
+    30
+    >>> f.prox(x, 1)
+    array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
+    >>> f.grad(x)
+    array([2, 4, 6, 8])
+
     """
 
-    def eval(self, x):
-        r"""
-        L-2 norm evaluation.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        Returns
-        -------
-        y : float
-            The squared L-2 norm of the vector `x` :
-            :math:`\lambda ||w \cdot (A(x)-y)||_2^2`
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.norm_l2()
-        >>> f.eval([1, 2, 3, 4])
-        30
-
-        """
+    def _eval(self, x):
         sol = self.A(np.array(x)) - self.y
         sol = self.lambda_ * np.sum((self.w * sol)**2)
-        if self.verbosity in ['low', 'high']:
-            print('L2-norm evaluation : %e' % (sol,))
         return sol
 
-    def prox(self, x, T):
-        r"""
-        L-2 norm proximal operator.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-        T : float
-            The regularization parameter.
-
-        Returns
-        -------
-        y : ndarray
-            The L2-norm proximal operator evaluated at `x` :
-            :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma
-            ||w \cdot (A(z)-y)||_2^2` where :math:`\gamma = \lambda \cdot T`
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.norm_l2()
-        >>> f.prox([1, 2, 3, 4], 1)
-        array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
-
-        """
+    def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
@@ -471,28 +379,6 @@ class norm_l2(norm):
             raise NotImplementedError('Not implemented for non tight frame.')
         return sol
 
-    def grad(self, x):
-        r"""
-        L-2 norm gradient.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        Returns
-        -------
-        y : ndarray
-            The L2-norm gradient evaluated at `x` :
-            :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`
-
-        Examples
-        --------
-        >>> import pyunlocbox
-        >>> f = pyunlocbox.functions.norm_l2()
-        >>> f.grad([1, 2, 3, 4])
-        array([2, 4, 6, 8])
-
-        """
+    def _grad(self, x):
         sol = self.A(np.array(x)) - self.y
         return 2 * self.lambda_ * self.w * self.At(sol)
