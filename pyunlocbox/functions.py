@@ -269,6 +269,7 @@ class norm_l1(norm):
             The L1-norm proximal operator evaluated at `x` :
             :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma
             ||w \cdot (A(z)-y)||_1` where :math:`\gamma = \lambda \cdot T`
+            This is simply a soft thresholding.
 
         Examples
         --------

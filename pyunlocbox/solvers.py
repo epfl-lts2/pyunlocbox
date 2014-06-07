@@ -21,10 +21,11 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     convex functions.
 
     This function minimizes the objective function :math:`f(x) =
-    \sum\limits_{k=0}^{k=M} f_k(x)`, i.e. solves :math:`\arg\!\min_x
-    \sum\limits_{k=0}^{k=M} f_k(x)` for :math:`x \in \mathbb{R}^N` using
-    whatever algorithm. It returns a dictionary with the found solution and
-    some informations about the algorithm execution.
+    \sum\limits_{k=0}^{k=M} f_k(x)`, i.e. solves
+    :math:`\operatorname{arg\,min}\limits_x \sum\limits_{k=0}^{k=M} f_k(x)` for
+    :math:`x \in \mathbb{R}^N` using whatever algorithm. It returns a
+    dictionary with the found solution and some informations about the
+    algorithm execution.
 
     Parameters
     ----------
