@@ -13,21 +13,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def compressed_sensing_1(tau=1):
+def compressed_sensing_1():
     r"""
     TODO
     """
 
     # Problem creation.
-#    tau = 50      # Regularization parameter.
+    tau = 1      # Regularization parameter.
     N = 5000     # Signal size.
     K = 100      # Sparsity level.
     R = max(4, np.ceil(np.log(N)))
     M = K * R    # Number of measurements.
 
-    txt = ('Compression ratio of %f (%d measurements for a signal size of %d)'
-           % (N/M, M, N))
-    print(txt)
+    print(('Signal size of %d, %d measurements : compression ratio of %3.2f'
+          % (N, M, N/M)))
 
     # Measurements matrix.
     A = np.random.standard_normal((M, N))
@@ -56,35 +55,35 @@ def compressed_sensing_1(tau=1):
     f4.grad = lambda x: 2.0 * np.dot(np.transpose(A), np.dot(A, x) - y)
     f4.eval = lambda x: np.linalg.norm(np.dot(A, x) - y)**2
 
-    # Set the solver object.
-    gamma = 0.5 / np.linalg.norm(A,ord=2)**2  # Step size (beta = 2*norm(A)^2).
+    # Set the solver object. Step size : beta = 2*norm(A)^2.
+    gamma = 0.5 / np.linalg.norm(A, ord=2)**2
     solver = solvers.forward_backward(method='FISTA', gamma=gamma)
 
     # Solve the problem.
     x0 = np.zeros(N)
-    ret = solvers.solve([f1, f4], x0, solver, relTol=1e-4, maxIter=500,
+    ret = solvers.solve([f1, f2], x0, solver, relTol=1e-4, maxIter=300,
                         verbosity='high')
 
     # Display the results.
     fig = plt.figure()
-    plt.plot(x, 'o')
-    plt.plot(ret['sol'], 'xr')
-    plt.title(txt)
-    plt.legend(('Original', 'Reconstructed'))
+    plt.plot(x, 'o', label='Original')
+    plt.plot(ret['sol'], 'xr', label='Reconstructed')
+    plt.title('Achieved reconstruction')
+    plt.legend()
     plt.xlabel('Signal dimension number')
     plt.ylabel('Signal value')
-    fig.savefig('compressed_sensing_results_%d.png' % (tau,))
+    fig.savefig('compressed_sensing_results.png')
 
     # Display the convergence
     fig = plt.figure()
     objective = np.array(ret['objective'])
-    plt.plot(objective[:, 0])
-    plt.plot(objective[:, 1])
-    plt.plot(np.sum(objective, axis=1))
+    plt.semilogy(objective[:, 0], label='L1-norm')
+    plt.semilogy(objective[:, 1], label='L2-norm')
+    plt.semilogy(np.sum(objective, axis=1), label='Global objective')
     plt.title(r'Convergence with $\tau$ = %d' % tau)
-    plt.legend(('L1-norm', 'L2-norm', 'Global objective'))
+    plt.legend()
     plt.xlabel('Iteration number')
     plt.ylabel('Objective function value')
-    fig.savefig('compressed_sensing_convergence_%d.png' % (tau,))
+    fig.savefig('compressed_sensing_convergence.png')
 
 #    plt.show()
