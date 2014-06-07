@@ -30,4 +30,3 @@ Solvers module
     solvers
 
 .. automodule:: pyunlocbox.solvers
-

@@ -25,4 +25,3 @@ L2-norm
     :members:
     :undoc-members:
     :show-inheritance:
-

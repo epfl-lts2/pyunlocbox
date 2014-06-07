@@ -5,6 +5,9 @@ This module implements function objects which are then passed to solvers.  The
 :class:`func` base class defines the interface whereas specialised classes who
 inherit from it implement the methods. These classes include :
 
+* :class:`dummy`: A dummy function object which returns 0 for the :meth:`eval`,
+  :meth:`prox` and :meth:`grad` methods.
+
 * :class:`norm`: Norm base class.
 
   * :class:`norm_l1`: L1-norm who implements the :meth:`eval` and :meth:`prox`
@@ -73,10 +76,18 @@ class func(object):
     meant to be passed to the :func:`pyunlocbox.solvers.solve` solving
     function.
 
+    Parameters
+    ----------
+    verbosity : {'none', 'low', 'high'}, optional
+        The log level : 'none' for no log, 'low' for resume at convergence,
+        'high' to for all steps. Default is 'low'.
+
     Examples
     --------
 
-    Manual implementation of an L2 norm :
+    Lets define a parabola as an example of manual implementation of a function
+    object :
+
     >>> import pyunlocbox
     >>> import numpy as np
     >>> f = pyunlocbox.functions.func()
@@ -89,6 +100,12 @@ class func(object):
     array([2, 4, 6, 8])
 
     """
+
+    def __init__(self, verbosity='none'):
+        if verbosity not in ['none', 'low', 'high']:
+            raise ValueError('Verbosity should be either none, low or high.')
+        else:
+            self.verbosity = verbosity
 
     def eval(self, x):
         r"""
@@ -157,9 +174,99 @@ class func(object):
         raise NotImplementedError("Class user should define this method.")
 
 
+class dummy(func):
+    r"""
+    Dummy function object. Can be used as a second function object when there
+    is only one function to minimize.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
+    """
+
+    def eval(self, x):
+        """
+        Dummy evaluation which returns 0.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        y : float
+             Always 0.
+
+        Examples
+        --------
+        >>> import pyunlocbox
+        >>> f = pyunlocbox.functions.dummy()
+        >>> f.eval([1, 2, 3, 4])
+        0
+
+        """
+        sol = 0
+        if self.verbosity in ['low', 'high']:
+            print('Dummy evaluation : %e' % (sol,))
+        return sol
+
+    def prox(self, x, T):
+        r"""
+        Dummy proximal operator which returns 0.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+        T : float
+            The regularization parameter.
+
+        Returns
+        -------
+        y : ndarray
+            Always 0.
+
+        Examples
+        --------
+        >>> import pyunlocbox
+        >>> f = pyunlocbox.functions.dummy()
+        >>> f.prox([1, 2, 3, 4], 1)
+        array([ 0.,  0.,  0.,  0.])
+
+        """
+        return np.zeros(len(x))
+
+    def grad(self, x):
+        r"""
+        Dummy gradient which returns 0.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        y : ndarray
+            Always 0.
+
+        Examples
+        --------
+        >>> import pyunlocbox
+        >>> f = pyunlocbox.functions.dummy()
+        >>> f.grad([1, 2, 3, 4])
+        array([ 0.,  0.,  0.,  0.])
+
+        """
+        return np.zeros(len(x))
+
+
 class norm(func):
     r"""
     Base class which defines the attributes of the norm objects.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
 
     Parameters
     ----------
@@ -181,16 +288,17 @@ class norm(func):
     nu : float, optional
         bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
         ||x||^2`. Default is 1.
-    verbosity : {'none', 'low', 'high'}, optional
-        The log level : 'none' for no log, 'low' for resume at convergence,
-        'high' to for all steps. Default is 'low'.
     """
 
     def __init__(self, lambda_=1, y=0, w=1, A=None, At=None,
-                 tight=True, nu=1, verbosity='none'):
+                 tight=True, nu=1, *args, **kwargs):
+
+        super(norm, self).__init__(*args, **kwargs)
+
         self.lambda_ = lambda_
         self.y = np.array(y)
         self.w = np.array(w)
+
         if A is None:
             self.A = lambda x: x
         else:
@@ -199,6 +307,7 @@ class norm(func):
                 self.A = lambda x: np.dot(A, x)
             else:
                 self.A = A
+
         if At is None:
             if type(A) is np.ndarray:
                 self.At = lambda x: np.dot(np.transpose(A), x)
@@ -210,17 +319,17 @@ class norm(func):
                 self.At = lambda x: np.dot(At, x)
             else:
                 self.At = At
+
         self.tight = tight
         self.nu = nu
-        if verbosity not in ['none', 'low', 'high']:
-            raise ValueError('Verbosity should be either none, low or high.')
-        else:
-            self.verbosity = verbosity
 
 
 class norm_l1(norm):
     r"""
     L1-norm function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.norm` base class.
     """
 
     def eval(self, x):
@@ -293,6 +402,9 @@ class norm_l1(norm):
 class norm_l2(norm):
     r"""
     L2-norm function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.norm` base class.
     """
 
     def eval(self, x):

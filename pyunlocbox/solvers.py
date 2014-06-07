@@ -95,9 +95,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     >>> import pyunlocbox
     >>> y = [4, 5, 6, 7]
     >>> f1 = pyunlocbox.functions.norm_l2(y=y)
-    >>> f2 = pyunlocbox.functions.func()
-    >>> f2.eval = lambda x: 0
-    >>> f2.grad = lambda x: 0
+    >>> f2 = pyunlocbox.functions.dummy()
     >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], absTol=1e-5)
     Selected solver : forward_backward
     Solution found in 10 iterations :
@@ -305,9 +303,7 @@ class forward_backward(solver):
     >>> import pyunlocbox
     >>> y = [4, 5, 6, 7]
     >>> f1 = pyunlocbox.functions.norm_l2(y=y)
-    >>> f2 = pyunlocbox.functions.func()
-    >>> f2.eval = lambda x: 0
-    >>> f2.grad = lambda x: 0
+    >>> f2 = pyunlocbox.functions.dummy()
     >>> solver = pyunlocbox.solvers.forward_backward(method='FISTA', lambda_=1,
     ...                                              gamma=1)
     >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver,

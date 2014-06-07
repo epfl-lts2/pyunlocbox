@@ -17,4 +17,3 @@ Forward-backward proximal splitting algorithm
     :members:
     :undoc-members:
     :show-inheritance:
-
