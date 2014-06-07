@@ -12,6 +12,7 @@ it and implement the class methods. The following solvers are included :
 
 import numpy as np
 import time
+from pyunlocbox.functions import dummy
 
 
 def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
@@ -90,13 +91,14 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     Examples
     --------
 
-    Basic example :
+    Simple example showing the automatic selection of a solver (and a second
+    function) :
 
     >>> import pyunlocbox
     >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
-    >>> f2 = pyunlocbox.functions.dummy()
-    >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], absTol=1e-5)
-    Selected solver : forward_backward
+    >>> ret = pyunlocbox.solvers.solve([f1], [0, 0, 0, 0], absTol=1e-5)
+    INFO: Added dummy objective function.
+    INFO: Selected solver : forward_backward
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
@@ -111,43 +113,44 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     if verbosity not in ['none', 'low', 'high']:
         raise ValueError('Verbosity should be either none, low or high.')
 
-    startTime = time.time()
-    objective = [[f.eval(x0) for f in functions]]
-    stopCrit = None
-    nIter = 0
-
     # Choose a solver if none provided.
     if not solver:
         if len(functions) < 1:
             raise ValueError('At least 1 convex function should be passed.')
         elif len(functions) == 1:
-            f1 = functions[0]
-            f2 = functions.dummy()
-            functions = [f1, f2]
+            functions.append(dummy())
+            solver = forward_backward()
+            if verbosity in ['low', 'high']:
+                print('INFO: Added dummy objective function.')
         elif len(functions) == 2:
             solver = forward_backward()
         else:
             raise NotImplementedError('No solver able to minimize more than 2'
                                       'functions for now.')
         if verbosity in ['low', 'high']:
-            print('Selected solver : %s' % (solver.__class__.__name__,))
+            print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
+
+    startTime = time.time()
+    stopCrit = None
+    nIter = 0
+    objective = [[f.eval(x0) for f in functions]]
 
     # Solver specific initialization.
-    solver.pre(x0, verbosity)
+    solver.pre(functions, x0, verbosity)
 
     while not stopCrit:
 
         nIter += 1
 
         # Solver iterative algorithm.
-        solver.algo(functions, verbosity, objective, nIter)
+        solver.algo(objective, nIter)
 
         objective.append([f.eval(solver.sol) for f in functions])
         current = np.sum(objective[-1])
         last = np.sum(objective[-2])
 
         # Prevent division by 0.
-        eps = 0
+        eps = 0.0
         if current == 0:
             if verbosity in ['low', 'high']:
                 print('WARNING: objective function is equal to 0 ! '
@@ -240,28 +243,28 @@ class solver(object):
         else:
             self.post_sol = lambda gamma, sol, objective, niter: sol
 
-    def pre(self, x0, verbosity):
+    def pre(self, functions, x0, verbosity):
         """
         Solver specific initialization. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._pre(x0, verbosity)
+        self._pre(functions, x0, verbosity)
 
     def _pre(self, x0, verbosity):
         raise NotImplementedError("Class user should define this method.")
 
-    def algo(self, functions, verbosity, objective, niter):
+    def algo(self, objective, niter):
         """
         Call the solver iterative algorithm while allowing the user to alter
         it. This makes it possible to dynamically change the `gamma` step size
         while the algorithm is running.  See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._algo(functions, verbosity)
+        self._algo()
         self.gamma = self.post_gamma(self.gamma, self.sol, objective, niter)
         self.sol = self.post_sol(self.gamma, self.sol, objective, niter)
 
-    def _algo(self, functions, verbosity):
+    def _algo(self):
         raise NotImplementedError("Class user should define this method.")
 
     def post(self, verbosity):
@@ -297,9 +300,9 @@ class forward_backward(solver):
 
     Notes
     -----
-    This algorithm requires the first function to implement the
-    :meth:`pyunlocbox.functions.func.prox` method and the second to implement
-    the :meth:`pyunlocbox.functions.func.grad` method.
+    This algorithm requires one function to implement the
+    :meth:`pyunlocbox.functions.func.prox` method and the other one to
+    implement the :meth:`pyunlocbox.functions.func.grad` method.
 
     Examples
     --------
@@ -332,30 +335,50 @@ class forward_backward(solver):
             raise ValueError('Lambda is bounded by 0 and 1.')
         self.lambda_ = lambda_
 
-    def _pre(self, x0, verbosity):
+    def _pre(self, functions, x0, verbosity):
         if verbosity == 'high':
-            print('Forward-backward selected method : %s' % (self.method))
+            print('INFO: Forward-backward method : %s' % (self.method,))
 
         # ISTA and FISTA initialization.
         self.sol = np.array(x0)
 
-        # FISTA initialization.
-        self.un = np.array(x0)
-        self.tn = 1.
+        if self.method == 'ISTA':
+            self._algo = self._ista
+        elif self.method == 'FISTA':
+            self._algo = self._fista
+            self.un = np.array(x0)
+            self.tn = 1.
+        else:
+            raise ValueError('The method should be either FISTA or ISTA.')
 
-    def _algo(self, functions, verbosity):
         if len(functions) != 2:
             raise ValueError('Forward-backward requires two convex functions.')
-        f1 = functions[0]
-        f2 = functions[1]
-        if self.method == 'ISTA':
-            yn = self.sol - self.gamma * f2.grad(self.sol)
-            self.sol += self.lambda_ * (f1.prox(yn, self.gamma) - self.sol)
-        elif self.method == 'FISTA':
-            xn = f1.prox(self.un - self.gamma * f2.grad(self.un), self.gamma)
-            tn1 = (1. + np.sqrt(1.+4.*self.tn**2.)) / 2.
-            self.un = xn + (self.tn-1) / tn1 * (xn-self.sol)
-            self.sol = xn
-            self.tn = tn1
+
+        try:
+            functions[0].prox(self.sol, self.gamma)
+            functions[1].grad(self.sol)
+        except NotImplementedError:
+            try:
+                functions[1].prox(self.sol, self.gamma)
+                functions[0].grad(self.sol)
+            except NotImplementedError:
+                raise ValueError('Forward-backward requires a function to '
+                                 'implement prox() and the other grad().')
+            else:
+                self.f1 = functions[1]
+                self.f2 = functions[0]
         else:
-            raise ValueError('The method should be FISTA or ISTA.')
+            self.f1 = functions[0]
+            self.f2 = functions[1]
+
+    def _ista(self):
+        yn = self.sol - self.gamma * self.f2.grad(self.sol)
+        self.sol += self.lambda_ * (self.f1.prox(yn, self.gamma) - self.sol)
+
+    def _fista(self):
+        xn = self.un - self.gamma * self.f2.grad(self.un)
+        xn = self.f1.prox(xn, self.gamma)
+        tn1 = (1. + np.sqrt(1.+4.*self.tn**2.)) / 2.
+        self.un = xn + (self.tn-1) / tn1 * (xn-self.sol)
+        self.tn = tn1
+        self.sol = xn

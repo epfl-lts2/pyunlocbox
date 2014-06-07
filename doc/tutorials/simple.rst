@@ -13,8 +13,8 @@ The first function to minimize is the sum of squared distances between the
 current signal `x` and the original `y`. For this purpose, we instantiate an
 L2-norm object :
 
->>> import pyunlocbox
->>> f1 = pyunlocbox.functions.norm_l2(y=y)
+>>> from pyunlocbox import functions
+>>> f1 = functions.norm_l2(y=y)
 
 This standard function object provides the :meth:`eval`, :meth:`grad` and
 :meth:`prox` methods that will be useful to the solver. We can evaluate them at
@@ -32,7 +32,7 @@ we have no constraint, we just define a dummy function object by hand. We have
 to define the :meth:`_eval` and :meth:`_grad` methods as the solver we will use
 requires it :
 
->>> f2 = pyunlocbox.functions.func()
+>>> f2 = functions.func()
 >>> f2._eval = lambda x: 0
 >>> f2._grad = lambda x: 0
 
@@ -41,12 +41,24 @@ requires it :
 
 We can now instantiate the solver object :
 
->>> solver = pyunlocbox.solvers.forward_backward()
+>>> from pyunlocbox import solvers
+>>> solver = solvers.forward_backward()
 
 And finally solve the problem :
 
 >>> x0 = [0, 0, 0, 0]
->>> ret = pyunlocbox.solvers.solve([f1, f2], x0, solver, absTol=1e-5)
+>>> ret = solvers.solve([f2, f1], x0, solver, absTol=1e-5, verbosity='high')
+INFO: Forward-backward method : FISTA
+Iteration   1 : objective = 1.40e+01, relative = 8.00e+00
+Iteration   2 : objective = 1.56e+00, relative = 8.00e+00
+Iteration   3 : objective = 3.29e-02, relative = 4.62e+01
+Iteration   4 : objective = 8.78e-03, relative = 2.75e+00
+Iteration   5 : objective = 6.39e-03, relative = 3.74e-01
+Iteration   6 : objective = 5.71e-04, relative = 1.02e+01
+Iteration   7 : objective = 1.73e-05, relative = 3.21e+01
+Iteration   8 : objective = 6.11e-05, relative = 7.17e-01
+Iteration   9 : objective = 1.21e-05, relative = 4.04e+00
+Iteration  10 : objective = 7.46e-09, relative = 1.62e+03
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
@@ -66,8 +78,8 @@ convergence graph out of it :
 >>> import matplotlib.pyplot as plt
 >>> fig = plt.figure()
 >>> objective = np.array(ret['objective'])
->>> _ = plt.semilogy(objective[:, 0], 'x', label='L2-norm')
->>> _ = plt.semilogy(objective[:, 1], label='Dummy')
+>>> _ = plt.semilogy(objective[:, 1], 'x', label='L2-norm')
+>>> _ = plt.semilogy(objective[:, 0], label='Dummy')
 >>> _ = plt.semilogy(np.sum(objective, axis=1), label='Global objective')
 >>> _ = plt.grid(True)
 >>> _ = plt.title('Convergence')
