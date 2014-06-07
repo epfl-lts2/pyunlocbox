@@ -41,13 +41,13 @@ def compressed_sensing_1():
     y = np.dot(A, x)
 
     # Set the two convex function objects.
-    f1 = functions.norm_l1(lambda_=tau)
-    f2 = functions.norm_l2(y=y, A=A)
+    f1 = functions.norm_l1(lambda_=tau, verbosity='low')
+    f2 = functions.norm_l2(y=y, A=A, verbosity='low')
 
     # Alternative 1 (same results) : pass operators instead of matrices.
     A_ = lambda x: np.dot(A, x)
     At_ = lambda x: np.dot(np.transpose(A), x)
-    f3 = functions.norm_l2(y=y, A=A_, At=At_)
+    f3 = functions.norm_l2(y=y, A=A_, At=At_, verbosity='low')
     assert f3
 
     # Alternative 2 (same results) : manual definition of the L2 norm.

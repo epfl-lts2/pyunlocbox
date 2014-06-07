@@ -137,14 +137,15 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         last = np.sum(objective[-2])
 
         # Prevent division by 0.
+        eps = 0
         if current == 0:
             if verbosity in ['low', 'high']:
                 print('WARNING: objective function is equal to 0 ! '
                       'Adding some epsilon to continue.')
             # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
-            current = np.spacing(1.0)
+            eps = np.spacing(1.0)
 
-        relative = np.abs((current - last) / current)
+        relative = np.abs((current - last) / (current + eps))
 
         # Verify stopping criteria.
         if current < absTol:

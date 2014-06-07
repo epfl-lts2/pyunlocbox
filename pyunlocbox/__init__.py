@@ -20,15 +20,27 @@ The :mod:`pyunlockbox` package is divided into the following modules :
 Following is a typical usage example who solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects
 are first instantiated with the desired parameters. The problem is then solved
-by a call to the solving algorithm.
+by a call to the solving function.
 
 >>> import pyunlocbox
->>> f1 = pyunlocbox.functions.norm_l1(lamb=1)
 >>> y = [4, 5, 6, 7]
->>> f2 = pyunlocbox.functions.norm_l2(lamb=1, y=y)
+>>> f1 = pyunlocbox.functions.norm_l2(y=y)
+>>> f1.eval([0, 0, 0, 0])
+126
+>>> f1.grad([0, 0, 0, 0])
+array([ -8, -10, -12, -14])
+>>> f2 = pyunlocbox.functions.func()
+>>> f2.eval = lambda x: 0
+>>> f2.grad = lambda x: 0
 >>> solver = pyunlocbox.solvers.forward_backward()
->>> x0 = [0, 0, 0, 0]
->>> sol, info, objective = pyunlocbox.solvers.solve(solver, [f1, f2], x0)
+>>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, absTol=1e-5)
+Solution found in 10 iterations :
+    objective function f(sol) = 7.460428e-09
+    last relative objective improvement : 1.624424e+03
+    stopping criterion : ABS_TOL
+>>> ret['sol']
+array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+
 """
 
 # When importing the toolbox, you surely want these two modules.
@@ -39,9 +51,12 @@ from . import solvers
 assert functions
 assert solvers
 
+__name__ = 'PyUNLocBoX'
+__version__ = '1.0'
+__release_date__ = '2014-06-07'
+
+__docformat__ = "restructuredtext en"
+
 __author__ = 'EPFL LTS2'
 __copyright__ = '2014, EPFL LTS2'
 __email__ = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch'
-
-__name__ = 'PyUNLocBoX'
-__version__ = '1.0'

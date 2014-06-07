@@ -23,4 +23,5 @@ Infrastructure :
 * Code hosted on GitHub
 * Code checked by flake8
 * Unit tests for all functions
+* Docstring and tutorial examples checked by doctest
 

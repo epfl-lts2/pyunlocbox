@@ -42,6 +42,7 @@ def _soft_threshold(z, T, handle_complex=True):
     >>> import pyunlocbox
     >>> pyunlocbox.functions._soft_threshold([-2, -1, 0, 1, 2], 1)
     array([-1., -0.,  0.,  0.,  1.])
+
     """
 
     sz = np.maximum(np.abs(z)-T, 0)
@@ -86,6 +87,7 @@ class func(object):
     array([ 1,  4,  9, 16])
     >>> f.grad(x)
     array([2, 4, 6, 8])
+
     """
 
     def eval(self, x):
@@ -179,13 +181,13 @@ class norm(func):
     nu : float, optional
         bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
         ||x||^2`. Default is 1.
-    verbosity : {'low', 'high', 'none'}, optional
+    verbosity : {'none', 'low', 'high'}, optional
         The log level : 'none' for no log, 'low' for resume at convergence,
         'high' to for all steps. Default is 'low'.
     """
 
     def __init__(self, lambda_=1, y=0, w=1, A=None, At=None,
-                 tight=True, nu=1, verbosity='low'):
+                 tight=True, nu=1, verbosity='none'):
         self.lambda_ = lambda_
         self.y = np.array(y)
         self.w = np.array(w)
@@ -242,6 +244,7 @@ class norm_l1(norm):
         >>> f = pyunlocbox.functions.norm_l1()
         >>> f.eval([1, 2, 3, 4])
         10
+
         """
         sol = self.A(np.array(x)) - self.y
         sol = self.lambda_ * np.sum(np.abs(self.w * sol))
@@ -273,6 +276,7 @@ class norm_l1(norm):
         >>> f = pyunlocbox.functions.norm_l1()
         >>> f.prox([1, 2, 3, 4], 1)
         array([ 0.,  1.,  2.,  3.])
+
         """
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
@@ -311,6 +315,7 @@ class norm_l2(norm):
         >>> f = pyunlocbox.functions.norm_l2()
         >>> f.eval([1, 2, 3, 4])
         30
+
         """
         sol = self.A(np.array(x)) - self.y
         sol = self.lambda_ * np.sum((self.w * sol)**2)
@@ -341,7 +346,8 @@ class norm_l2(norm):
         >>> import pyunlocbox
         >>> f = pyunlocbox.functions.norm_l2()
         >>> f.prox([1, 2, 3, 4], 1)
-        array([0.33333333, 0.66666667, 1., 1.33333333])
+        array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
+
         """
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
@@ -373,6 +379,7 @@ class norm_l2(norm):
         >>> f = pyunlocbox.functions.norm_l2()
         >>> f.grad([1, 2, 3, 4])
         array([2, 4, 6, 8])
+
         """
         sol = self.A(np.array(x)) - self.y
         return 2 * self.lambda_ * self.w * self.At(sol)
