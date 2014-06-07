@@ -66,8 +66,8 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     -------
     sol : ndarray
         problem solution
-    algo : str
-        used algorithm
+    solver : str
+        used solver
     niter : int
         number of iterations
     time : float
@@ -92,12 +92,20 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     Basic example :
 
     >>> import pyunlocbox
-    >>> solver1 = pyunlocbox.solvers.forward_backward('FISTA', gamma=2)
-    >>> f1 = None
-    >>> f2 = None
-    >>> x0 = None
-    >>> sol, info, objective = pyunlocbox.solvers.solve(solver1, [f1, f2], x0)
-    0
+    >>> y = [4, 5, 6, 7]
+    >>> f1 = pyunlocbox.functions.norm_l2(y=y)
+    >>> f2 = pyunlocbox.functions.func()
+    >>> f2.eval = lambda x: 0
+    >>> f2.grad = lambda x: 0
+    >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], absTol=1e-5)
+    Selected solver : forward_backward
+    Solution found in 10 iterations :
+        objective function f(sol) = 7.460428e-09
+        last relative objective improvement : 1.624424e+03
+        stopping criterion : ABS_TOL
+    >>> ret['sol']
+    array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+
     """
 
     if relTol < 0 or maxIter < 0:
@@ -120,7 +128,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
             raise NotImplementedError('No solver able to minimize more than 2'
                                       'functions for now.')
         if verbosity in ['low', 'high']:
-            print('Selected algorithm : %s' % (solver.__class__.__name__,))
+            print('Selected solver : %s' % (solver.__class__.__name__,))
 
     # Solver specific initialization.
     solver.pre(x0, verbosity)
@@ -172,7 +180,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
-              'algo':      solver.__class__.__name__,
+              'solver':    solver.__class__.__name__,
               'niter':     nIter,
               'time':      time.time() - startTime,
               'eval':      current,
@@ -294,12 +302,22 @@ class forward_backward(solver):
     Examples
     --------
     >>> import pyunlocbox
-    >>> solver1 = pyunlocbox.solvers.forward_backward('FISTA', gamma=2)
-    >>> f1 = None
-    >>> f2 = None
-    >>> x0 = None
-    >>> sol = pyunlocbox.solvers.solve([f1, f2], x0, solver1)
-    0
+    >>> y = [4, 5, 6, 7]
+    >>> f1 = pyunlocbox.functions.norm_l2(y=y)
+    >>> f2 = pyunlocbox.functions.func()
+    >>> f2.eval = lambda x: 0
+    >>> f2.grad = lambda x: 0
+    >>> solver = pyunlocbox.solvers.forward_backward(method='FISTA', lambda_=1,
+    ...                                              gamma=1)
+    >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver,
+    ...                                absTol=1e-5)
+    Solution found in 10 iterations :
+        objective function f(sol) = 7.460428e-09
+        last relative objective improvement : 1.624424e+03
+        stopping criterion : ABS_TOL
+    >>> ret['sol']
+    array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+
     """
 
     def __init__(self, method='FISTA', lambda_=1, *args, **kwargs):
