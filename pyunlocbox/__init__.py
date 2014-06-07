@@ -43,9 +43,9 @@ array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
 """
 
-# When importing the toolbox, you surely want these two modules.
-from . import functions
-from . import solvers
+# When importing the toolbox, you surely want these modules.
+from pyunlocbox import functions
+from pyunlocbox import solvers
 
 # Silence the code checker warning about unused symbols.
 assert functions
@@ -57,6 +57,6 @@ __release_date__ = '2014-06-07'
 
 __docformat__ = "restructuredtext en"
 
-__author__ = 'EPFL LTS2'
+__author__ = 'EPFL LTS2 Michaël Defferrard and Nathanaël Perraudin'
 __copyright__ = '2014, EPFL LTS2'
 __email__ = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch'

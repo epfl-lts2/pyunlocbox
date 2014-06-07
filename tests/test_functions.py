@@ -11,7 +11,7 @@ import numpy.testing as nptest
 from pyunlocbox import functions
 
 
-class TestPyunlocbox(unittest.TestCase):
+class FunctionsTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -117,5 +117,12 @@ class TestPyunlocbox(unittest.TestCase):
         self.assertEqual(f.eval(np.array([-3, 4])), 21)
 
 
+suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
+
+
+def run():
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+
 if __name__ == '__main__':
-    unittest.main()
+    run()
