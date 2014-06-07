@@ -5,10 +5,12 @@ This module implements function objects which are then passed to solvers.  The
 :class:`func` base class defines the interface whereas specialised classes who
 inherit from it implement the methods. These classes include :
 
-* :class:`norm_l1`: L1-norm which implements the :meth:`eval` and :meth:`prox`
-  methods.
-* :class:`norm_l2`: L2-norm which implements the :meth:`eval`, :meth:`prox`
-  and :meth:`grad` methods.
+* :class:`norm`: Norm base class.
+
+  * :class:`norm_l1`: L1-norm who implements the :meth:`eval` and :meth:`prox`
+    methods.
+  * :class:`norm_l2`: L2-norm who implements the :meth:`eval`, :meth:`prox`
+    and :meth:`grad` methods.
 """
 
 import numpy as np

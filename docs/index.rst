@@ -3,22 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pyunlocbox's documentation!
-======================================
-
-PyUNLockBox is a convex optimization toolbox using proximal splitting methods.
-It is a port of the Matlab UNLocBox toolbox.
-
-Contents:
+PyUNLocBoX documentation
+========================
 
 .. toctree::
    :maxdepth: 2
 
    readme
-   installation
-   usage
+   tutorials/index
+   reference/index
    contributing
-   authors
    history
 
 Indices and tables

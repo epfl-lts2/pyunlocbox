@@ -71,8 +71,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pyunlocbox'
-copyright = u'2014, EPFL LTS2'
+project = pyunlocbox.__name__
+copyright = pyunlocbox.__copyright__
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

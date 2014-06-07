@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-PyUNLockBox is a convex optimization toolbox using proximal splitting methods.
-It is a port of the Matlab UNLocBox toolbox
+PyUNLocBoX is a convex optimization toolbox using proximal splitting methods.
+It is a port of the Matlab UNLocBoX toolbox.
 
 The toolbox is organized around two classes hierarchy : the functions and the
 solvers. Instanced functions represent convex functions to optimize. Instanced
@@ -16,8 +16,6 @@ The :mod:`pyunlockbox` package is divided into the following modules :
   hierarchy and the solving function
 * :mod:`pyunlocbox.functions`: functions to be passed to the solvers, implement
   the functions class hierarchy
-* :mod:`pyunlocbox.demos`: some problem solving demonstrations using the
-  toolbox
 
 Following is a typical usage example who solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects
@@ -42,5 +40,8 @@ assert functions
 assert solvers
 
 __author__ = 'EPFL LTS2'
-__email__ = 'nathanael.perraudin@epfl.ch'
-__version__ = '0.1.0'
+__copyright__ = '2014, EPFL LTS2'
+__email__ = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch'
+
+__name__ = 'PyUNLocBoX'
+__version__ = '1.0'

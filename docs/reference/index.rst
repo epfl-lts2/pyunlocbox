@@ -1,6 +1,6 @@
-=====
-Usage
-=====
+===============
+Reference guide
+===============
 
 Toolbox overview
 ----------------
@@ -12,6 +12,7 @@ Functions module
 
 .. toctree::
     :maxdepth: 2
+    :hidden:
 
     func
     norms
@@ -23,19 +24,10 @@ Solvers module
 
 .. toctree::
     :maxdepth: 2
+    :hidden:
 
     solve
     solvers
 
 .. automodule:: pyunlocbox.solvers
-
-Demos module
-------------
-
-.. toctree::
-    :maxdepth: 2
-
-    compressed_sensing_1
-
-.. automodule:: pyunlocbox.demos
 
