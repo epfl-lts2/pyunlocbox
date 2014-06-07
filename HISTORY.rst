@@ -14,6 +14,7 @@ Features :
 * Forward-backward splitting algorithm
 * L1-norm function (eval and prox)
 * L2-norm function (eval, grad and prox)
+* Least square problem tutorial using L2-norm and forward-backward
 * Compressed sensing tutorial using L1-norm, L2-norm and forward-backward
 
 Infrastructure :

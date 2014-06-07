@@ -6,20 +6,20 @@ PyUNLocBoX is a convex optimization toolbox using proximal splitting methods
 implemented in Python. It is a free software distributed under the BSD license
 and is a port of the Matlab UNLocBoX toolbox.
 
+.. image:: https://badge.fury.io/py/pyunlocbox.png
+    :target: https://badge.fury.io/py/pyunlocbox
+
+.. image:: https://travis-ci.org/epfl-lts2/pyunlocbox.png?branch=master
+    :target: https://travis-ci.org/epfl-lts2/pyunlocbox
+
+.. image:: https://pypip.in/d/pyunlocbox/badge.png
+    :target: https://crate.io/packages/pyunlocbox?version=latest
+
 * Code : https://github.com/epfl-lts2/pyunlocbox
 * Documentation : https://pyunlocbox.readthedocs.org
 * PyPI package : https://pypi.python.org/pypi/pyunlocbox
 * Travis continuous integration : https://travis-ci.org/epfl-lts2/pyunlocbox
 * UNLocBoX matlab toolbox : http://unlocbox.sourceforge.net
-
-.. image:: https://badge.fury.io/py/pyunlocbox.png
-    :target: http://badge.fury.io/py/pyunlocbox
-
-.. image:: https://travis-ci.org/epfl-lts2/pyunlocbox.png?branch=master
-        :target: https://travis-ci.org/epfl-lts2/pyunlocbox
-
-.. image:: https://pypip.in/d/pyunlocbox/badge.png
-        :target: https://crate.io/packages/pyunlocbox?version=latest
 
 Features
 --------
