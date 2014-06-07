@@ -20,7 +20,7 @@ files.extend(glob.glob(os.path.join(base, '*.py')))
 files.extend(glob.glob(os.path.join(base, '*', '*.py')))
 
 # Test examples in documentation.
-base = os.path.join(os.path.dirname(__file__), os.path.pardir, 'docs')
+base = os.path.join(os.path.dirname(__file__), os.path.pardir, 'doc')
 base = os.path.abspath(base)
 files.extend(glob.glob(os.path.join(base, '*.rst')))
 files.extend(glob.glob(os.path.join(base, '*', '*.rst')))

@@ -40,7 +40,7 @@ output/*.html
 output/*/index.html
 
 # Sphinx
-docs/_build
+doc/_build
 
 # Vim swap files
 .*.swp

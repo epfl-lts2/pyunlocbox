@@ -71,8 +71,8 @@ convergence graph out of it :
 >>> _ = plt.legend(numpoints=1)
 >>> _ = plt.xlabel('Iteration number')
 >>> _ = plt.ylabel('Objective function value')
->>> fig.savefig('simple_convergence.png')
->>> fig.savefig('simple_convergence.pdf')
+>>> fig.savefig('doc/tutorials/simple_convergence.pdf')
+>>> fig.savefig('doc/tutorials/simple_convergence.png')
 
 The below graph show an exponential convergence of the objective function. The
 global objective is obviously only composed of the L2-norm as the dummy

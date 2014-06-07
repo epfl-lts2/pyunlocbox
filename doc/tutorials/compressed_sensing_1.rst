@@ -74,7 +74,8 @@ Solution found in 176 iterations :
 >>> _ = plt.legend(numpoints=1)
 >>> _ = plt.xlabel('Signal dimension number')
 >>> _ = plt.ylabel('Signal value')
->>> fig.savefig('compressed_sensing_results.png')
+>>> fig.savefig('doc/tutorials/compressed_sensing_1_results.pdf')
+>>> fig.savefig('doc/tutorials/compressed_sensing_1_results.png')
 
 .. image:: compressed_sensing_results.*
 
@@ -89,6 +90,7 @@ Solution found in 176 iterations :
 >>> _ = plt.legend()
 >>> _ = plt.xlabel('Iteration number')
 >>> _ = plt.ylabel('Objective function value')
->>> fig.savefig('compressed_sensing_convergence.png')
+>>> fig.savefig('doc/tutorials/compressed_sensing_1_convergence.pdf')
+>>> fig.savefig('doc/tutorials/compressed_sensing_1_convergence.png')
 
 .. image:: compressed_sensing_convergence.*
