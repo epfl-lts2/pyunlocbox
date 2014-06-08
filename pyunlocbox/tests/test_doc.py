@@ -14,13 +14,14 @@ import unittest
 files = []
 
 # Test examples in docstrings.
-base = os.path.join(os.path.dirname(__file__), os.path.pardir, 'pyunlocbox')
+base = os.path.join(os.path.dirname(__file__), os.path.pardir)
 base = os.path.abspath(base)
 files.extend(glob.glob(os.path.join(base, '*.py')))
 files.extend(glob.glob(os.path.join(base, '*', '*.py')))
 
 # Test examples in documentation.
-base = os.path.join(os.path.dirname(__file__), os.path.pardir, 'doc')
+base = os.path.join(os.path.dirname(__file__), os.path.pardir)
+base = os.path.join(base, os.path.pardir, 'doc')
 base = os.path.abspath(base)
 files.extend(glob.glob(os.path.join(base, '*.rst')))
 files.extend(glob.glob(os.path.join(base, '*', '*.rst')))

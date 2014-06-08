@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # When importing the tests, you surely want these modules.
-from tests import test_functions
-from tests import test_doc
-from tests import test_all
+from pyunlocbox.tests import test_functions, test_doc, test_all
 
 # Silence the code checker warning about unused symbols.
 assert test_functions

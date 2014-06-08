@@ -4,10 +4,11 @@
 History
 =======
 
-1.0 (2014-06-07)
-----------------
+0.1.0 (2014-06-08)
+------------------
 
-First usable version, available on GitHub. Not yet released on PyPI.
+First usable version, available on GitHub and released on PyPI. Still
+experimental.
 
 Features :
 
@@ -22,6 +23,7 @@ Infrastructure :
 * Sphinx generated documentation using Numpy style docstrings
 * Documentation hosted on Read the Docs
 * Code hosted on GitHub
+* Package hosted on PyPI
 * Code checked by flake8
 * Unit tests for all functions
 * Docstring and tutorial examples checked by doctest

@@ -36,14 +36,18 @@ Features
 Installation
 ------------
 
-At the command line::
+From the command line::
 
-    $ easy_install pyunlocbox
+    $ pip install pyunlocbox
 
 Or, if you have virtualenvwrapper installed::
 
     $ mkvirtualenv pyunlocbox
     $ pip install pyunlocbox
+
+Another way is to manually download and unpack the package then install with::
+
+    $ python setup.py install
 
 Authors
 -------

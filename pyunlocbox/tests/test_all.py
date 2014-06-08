@@ -6,7 +6,7 @@ Test suite for the pyunlocbox package.
 """
 
 import unittest
-from tests import test_functions, test_doc
+from pyunlocbox.tests import test_functions, test_doc
 
 
 suites = []
