@@ -3,13 +3,12 @@
 
 import os
 import sys
-import pyunlocbox
 from setuptools import setup
 
 
 setup(
-    name = pyunlocbox.__name__,
-    version = pyunlocbox.__version__,
+    name = 'pyunlocbox',
+    version = '0.1.0',
     description = 'A convex optimization toolbox using proximal '
                   'splitting methods.',
     long_description = open('README.rst').read(),
@@ -17,13 +16,13 @@ setup(
              'Nathanaël Perraudin (EPFL LTS2)',
     author_email = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch',
     url = 'https://github.com/epfl-lts2/pyunlocbox',
-    packages = [pyunlocbox.__name__],
+    packages = ['pyunlocbox', 'pyunlocbox.tests'],
     test_suite = 'pyunlocbox.tests.test_all.suite',
-    requires = [
-        'numpy',
-    ],
+    install_requires = ['numpy', 'matplotlib'],
+    requires = ['numpy', 'matplotlib'],
     license = "BSD",
     keywords = 'convex optimization',
+    platforms = 'any',
     classifiers = [
         'Topic :: Scientific/Engineering :: Mathematics',
         'Environment :: Console',

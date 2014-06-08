@@ -25,5 +25,6 @@ Infrastructure :
 * Code hosted on GitHub
 * Package hosted on PyPI
 * Code checked by flake8
-* Unit tests for all functions
-* Docstring and tutorial examples checked by doctest
+* Docstring and tutorial examples checked by doctest (as a test suite)
+* Unit tests for functions module (as a test suite)
+* All test suites executed in Python 2.6, 2.7 and 3.2 virtualenvs by tox

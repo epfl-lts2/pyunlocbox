@@ -36,19 +36,28 @@ Features
 Installation
 ------------
 
-From the command line::
+System-wide installation::
 
-    $ pip install pyunlocbox
+    # pip install pyunlocbox
 
-Or, if you have virtualenvwrapper installed (the system-site-packages option is
-useful if you already have a working installation of numpy)::
+Installation in an isolated virtual environment::
 
     $ mkvirtualenv --system-site-packages pyunlocbox
     $ pip install pyunlocbox
 
-Another way is to manually download and unpack the package then install with::
+.. Note:: You need virtualenvwrapper to run this command. The
+    ``--system-site-packages`` option could be useful if you want to use a
+    shared system installation of numpy and matplotlib. Their building and
+    installation requires quite some dependencies.
+
+Another way is to manually download from PyPI and unpack the package then
+install with::
 
     $ python setup.py install
+
+Execute the project test suite once to make sure you have a working install::
+
+    $ python setup.py test
 
 Authors
 -------
