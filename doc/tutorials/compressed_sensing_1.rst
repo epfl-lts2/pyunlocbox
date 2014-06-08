@@ -119,8 +119,11 @@ Solution found after 176 iterations :
 
 Lets display the results :
 
+>>> import matplotlib, sys
+>>> cmd_backend = 'matplotlib.use("AGG")'
+>>> _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
 >>> import matplotlib.pyplot as plt
->>> fig = plt.figure()
+>>> _ = plt.figure()
 >>> _ = plt.plot(x, 'o', label='Original')
 >>> _ = plt.plot(ret['sol'], 'xr', label='Reconstructed')
 >>> _ = plt.grid(True)
@@ -128,8 +131,8 @@ Lets display the results :
 >>> _ = plt.legend(numpoints=1)
 >>> _ = plt.xlabel('Signal dimension number')
 >>> _ = plt.ylabel('Signal value')
->>> fig.savefig('doc/tutorials/compressed_sensing_1_results.pdf')
->>> fig.savefig('doc/tutorials/compressed_sensing_1_results.png')
+>>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_results.pdf')
+>>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_results.png')
 
 .. image:: compressed_sensing_1_results.*
 
@@ -139,8 +142,8 @@ objective).
 
 We can also display the convergence of the two objective functions :
 
->>> fig = plt.figure()
 >>> objective = np.array(ret['objective'])
+>>> _ = plt.figure()
 >>> _ = plt.semilogy(objective[:, 0], label='L1-norm objective')
 >>> _ = plt.semilogy(objective[:, 1], label='L2-norm objective')
 >>> _ = plt.semilogy(np.sum(objective, axis=1), label='Global objective')
@@ -149,7 +152,7 @@ We can also display the convergence of the two objective functions :
 >>> _ = plt.legend()
 >>> _ = plt.xlabel('Iteration number')
 >>> _ = plt.ylabel('Objective function value')
->>> fig.savefig('doc/tutorials/compressed_sensing_1_convergence.pdf')
->>> fig.savefig('doc/tutorials/compressed_sensing_1_convergence.png')
+>>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_convergence.pdf')
+>>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_convergence.png')
 
 .. image:: compressed_sensing_1_convergence.*

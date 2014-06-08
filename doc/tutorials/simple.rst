@@ -75,9 +75,11 @@ by 11 (10 iterations plus the evaluation at `x0`) ``ndarray``. Lets plot a
 convergence graph out of it :
 
 >>> import numpy as np
+>>> import matplotlib
+>>> matplotlib.use('AGG')
 >>> import matplotlib.pyplot as plt
->>> fig = plt.figure()
 >>> objective = np.array(ret['objective'])
+>>> _ = plt.figure()
 >>> _ = plt.semilogy(objective[:, 1], 'x', label='L2-norm')
 >>> _ = plt.semilogy(objective[:, 0], label='Dummy')
 >>> _ = plt.semilogy(np.sum(objective, axis=1), label='Global objective')
@@ -86,8 +88,8 @@ convergence graph out of it :
 >>> _ = plt.legend(numpoints=1)
 >>> _ = plt.xlabel('Iteration number')
 >>> _ = plt.ylabel('Objective function value')
->>> fig.savefig('doc/tutorials/simple_convergence.pdf')
->>> fig.savefig('doc/tutorials/simple_convergence.png')
+>>> _ = plt.savefig('doc/tutorials/simple_convergence.pdf')
+>>> _ = plt.savefig('doc/tutorials/simple_convergence.png')
 
 The below graph shows an exponential convergence of the objective function. The
 global objective is obviously only composed of the L2-norm as the dummy
