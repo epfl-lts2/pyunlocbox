@@ -40,9 +40,10 @@ From the command line::
 
     $ pip install pyunlocbox
 
-Or, if you have virtualenvwrapper installed::
+Or, if you have virtualenvwrapper installed (the system-site-packages option is
+useful if you already have a working installation of numpy)::
 
-    $ mkvirtualenv pyunlocbox
+    $ mkvirtualenv --system-site-packages pyunlocbox
     $ pip install pyunlocbox
 
 Another way is to manually download and unpack the package then install with::

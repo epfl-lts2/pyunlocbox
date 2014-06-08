@@ -6,9 +6,6 @@ import sys
 import pyunlocbox
 from setuptools import setup
 
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist upload')
-    sys.exit()
 
 setup(
     name = pyunlocbox.__name__,
