@@ -75,8 +75,9 @@ by 11 (10 iterations plus the evaluation at `x0`) ``ndarray``. Lets plot a
 convergence graph out of it :
 
 >>> import numpy as np
->>> import matplotlib
->>> matplotlib.use('AGG')
+>>> import matplotlib, sys
+>>> cmd_backend = 'matplotlib.use("AGG")'
+>>> _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
 >>> import matplotlib.pyplot as plt
 >>> objective = np.array(ret['objective'])
 >>> _ = plt.figure()

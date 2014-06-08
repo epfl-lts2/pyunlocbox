@@ -1,4 +1,4 @@
-# Config file for automatic testing at travis-ci.org
+# Configuration file for automatic testing at travis-ci.org
 
 language: python
 
@@ -6,10 +6,13 @@ python:
   - "3.3"
   - "2.7"
   - "2.6"
-  - "pypy"
+#  - "pypy" fails to install numpy
 
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+# Install dependencies
+# Need no more than numpy and matplotlib which are expressed dependencies in
+# the package. Matplotlib however fails to automatically install one of its
+# dependency which is thus expressed in our requirements.txt (tornado).
 install: pip install -r requirements.txt
 
-# command to run tests, e.g. python setup.py test
+# Run tests.
 script: python setup.py test
