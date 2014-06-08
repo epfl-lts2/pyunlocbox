@@ -45,10 +45,10 @@ Installation in an isolated virtual environment::
     $ mkvirtualenv --system-site-packages pyunlocbox
     $ pip install pyunlocbox
 
-.. Note:: You need virtualenvwrapper to run this command. The
-    ``--system-site-packages`` option could be useful if you want to use a
-    shared system installation of numpy and matplotlib. Their building and
-    installation requires quite some dependencies.
+You need virtualenvwrapper to run this command. The ``--system-site-packages``
+option could be useful if you want to use a shared system installation of numpy
+and matplotlib. Their building and installation requires quite some
+dependencies.
 
 Another way is to manually download from PyPI and unpack the package then
 install with::
