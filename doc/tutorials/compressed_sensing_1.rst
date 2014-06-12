@@ -87,9 +87,9 @@ A third alternative would be to define the function object by hand :
 
 Now that the two function objects to minimize (the L1-norm and the L2-norm) are
 instantiated, we can instantiate the solver object. The step size for optimal
-convergence is :math:`\frac{1}{\beta}` where :math:`\beta` is given by
+convergence is :math:`\frac{1}{\beta}` where :math:`\beta` is the Lipschitz constant of the gradient of `f2`, `f3`, `f4` given by:
 
-.. math:: \beta = 2 \cdot \|A\|_2^2 = 2 \cdot \lambda_{max} (A^*A)
+.. math:: \beta = 2 \cdot \|A\|_{\text{op}}^2 = 2 \cdot \lambda_{max} (A^*A).
 
 To solve this problem, we use the forward-backward splitting algorithm which is
 instantiated as follow :
