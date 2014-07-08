@@ -17,10 +17,10 @@ and the sparsity level `K` :
 >>> N = 5000
 >>> K = 100
 >>> import numpy as np
->>> M = K * max(4, np.ceil(np.log(N)))
+>>> M = int(K * max(4, np.ceil(np.log(N))))
 >>> print('Number of measurements : %d' % (M,))
 Number of measurements : 900
->>> print('Compression ratio : %3.2f' % (N/M,))
+>>> print('Compression ratio : %3.2f' % (float(N)/M,))
 Compression ratio : 5.56
 
 .. note:: With the above defined number of measurements, the algorithm is
