@@ -154,8 +154,8 @@ class func(object):
         This method is required by some solvers.
 
         The proximal operator is defined by
-        :math:`\operatorname{prox}_{f,\gamma}(x) = \min_z \frac{1}{2}
-        ||x-z||_2^2 + \gamma f(z)`
+        :math:`\operatorname{prox}_{f,\gamma}(x) = \min\limits_z \frac{1}{2}
+        \|x-z\|_2^2 + \gamma f(z)`
         """
         return self._prox(np.array(x), T)
 
@@ -249,8 +249,8 @@ class norm(func):
         ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
         ``True``.
     nu : float, optional
-        Bound on the norm of the operator `A`, i.e. :math:`||A(x)||^2 \leq \nu
-        ||x||^2`. Default is 1.
+        Bound on the norm of the operator `A`, i.e. :math:`\|A(x)\|^2 \leq \nu
+        \|x\|^2`. Default is 1.
     """
 
     def __init__(self, lambda_=1, y=0, w=1, A=None, At=None,
@@ -297,11 +297,11 @@ class norm_l1(norm):
     Notes
     -----
     * The L-1 norm of the vector `x` is given by
-      :math:`\lambda ||w \cdot (A(x)-y)||_1`
+      :math:`\lambda \|w \cdot (A(x)-y)\|_1`
     * The L1-norm proximal operator evaluated at `x` is given by
-      :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma ||w \cdot (A(z)-y)||_1`
-      where :math:`\gamma = \lambda \cdot T`
-      This is simply a soft thresholding.
+      :math:`\min\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma \|w \cdot
+      (A(z)-y)\|_1` where :math:`\gamma = \lambda \cdot T`. This is simply a
+      soft thresholding.
 
     Examples
     --------
@@ -342,10 +342,10 @@ class norm_l2(norm):
     Notes
     -----
     * The squared L-2 norm of the vector `x` is given by
-      :math:`\lambda ||w \cdot (A(x)-y)||_2^2`
+      :math:`\lambda \|w \cdot (A(x)-y)\|_2^2`
     * The squared L2-norm proximal operator evaluated at `x` is given by
-      :math:`\min_z \frac{1}{2} ||x-z||_2^2 + \gamma ||w \cdot (A(z)-y)||_2^2`
-      where :math:`\gamma = \lambda \cdot T`
+      :math:`\min\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma \|w \cdot
+      (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`
     * The squared L2-norm gradient evaluated at `x` is given by
       :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`
 
