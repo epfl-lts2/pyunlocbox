@@ -19,6 +19,9 @@ Functions module
 
 .. automodule:: pyunlocbox.functions
 
+.. inheritance-diagram:: pyunlocbox.functions
+    :parts: 2
+
 Solvers module
 --------------
 
@@ -30,3 +33,6 @@ Solvers module
     solvers
 
 .. automodule:: pyunlocbox.solvers
+
+.. inheritance-diagram:: pyunlocbox.solvers
+    :parts: 2
