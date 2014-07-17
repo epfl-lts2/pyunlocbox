@@ -23,8 +23,8 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     convex functions.
 
     This function minimizes the objective function :math:`f(x) =
-    \sum\limits_{k=0}^{k=M} f_k(x)`, i.e. solves
-    :math:`\operatorname{arg\,min}\limits_x \sum\limits_{k=0}^{k=M} f_k(x)` for
+    \sum\limits_{m=0}^{m=M} f_m(x)`, i.e. solves
+    :math:`\operatorname{arg\,min}\limits_x f(x)` for
     :math:`x \in \mathbb{R}^N` using whatever algorithm. It returns a
     dictionary with the found solution and some informations about the
     algorithm execution.
@@ -50,8 +50,8 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     relTol : float, optional
         The convergence (relative tolerance) stopping criterion. The algorithm
         stops if :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
-        :math:`n(k)=f(x)=f_1(x)+f_2(x)` is the objective function at iteration
-        :math:`k`. Default is :math:`10^{-3}`.
+        :math:`n(k)=f(x)` is the objective function at iteration :math:`k`.
+        Default is :math:`10^{-3}`.
     absTol : float, optional
         The absolute tolerance stopping criterion. The algorithm stops if
         :math:`n(k)<abstol`. Default is minus infinity.
