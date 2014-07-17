@@ -8,6 +8,7 @@ interface of all solver objects. The specialized solver objects inherit from
 it and implement the class methods. The following solvers are included :
 
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
+* :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
 """
 
 import numpy as np
@@ -281,7 +282,7 @@ class solver(object):
 
 class forward_backward(solver):
     r"""
-    Forward-backward splitting algorithm.
+    Forward-backward proximal splitting algorithm.
 
     This algorithm solves convex optimization problems composed of the sum of
     two objective functions.
@@ -382,3 +383,49 @@ class forward_backward(solver):
         self.un = xn + (self.tn-1) / tn1 * (xn-self.sol)
         self.tn = tn1
         self.sol = xn
+
+
+class douglas_rachford(solver):
+    r"""
+    Douglas-Rachford proximal splitting algorithm.
+
+    This algorithm solves convex optimization problems composed of the sum of
+    two objective functions.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.solvers.solver` base class.
+
+    Parameters
+    ----------
+    lambda_ : float, optional
+        The update term weight. It should be between 0 and 1. Default is 1.
+
+    Notes
+    -----
+    This algorithm requires the two functions to implement the
+    :meth:`pyunlocbox.functions.func.prox` method.
+    """
+
+    def __init__(self, lambda_=1, *args, **kwargs):
+
+        super(douglas_rachford, self).__init__(*args, **kwargs)
+
+        if lambda_ < 0 or lambda_ > 1:
+            raise ValueError('Lambda is bounded by 0 and 1.')
+        self.lambda_ = lambda_
+
+    def _pre(self, functions, x0, verbosity):
+
+        self.yn = np.array(x0)
+        self.sol = np.array(x0)
+
+        if len(functions) != 2:
+            raise ValueError('Douglas-Rachford requires two convex functions.')
+
+        self.f1 = functions[0]
+        self.f2 = functions[1]
+
+    def _algo(self):
+        tmp = self.f1.prox(2 * self.sol * - self.yn, self.gamma)
+        self.yn += self.lambda_ * (tmp - self.sol)
+        self.sol = self.f2.prox(self.yn, self.gamma)
