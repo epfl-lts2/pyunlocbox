@@ -125,7 +125,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         elif len(functions) == 2:
             solver = forward_backward()
         else:
-            raise NotImplementedError('No solver able to minimize more than 2'
+            raise NotImplementedError('No solver able to minimize more than 2 '
                                       'functions for now.')
         if verbosity in ['low', 'high']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
