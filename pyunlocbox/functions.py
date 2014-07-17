@@ -78,6 +78,22 @@ class func(object):
 
     Parameters
     ----------
+    y : array_like, optional
+        Measurements. Default is 0.
+    A : function or ndarray, optional
+        The forward operator. Default is the identity, :math:`A(x)=x`. If `A`
+        is an ``ndarray``, it will be converted to the operator form.
+    At : function or ndarray, optional
+        The adjoint operator. If `At` is an ``ndarray``, it will be converted
+        to the operator form. If `A` is an ``ndarray``, default is the
+        transpose of `A`.  If `A` is a function, default is `A`,
+        :math:`At(x)=A(x)`.
+    tight : bool, optional
+        ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
+        ``True``.
+    nu : float, optional
+        Bound on the norm of the operator `A`, i.e. :math:`\|A(x)\|^2 \leq \nu
+        \|x\|^2`. Default is 1.
     verbosity : {'none', 'low', 'high'}, optional
         The log level : ``'none'`` for no log, ``'low'`` for resume at
         convergence, ``'high'`` to for all steps. Default is ``'low'``.
@@ -100,7 +116,35 @@ class func(object):
 
     """
 
-    def __init__(self, verbosity='none'):
+    def __init__(self, y=0, A=None, At=None, tight=True, nu=1,
+                 verbosity='none'):
+
+        self.y = np.array(y)
+
+        if A is None:
+            self.A = lambda x: x
+        else:
+            if type(A) is np.ndarray:
+                # Transform matrix form to operator form.
+                self.A = lambda x: np.dot(A, x)
+            else:
+                self.A = A
+
+        if At is None:
+            if type(A) is np.ndarray:
+                self.At = lambda x: np.dot(np.transpose(A), x)
+            else:
+                self.At = self.A
+        else:
+            if type(At) is np.ndarray:
+                # Transform matrix form to operator form.
+                self.At = lambda x: np.dot(At, x)
+            else:
+                self.At = At
+
+        self.tight = tight
+        self.nu = nu
+
         if verbosity not in ['none', 'low', 'high']:
             raise ValueError('Verbosity should be either none, low or high.')
         else:
@@ -233,58 +277,16 @@ class norm(func):
     ----------
     lambda_ : float, optional
         Regularization parameter :math:`\lambda`. Default is 1.
-    y : array_like, optional
-        Measurements. Default is 0.
     w : array_like, optional
         Weights for a weighted norm. Default is 1.
-    A : function or ndarray, optional
-        The forward operator. Default is the identity, :math:`A(x)=x`. If `A`
-        is an ``ndarray``, it will be converted to the operator form.
-    At : function or ndarray, optional
-        The adjoint operator. If `At` is an ``ndarray``, it will be converted
-        to the operator form. If `A` is an ``ndarray``, default is the
-        transpose of `A`.  If `A` is a function, default is `A`,
-        :math:`At(x)=A(x)`.
-    tight : bool, optional
-        ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
-        ``True``.
-    nu : float, optional
-        Bound on the norm of the operator `A`, i.e. :math:`\|A(x)\|^2 \leq \nu
-        \|x\|^2`. Default is 1.
     """
 
-    def __init__(self, lambda_=1, y=0, w=1, A=None, At=None,
-                 tight=True, nu=1, *args, **kwargs):
+    def __init__(self, lambda_=1, w=1, *args, **kwargs):
 
         super(norm, self).__init__(*args, **kwargs)
 
         self.lambda_ = lambda_
-        self.y = np.array(y)
         self.w = np.array(w)
-
-        if A is None:
-            self.A = lambda x: x
-        else:
-            if type(A) is np.ndarray:
-                # Transform matrix form to operator form.
-                self.A = lambda x: np.dot(A, x)
-            else:
-                self.A = A
-
-        if At is None:
-            if type(A) is np.ndarray:
-                self.At = lambda x: np.dot(np.transpose(A), x)
-            else:
-                self.At = self.A
-        else:
-            if type(At) is np.ndarray:
-                # Transform matrix form to operator form.
-                self.At = lambda x: np.dot(At, x)
-            else:
-                self.At = At
-
-        self.tight = tight
-        self.nu = nu
 
 
 class norm_l1(norm):
