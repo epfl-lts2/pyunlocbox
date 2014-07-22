@@ -212,8 +212,8 @@ class func(object):
         This method is required by some solvers.
 
         The proximal operator is defined by
-        :math:`\operatorname{prox}_{f,\gamma}(x) = \min\limits_z \frac{1}{2}
-        \|x-z\|_2^2 + \gamma f(z)`
+        :math:`\operatorname{prox}_{f,\gamma}(x) = \operatorname{arg\,min}
+        \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
         """
         return self._prox(np.array(x), T)
 
@@ -315,9 +315,9 @@ class norm_l1(norm):
     * The L1-norm of the vector `x` is given by
       :math:`\lambda \|w \cdot (A(x)-y)\|_1`.
     * The L1-norm proximal operator evaluated at `x` is given by
-      :math:`\min\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma \|w \cdot
-      (A(z)-y)\|_1` where :math:`\gamma = \lambda \cdot T`. This is simply a
-      soft thresholding.
+      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
+      \|w \cdot (A(z)-y)\|_1` where :math:`\gamma = \lambda \cdot T`. This is
+      simply a soft thresholding.
 
     Examples
     --------
@@ -365,8 +365,8 @@ class norm_l2(norm):
     * The squared L2-norm of the vector `x` is given by
       :math:`\lambda \|w \cdot (A(x)-y)\|_2^2`.
     * The squared L2-norm proximal operator evaluated at `x` is given by
-      :math:`\min\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma \|w \cdot
-      (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`.
+      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
+      \|w \cdot (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`.
     * The squared L2-norm gradient evaluated at `x` is given by
       :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`.
 
