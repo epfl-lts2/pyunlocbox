@@ -466,9 +466,6 @@ class proj_b2(proj):
         # return np.spacing(1.0)
         return 0
 
-    def _scaling(z):
-        pass
-
     def _prox(self, x, T):
 
         crit = None  # Stopping criterion.
@@ -476,8 +473,9 @@ class proj_b2(proj):
 
         # Tight frame.
         if self.tight:
-            tmp = self.A(x) - self.y
-            sol = x + 1./self.nu * self.At(self._scaling(tmp) - tmp)
+            tmp1 = self.A(x) - self.y
+            tmp2 = tmp1 * min(1, self.epsilon/np.linalg.norm(tmp1))  # Scaling.
+            sol = x + 1./self.nu * self.At(tmp2 - tmp1)
             crit = 'TOL'
             u = np.nan
 
@@ -543,3 +541,5 @@ class proj_b2(proj):
                 norm_res = np.linalg.norm(self.y - self.A(sol), 2)
                 print('  Proj. L2-ball : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
                       '%s, niter = %d' % (self.epsilon, norm_res, crit, niter))
+
+        return sol
