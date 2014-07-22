@@ -452,6 +452,17 @@ class proj_b2(proj):
       function of :math:`\|y-A(z)\|_2 < \epsilon`. So it can be written as
       :math:`\operatorname{prox}_{f,\gamma}(x)` where :math:`f = i_c(
       \|y-A(z)\|_2 < \epsilon)`.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.proj_b2(y=[1, 2], verbosity='none')
+    >>> x = [3, 3]
+    >>> f.eval(x)
+    0
+    >>> f.prox(x, 1)
+    array([ 1.00089443,  2.00044721])
+
     """
 
     def __init__(self, **kwargs):
