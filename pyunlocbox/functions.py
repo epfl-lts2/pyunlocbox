@@ -252,9 +252,6 @@ class dummy(func):
     function to minimize. The :meth:`eval`, :meth:`prox` and :meth:`grad`
     methods then all return 0.
 
-    See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.func` base class.
-
     Examples
     --------
     >>> import pyunlocbox
@@ -269,6 +266,10 @@ class dummy(func):
     array([ 0.,  0.,  0.,  0.])
 
     """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(dummy, self).__init__(**kwargs)
 
     def _eval(self, x):
         return 0
@@ -295,10 +296,8 @@ class norm(func):
         Weights for a weighted norm. Default is 1.
     """
 
-    def __init__(self, lambda_=1, w=1, *args, **kwargs):
-
-        super(norm, self).__init__(*args, **kwargs)
-
+    def __init__(self, lambda_=1, w=1, **kwargs):
+        super(norm, self).__init__(**kwargs)
         self.lambda_ = lambda_
         self.w = np.array(w)
 
@@ -308,7 +307,8 @@ class norm_l1(norm):
     L1-norm function object.
 
     See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.norm` base class.
+    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
+    takes keyword-only parameters.
 
     Notes
     -----
@@ -330,6 +330,10 @@ class norm_l1(norm):
     array([ 0.,  1.,  2.,  3.])
 
     """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(norm_l1, self).__init__(**kwargs)
 
     def _eval(self, x):
         sol = self.A(np.array(x)) - self.y
@@ -353,7 +357,8 @@ class norm_l2(norm):
     L2-norm function object.
 
     See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.norm` base class.
+    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
+    takes keyword-only parameters.
 
     Notes
     -----
@@ -379,6 +384,10 @@ class norm_l2(norm):
     array([2, 4, 6, 8])
 
     """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(norm_l2, self).__init__(**kwargs)
 
     def _eval(self, x):
         sol = self.A(np.array(x)) - self.y
@@ -416,8 +425,8 @@ class proj(func):
         Default is 'FISTA'.
     """
 
-    def __init__(self, epsilon=1e-3, method='FISTA', *args, **kwargs):
-        super(norm, self).__init__(*args, **kwargs)
+    def __init__(self, epsilon=1e-3, method='FISTA', **kwargs):
+        super(proj, self).__init__(**kwargs)
         self.epsilon = epsilon
         self.method = method
 
@@ -427,7 +436,8 @@ class proj_b2(proj):
     L2-ball function object.
 
     See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.proj` base class.
+    :class:`pyunlocbox.functions.proj` base class. Note that the constructor
+    takes keyword-only parameters.
 
     Notes
     -----
@@ -443,6 +453,10 @@ class proj_b2(proj):
       :math:`\operatorname{prox}_{f,\gamma}(x)` where :math:`f = i_c(
       \|y-A(z)\|_2 < \epsilon)`.
     """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(proj_b2, self).__init__(**kwargs)
 
     def _eval(self, x):
         # Matlab version returns a small delta to avoid division by 0 when

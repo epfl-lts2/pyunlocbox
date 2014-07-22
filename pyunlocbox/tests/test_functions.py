@@ -82,15 +82,15 @@ class FunctionsTestCase(unittest.TestCase):
         f = functions.norm_l2(lambda_=4, verbosity='none')
         nptest.assert_allclose(f.prox([7, -22], .125), [3.5, -11])
 
-        f = functions.norm_l2(1, A=lambda x: 2*x, At=lambda x: x/2, y=[8, 12],
-                              verbosity='none')
+        f = functions.norm_l2(lambda_=1, A=lambda x: 2*x, At=lambda x: x/2,
+                              y=[8, 12], verbosity='none')
         self.assertEqual(f.eval([4, 6]), 0)
         self.assertEqual(f.eval([5, -2]), 256+4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
 #        nptest.assert_allclose(f.grad([5, -2]), [8, -64])
         nptest.assert_allclose(f.prox([4, 6], 1), [4, 6])
 
-        f = functions.norm_l2(2, y=np.fft.fft([2, 4])/np.sqrt(2),
+        f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4])/np.sqrt(2),
                               A=lambda x: np.fft.fft(x)/np.sqrt(x.size),
                               At=lambda x: np.fft.ifft(x)*np.sqrt(x.size),
                               verbosity='none')
