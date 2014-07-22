@@ -8,12 +8,18 @@ inherit from it implement the methods. These classes include :
 * :class:`dummy`: A dummy function object which returns 0 for the
   :meth:`_eval`, :meth:`_prox` and :meth:`_grad` methods.
 
-* :class:`norm`: Norm base class.
+* :class:`norm`: Norm operators base class.
 
   * :class:`norm_l1`: L1-norm who implements the :meth:`_eval` and
     :meth:`_prox` methods.
   * :class:`norm_l2`: L2-norm who implements the :meth:`_eval`, :meth:`_prox`
     and :meth:`_grad` methods.
+
+* :class:`proj`: Projection operators base class.
+
+  * :class:`proj_b2`: Projection on the L2-ball who implements the
+    :meth:`_eval` and :meth:`_prox` methods.
+
 """
 
 import numpy as np
@@ -94,14 +100,20 @@ class func(object):
     nu : float, optional
         Bound on the norm of the operator `A`, i.e. :math:`\|A(x)\|^2 \leq \nu
         \|x\|^2`. Default is 1.
+    tol : float, optional
+        The tolerance stopping criterion. The exact definition depends on the
+        function object, please see the documentation of the considered
+        function. Default is 1e-3.
+    maxit : int, optional
+        The maximum number of iterations. Default is 200.
     verbosity : {'none', 'low', 'high'}, optional
         The log level : ``'none'`` for no log, ``'low'`` for resume at
-        convergence, ``'high'`` to for all steps. Default is ``'low'``.
+        convergence, ``'high'`` for info at all steps. Default is ``'low'``.
 
     Examples
     --------
 
-    Lets define a parabola as an example of the manual implementation of a
+    Let's define a parabola as an example of the manual implementation of a
     function object :
 
     >>> import pyunlocbox
@@ -116,8 +128,8 @@ class func(object):
 
     """
 
-    def __init__(self, y=0, A=None, At=None, tight=True, nu=1,
-                 verbosity='none'):
+    def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
+                 maxit=200, verbosity='none'):
 
         self.y = np.array(y)
 
@@ -144,6 +156,8 @@ class func(object):
 
         self.tight = tight
         self.nu = nu
+        self.tol = tol
+        self.maxit = maxit
 
         if verbosity not in ['none', 'low', 'high']:
             raise ValueError('Verbosity should be either none, low or high.')
@@ -268,7 +282,7 @@ class dummy(func):
 
 class norm(func):
     r"""
-    Base class which defines the attributes of the norm objects.
+    Base class which defines the attributes of the `norm` objects.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.func` base class.
@@ -298,8 +312,8 @@ class norm_l1(norm):
 
     Notes
     -----
-    * The L-1 norm of the vector `x` is given by
-      :math:`\lambda \|w \cdot (A(x)-y)\|_1`
+    * The L1-norm of the vector `x` is given by
+      :math:`\lambda \|w \cdot (A(x)-y)\|_1`.
     * The L1-norm proximal operator evaluated at `x` is given by
       :math:`\min\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma \|w \cdot
       (A(z)-y)\|_1` where :math:`\gamma = \lambda \cdot T`. This is simply a
@@ -343,13 +357,13 @@ class norm_l2(norm):
 
     Notes
     -----
-    * The squared L-2 norm of the vector `x` is given by
-      :math:`\lambda \|w \cdot (A(x)-y)\|_2^2`
+    * The squared L2-norm of the vector `x` is given by
+      :math:`\lambda \|w \cdot (A(x)-y)\|_2^2`.
     * The squared L2-norm proximal operator evaluated at `x` is given by
       :math:`\min\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma \|w \cdot
-      (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`
+      (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`.
     * The squared L2-norm gradient evaluated at `x` is given by
-      :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`
+      :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`.
 
     Examples
     --------
@@ -384,3 +398,134 @@ class norm_l2(norm):
     def _grad(self, x):
         sol = self.A(np.array(x)) - self.y
         return 2 * self.lambda_ * self.w * self.At(sol)
+
+
+class proj(func):
+    r"""
+    Base class which defines the attributes of the `proj` objects.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
+
+    Parameters
+    ----------
+    epsilon : float, optional
+        The radius of the ball. Default is 1e-3.
+    method : {'FISTA', 'ISTA'}, optional
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
+        Default is 'FISTA'.
+    """
+
+    def __init__(self, epsilon=1e-3, method='FISTA', *args, **kwargs):
+        super(norm, self).__init__(*args, **kwargs)
+        self.epsilon = epsilon
+        self.method = method
+
+
+class proj_b2(proj):
+    r"""
+    L2-ball function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.proj` base class.
+
+    Notes
+    -----
+    * The `tol` parameter is defined as the tolerance for the projection on the
+      L2-ball. The algorithm stops if :math:`\frac{\epsilon}{1-tol} \leq
+      \|y-A(z)\|_2 \leq \frac{\epsilon}{1+tol}`.
+    * The evaluation of this function is zero.
+    * The L2-ball proximal operator evaluated at `x` is given by
+      :math:`\min\limits_z \|x-z\|_2^2` s.t. :math:`\|y-A(z)\|_2 < \epsilon`.
+      It is a projection of the vector `x` onto an L2-ball of diameter
+      `epsilon`. The projection is the proximal operator of the indicative
+      function of :math:`\|y-A(z)\|_2 < \epsilon`. So it can be written as
+      :math:`\operatorname{prox}_{f,\gamma}(x)` where :math:`f = i_c(
+      \|y-A(z)\|_2 < \epsilon)`.
+    """
+
+    def _eval(self, x):
+        # Matlab version returns a small delta to avoid division by 0 when
+        # evaluating relative tolerance. Here the delta is added in the solve
+        # function if the sum of the objective functions is zero.
+        # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
+        # return np.spacing(1.0)
+        return 0
+
+    def _scaling(z):
+        pass
+
+    def _prox(self, x, T):
+
+        crit = None  # Stopping criterion.
+        niter = 0    # Number of iterations.
+
+        # Tight frame.
+        if self.tight:
+            tmp = self.A(x) - self.y
+            sol = x + 1./self.nu * self.At(self._scaling(tmp) - tmp)
+            crit = 'TOL'
+            u = np.nan
+
+        # Non tight frame.
+        else:
+
+            # Initialization.
+            sol = x
+            u = np.zeros(np.size(self.y))
+            if self.method is 'FISTA':
+                v_last = u
+                t_last = 1.
+            elif self.method is not 'ISTA':
+                raise ValueError('The method should be either FISTA or ISTA.')
+
+            # Tolerance around the L2-ball.
+            epsilon_low = self.epsilon / (1. + self.tol)
+            epsilon_up = self.epsilon / (1. - self.tol)
+
+            # Check if we are already in the L2-ball.
+            norm_res = np.linalg.norm(self.y - self.A(sol), 2)
+            if norm_res <= epsilon_up:
+                crit = 'IN_BALL'
+
+            # Projection onto the L2-ball
+            while not crit:
+
+                niter += 1
+
+                # Residual.
+                res = self.y - self.A(sol)
+                norm_res = np.linalg.norm(res, 2)
+
+                if self.verbosity is 'high':
+                    print('  Proj. L2-ball iteration %3d : epsilon = %.2e, '
+                          '||y-A(z)||_2 = %.2e'
+                          % (niter, self.epsilon, norm_res))
+
+                # Scaling for projection.
+                norm_proj = np.linalg.norm(res + u * self.nu, 2)
+
+                ratio = min(1, self.epsilon/norm_proj)
+                v = 1. / self.nu * (res - res*ratio)
+
+                if self.method is 'FISTA':
+                    t = (1. + np.sqrt(1.+4.*t_last**2.)) / 2.  # Time step.
+                    u = v + (t_last-1.) / t * (v-v_last)
+                    v_last = v
+                    t_last = t
+                else:
+                    u = v
+
+                # Current estimation.
+                sol = x - self.At(u)
+
+                # Stopping criterion.
+                if norm_res >= epsilon_low and norm_res <= epsilon_up:
+                    crit = 'TOL'
+                elif niter >= self.maxit:
+                    crit = 'MAX_IT'
+
+            if self.verbosity in ['low', 'high']:
+                norm_res = np.linalg.norm(self.y - self.A(sol), 2)
+                print('  Proj. L2-ball : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
+                      '%s, niter = %d' % (self.epsilon, norm_res, crit, niter))

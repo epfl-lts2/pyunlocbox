@@ -15,7 +15,8 @@ Functions module
     :hidden:
 
     func
-    norms
+    func_norms
+    func_projections
 
 .. automodule:: pyunlocbox.functions
 

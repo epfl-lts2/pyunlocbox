@@ -63,7 +63,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         The maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
         The log level : ``'none'`` for no log, ``'low'`` for resume at
-        convergence, ``'high'`` to for all steps. Default is ``'low'``.
+        convergence, ``'high'`` for info at all steps. Default is ``'low'``.
 
     Returns
     -------
@@ -143,6 +143,9 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
 
         nIter += 1
 
+        if verbosity is 'high':
+            print('Iteration %d of %s :' % (nIter, solver.__class__.__name__))
+
         # Solver iterative algorithm.
         solver.algo(objective, nIter)
 
@@ -171,9 +174,9 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         elif last - current < convergence_speed:
             stopCrit = 'CONV_SPEED'
 
-        if verbosity == 'high':
-            print('Iteration %3d : objective = %.2e, relative = %.2e'
-                  % (nIter, current, relative))
+        if verbosity is 'high':
+            print('    objective = %.2e, relative = %.2e'
+                  % (current, relative))
 
     # Solver specific post-processing.
     solver.post(verbosity)
@@ -186,7 +189,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
-              'solver':    solver.__class__.__name__,
+              'solver':    solver.__class__.__name__,  # algo for consistency ?
               'niter':     nIter,
               'time':      time.time() - startTime,
               'eval':      current,
@@ -293,10 +296,10 @@ class forward_backward(solver):
     Parameters
     ----------
     method : {'FISTA', 'ISTA'}, optional
-        the method used to solve the problem.  It can be 'FISTA' or 'ISTA'.
+        the method used to solve the problem. It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
     lambda_ : float, optional
-        the update term weight for ISTA.  It should be between 0 and 1. Default
+        the update term weight for ISTA. It should be between 0 and 1. Default
         is 1.
 
     Notes
@@ -325,20 +328,17 @@ class forward_backward(solver):
     """
 
     def __init__(self, method='FISTA', lambda_=1, *args, **kwargs):
-
         super(forward_backward, self).__init__(*args, **kwargs)
-
-        if method not in ['FISTA', 'ISTA']:
-            raise ValueError('The method should be FISTA or ISTA.')
         self.method = method
-
-        if lambda_ < 0 or lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
         self.lambda_ = lambda_
 
     def _pre(self, functions, x0, verbosity):
-        if verbosity == 'high':
+
+        if verbosity is 'high':
             print('INFO: Forward-backward method : %s' % (self.method,))
+
+        if self.lambda_ < 0 or self.lambda_ > 1:
+            raise ValueError('Lambda is bounded by 0 and 1.')
 
         # ISTA and FISTA initialization.
         self.sol = np.array(x0)

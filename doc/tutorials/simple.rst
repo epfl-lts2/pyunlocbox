@@ -49,16 +49,26 @@ And finally solve the problem :
 >>> x0 = [0, 0, 0, 0]
 >>> ret = solvers.solve([f2, f1], x0, solver, absTol=1e-5, verbosity='high')
 INFO: Forward-backward method : FISTA
-Iteration   1 : objective = 1.40e+01, relative = 8.00e+00
-Iteration   2 : objective = 1.56e+00, relative = 8.00e+00
-Iteration   3 : objective = 3.29e-02, relative = 4.62e+01
-Iteration   4 : objective = 8.78e-03, relative = 2.75e+00
-Iteration   5 : objective = 6.39e-03, relative = 3.74e-01
-Iteration   6 : objective = 5.71e-04, relative = 1.02e+01
-Iteration   7 : objective = 1.73e-05, relative = 3.21e+01
-Iteration   8 : objective = 6.11e-05, relative = 7.17e-01
-Iteration   9 : objective = 1.21e-05, relative = 4.04e+00
-Iteration  10 : objective = 7.46e-09, relative = 1.62e+03
+Iteration 1 of forward_backward :
+    objective = 1.40e+01, relative = 8.00e+00
+Iteration 2 of forward_backward :
+    objective = 1.56e+00, relative = 8.00e+00
+Iteration 3 of forward_backward :
+    objective = 3.29e-02, relative = 4.62e+01
+Iteration 4 of forward_backward :
+    objective = 8.78e-03, relative = 2.75e+00
+Iteration 5 of forward_backward :
+    objective = 6.39e-03, relative = 3.74e-01
+Iteration 6 of forward_backward :
+    objective = 5.71e-04, relative = 1.02e+01
+Iteration 7 of forward_backward :
+    objective = 1.73e-05, relative = 3.21e+01
+Iteration 8 of forward_backward :
+    objective = 6.11e-05, relative = 7.17e-01
+Iteration 9 of forward_backward :
+    objective = 1.21e-05, relative = 4.04e+00
+Iteration 10 of forward_backward :
+    objective = 7.46e-09, relative = 1.62e+03
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
