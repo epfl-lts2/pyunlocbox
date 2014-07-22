@@ -435,6 +435,11 @@ class proj_b2(proj):
     r"""
     L2-ball function object.
 
+    This function is the indicator function :math:`i_S(z)` of the set S which
+    is zero if `z` is in the set and infinite otherwise. The set S is defined
+    by :math:`\left\{z \in \mathbb{R}^N \mid \|A(z)-y\|_2 \leq \epsilon
+    \right\}`.
+
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
     takes keyword-only parameters.
@@ -446,12 +451,11 @@ class proj_b2(proj):
       \|y-A(z)\|_2 \leq \frac{\epsilon}{1+tol}`.
     * The evaluation of this function is zero.
     * The L2-ball proximal operator evaluated at `x` is given by
-      :math:`\min\limits_z \|x-z\|_2^2` s.t. :math:`\|y-A(z)\|_2 < \epsilon`.
-      It is a projection of the vector `x` onto an L2-ball of diameter
-      `epsilon`. The projection is the proximal operator of the indicative
-      function of :math:`\|y-A(z)\|_2 < \epsilon`. So it can be written as
-      :math:`\operatorname{prox}_{f,\gamma}(x)` where :math:`f = i_c(
-      \|y-A(z)\|_2 < \epsilon)`.
+      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + i_S(z)`
+      which has an identical solution as
+      :math:`\operatorname{arg\,min}\limits_z \|x-z\|_2^2` such that
+      :math:`\|A(z)-y\|_2 \leq \epsilon`. It is thus a projection of the vector
+      `x` onto an L2-ball of diameter `epsilon`.
 
     Examples
     --------
