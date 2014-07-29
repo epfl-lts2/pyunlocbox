@@ -260,7 +260,7 @@ class dummy(func):
     dummy evaluation : 0.000000e+00
     0
     >>> f.prox(x, 1)
-    array([ 0.5,  1. ,  1.5,  2. ])
+    array([1, 2, 3, 4])
     >>> f.grad(x)
     array([ 0.,  0.,  0.,  0.])
 
