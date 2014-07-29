@@ -19,9 +19,10 @@ class FunctionsTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_forward_backward(self):
+    def test_forward_backward_fista(self):
         """
-        Test forward-backward solver with L1-norm, L2-norm and dummy functions.
+        Test FISTA algorithm of forward-backward solver with L1-norm, L2-norm
+        and dummy functions.
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
@@ -87,7 +88,38 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
         self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['niter'], 4)
 
+    def test_forward_backward_ista(self):
+        """
+        Test ISTA algorithm of forward-backward solver with L1-norm, L2-norm
+        and dummy functions. Test the effect of gamma and lambda parameters.
+        """
+        y = [4, 5, 6, 7]
+        x0 = np.zeros(len(y))
+        # Smaller step size and update rate --> slower convergence.
+        solver = solvers.forward_backward(method='ISTA', gamma=.8, lambda_=.5)
+        param = {'x0': x0, 'solver': solver}
+        param['absTol'] = 1e-5
+        param['verbosity'] = 'none'
+
+        # L2-norm prox and dummy gradient.
+        f1 = functions.norm_l2(y=y)
+        f2 = functions.dummy()
+        sol = [3.99915094, 4.99893867, 5.9987264, 6.99851414]
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['niter'], 23)
+
+        # L1-norm prox and L2-norm gradient.
+        f1 = functions.norm_l1(y=y, lambda_=1.0)
+        f2 = functions.norm_l2(y=y, lambda_=0.8)
+        sol = [3.99999825, 4.9999979, 5.99999756, 6.99999723]
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['niter'], 21)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
 
