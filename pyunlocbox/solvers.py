@@ -68,33 +68,29 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     Returns
     -------
     sol : ndarray
-        problem solution
+        The problem solution.
     solver : str
-        used solver
+        The used solver.
     niter : int
-        number of iterations
+        The number of iterations.
     time : float
-        execution time in seconds
+        The execution time in seconds.
     eval : float
-        final evaluation of the objective function :math:`f(x)`
+        The final evaluation of the objective function :math:`f(x)`.
     crit : {'MAX_IT', 'ABS_TOL', 'REL_TOL', 'CONV_SPEED'}
-        Used stopping criterion. 'MAX_IT' if the maximum number of iterations
-        `maxIter` is reached, 'ABS_TOL' if the objective function value is
-        smaller than `absTol`, 'REL_TOL' if the relative objective function
-        improvement was smaller than `relTol` (i.e. the algorithm converged),
-        'CONV_SPEED' if the objective function improvement is smaller than
-        `convergence_speed`.
+        The used stopping criterion. 'MAX_IT' if the maximum number of
+        iterations `maxIter` is reached, 'ABS_TOL' if the objective function
+        value is smaller than `absTol`, 'REL_TOL' if the relative objective
+        function improvement was smaller than `relTol` (i.e. the algorithm
+        converged), 'CONV_SPEED' if the objective function improvement is
+        smaller than `convergence_speed`.
     rel : float
-        relative objective improvement at convergence
+        The relative objective improvement at convergence.
     objective : ndarray
-        successive evaluations of the objective function at each iteration
+        The successive evaluations of the objective function at each iteration.
 
     Examples
     --------
-
-    Simple example showing the automatic selection of a solver (and a second
-    function) :
-
     >>> import pyunlocbox
     >>> f = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
     >>> ret = pyunlocbox.solvers.solve([f], [0, 0, 0, 0], atol=1e-5)
@@ -306,10 +302,10 @@ class forward_backward(solver):
     Parameters
     ----------
     method : {'FISTA', 'ISTA'}, optional
-        the method used to solve the problem. It can be 'FISTA' or 'ISTA'.
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
     lambda_ : float, optional
-        the update term weight for ISTA. It should be between 0 and 1. Default
+        The update term weight for ISTA. It should be between 0 and 1. Default
         is 1.
 
     Notes
