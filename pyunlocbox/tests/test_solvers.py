@@ -19,6 +19,37 @@ class FunctionsTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_solve(self):
+        """
+        Test some features of the solve function.
+        """
+        y = [4, 5, 6, 7]
+        x0 = np.zeros(len(y))
+        param = {'x0': x0, 'maxIter': 1, 'verbosity': 'none'}
+
+        # Automatic solver selection.
+        f0 = functions.func()
+        f0._eval = lambda x: 0
+        f0._grad = lambda x: x
+        f1 = functions.func()
+        f1._eval = lambda x: 0
+        f1._grad = lambda x: x
+        f1._prox = lambda x, T: x
+        f2 = functions.func()
+        f2._eval = lambda x: 0
+        f2._prox = lambda x, T: x
+        self.assertRaises(ValueError, solvers.solve, [f0, f0], **param)
+        ret = solvers.solve([f0, f1], **param)
+        self.assertEqual(ret['solver'], 'forward_backward')
+        ret = solvers.solve([f1, f0], **param)
+        self.assertEqual(ret['solver'], 'forward_backward')
+        ret = solvers.solve([f1, f2], **param)
+        self.assertEqual(ret['solver'], 'forward_backward')
+        ret = solvers.solve([f2, f2], **param)
+        self.assertEqual(ret['solver'], 'douglas_rachford')
+        self.assertRaises(NotImplementedError, solvers.solve,
+                          [f0, f1, f2], **param)
+
     def test_forward_backward_fista(self):
         """
         Test FISTA algorithm of forward-backward solver with L1-norm, L2-norm

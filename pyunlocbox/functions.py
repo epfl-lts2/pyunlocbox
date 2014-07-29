@@ -118,13 +118,15 @@ class func(object):
 
     >>> import pyunlocbox
     >>> f = pyunlocbox.functions.func()
-    >>> f._eval = lambda x : x**2
-    >>> f._grad = lambda x : 2*x
+    >>> f._eval = lambda x: x**2
+    >>> f._grad = lambda x: 2*x
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
     array([ 1,  4,  9, 16])
     >>> f.grad(x)
     array([2, 4, 6, 8])
+    >>> f.cap(x)
+    ['EVAL', 'GRAD']
 
     """
 
@@ -242,6 +244,35 @@ class func(object):
 
     def _grad(self, x):
         raise NotImplementedError("Class user should define this method.")
+
+    def cap(self, x):
+        r"""
+        Test the capabilities of the function object.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        cap : list of string
+            A list of capabilities ('EVAL', 'GRAD', 'PROX').
+        """
+        cap = ['EVAL', 'GRAD', 'PROX']
+        try:
+            self.eval(x)
+        except NotImplementedError:
+            cap.remove('EVAL')
+        try:
+            self.grad(x)
+        except NotImplementedError:
+            cap.remove('GRAD')
+        try:
+            self.prox(x, 1)
+        except NotImplementedError:
+            cap.remove('PROX')
+        return cap
 
 
 class dummy(func):

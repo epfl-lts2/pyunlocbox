@@ -96,8 +96,8 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     function) :
 
     >>> import pyunlocbox
-    >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
-    >>> ret = pyunlocbox.solvers.solve([f1], [0, 0, 0, 0], absTol=1e-5)
+    >>> f = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
+    >>> ret = pyunlocbox.solvers.solve([f], [0, 0, 0, 0], absTol=1e-5)
     INFO: Dummy objective function added.
     INFO: Selected solver : forward_backward
     Solution found after 10 iterations :
@@ -117,17 +117,26 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     # Add a second dummy convex function if only one function is provided.
     if len(functions) < 1:
         raise ValueError('At least 1 convex function should be provided.')
-    elif len(functions) is 1:
+    elif len(functions) == 1:
         functions.append(dummy())
         if verbosity in ['low', 'high']:
             print('INFO: Dummy objective function added.')
-    elif len(functions) > 2:
-        raise NotImplementedError('No solver able to minimize more than 2 '
-                                  'functions for now.')
 
     # Choose a solver if none provided.
     if not solver:
-        solver = forward_backward()
+        fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+        fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
+        dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+        if len(functions) == 2:
+            if fb0 or fb1:
+                solver = forward_backward()  # Need one prox and 1 grad.
+            elif dg0:
+                solver = douglas_rachford()  # Need two prox.
+            else:
+                raise ValueError('No suitable solver for the given functions.')
+        elif len(functions) > 2:
+            raise NotImplementedError('No solver able to minimize more than 2 '
+                                      'functions for now.')
         if verbosity in ['low', 'high']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
@@ -356,22 +365,15 @@ class forward_backward(solver):
         if len(functions) != 2:
             raise ValueError('Forward-backward requires two convex functions.')
 
-        try:
-            functions[0].prox(self.sol, self.gamma)
-            functions[1].grad(self.sol)
-        except NotImplementedError:
-            try:
-                functions[1].prox(self.sol, self.gamma)
-                functions[0].grad(self.sol)
-            except NotImplementedError:
-                raise ValueError('Forward-backward requires a function to '
-                                 'implement prox() and the other grad().')
-            else:
-                self.f1 = functions[1]
-                self.f2 = functions[0]
-        else:
+        if 'PROX' in functions[0].cap(x0) and 'GRAD' in functions[1].cap(x0):
             self.f1 = functions[0]
             self.f2 = functions[1]
+        elif 'PROX' in functions[1].cap(x0) and 'GRAD' in functions[0].cap(x0):
+            self.f1 = functions[1]
+            self.f2 = functions[0]
+        else:
+            raise ValueError('Forward-backward requires a function to '
+                             'implement prox() and the other grad().')
 
     def _ista(self):
         yn = self.sol - self.gamma * self.f2.grad(self.sol)
