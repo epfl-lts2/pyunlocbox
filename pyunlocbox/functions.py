@@ -185,7 +185,7 @@ class func(object):
         """
         sol = self._eval(np.array(x))
         if self.verbosity in ['low', 'high']:
-            print('%s evaluation : %e' % (self.__class__.__name__, sol))
+            print('    %s evaluation : %e' % (self.__class__.__name__, sol))
         return sol
 
     def _eval(self, x):
@@ -254,10 +254,9 @@ class dummy(func):
     Examples
     --------
     >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.dummy(verbosity='low')
+    >>> f = pyunlocbox.functions.dummy()
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
-    dummy evaluation : 0.000000e+00
     0
     >>> f.prox(x, 1)
     array([1, 2, 3, 4])
@@ -321,9 +320,8 @@ class norm_l1(norm):
     Examples
     --------
     >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l1(verbosity='low')
+    >>> f = pyunlocbox.functions.norm_l1()
     >>> f.eval([1, 2, 3, 4])
-    norm_l1 evaluation : 1.000000e+01
     10
     >>> f.prox([1, 2, 3, 4], 1)
     array([ 0.,  1.,  2.,  3.])
@@ -372,10 +370,9 @@ class norm_l2(norm):
     Examples
     --------
     >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l2(verbosity='low')
+    >>> f = pyunlocbox.functions.norm_l2()
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
-    norm_l2 evaluation : 3.000000e+01
     30
     >>> f.prox(x, 1)
     array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
@@ -459,7 +456,7 @@ class proj_b2(proj):
     Examples
     --------
     >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.proj_b2(y=[1, 2], verbosity='none')
+    >>> f = pyunlocbox.functions.proj_b2(y=[1, 2])
     >>> x = [3, 3]
     >>> f.eval(x)
     0
@@ -524,7 +521,7 @@ class proj_b2(proj):
                 norm_res = np.linalg.norm(res, 2)
 
                 if self.verbosity is 'high':
-                    print('  Proj. L2-ball iteration %3d : epsilon = %.2e, '
+                    print('    proj_b2 iteration %3d : epsilon = %.2e, '
                           '||y-A(z)||_2 = %.2e'
                           % (niter, self.epsilon, norm_res))
 
@@ -554,7 +551,7 @@ class proj_b2(proj):
 
             if self.verbosity in ['low', 'high']:
                 norm_res = np.linalg.norm(self.y - self.A(sol), 2)
-                print('  Proj. L2-ball : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
+                print('    proj_b2 : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
                       '%s, niter = %d' % (self.epsilon, norm_res, crit, niter))
 
         return sol
