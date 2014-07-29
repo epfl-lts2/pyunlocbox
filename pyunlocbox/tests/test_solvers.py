@@ -21,7 +21,7 @@ class FunctionsTestCase(unittest.TestCase):
 
     def test_solve(self):
         """
-        Test some features of the solve function.
+        Test some features of the solving function.
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
@@ -33,8 +33,15 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertRaises(ValueError, solvers.solve, [f], maxIter=-1, **param)
         self.assertRaises(ValueError, solvers.solve, [f], x0, verbosity='??')
 
-        # Automatic solver selection.
+        # Addition of dummy function.
         param['maxIter'] = 1
+        self.assertRaises(ValueError, solvers.solve, [], **param)
+        solver = solvers.forward_backward()
+        solvers.solve([f], solver=solver, **param)
+        self.assertIsInstance(solver.f1, functions.dummy)
+        self.assertIsInstance(solver.f2, functions.dummy)
+
+        # Automatic solver selection.
         f0 = functions.func()
         f0._eval = lambda x: 0
         f0._grad = lambda x: x
