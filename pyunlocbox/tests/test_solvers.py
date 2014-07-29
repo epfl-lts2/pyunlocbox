@@ -25,9 +25,16 @@ class FunctionsTestCase(unittest.TestCase):
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
-        param = {'x0': x0, 'maxIter': 1, 'verbosity': 'none'}
+        param = {'x0': x0, 'verbosity': 'none'}
+
+        # Input parameters.
+        f = functions.dummy()
+        self.assertRaises(ValueError, solvers.solve, [f], relTol=-1, **param)
+        self.assertRaises(ValueError, solvers.solve, [f], maxIter=-1, **param)
+        self.assertRaises(ValueError, solvers.solve, [f], x0, verbosity='??')
 
         # Automatic solver selection.
+        param['maxIter'] = 1
         f0 = functions.func()
         f0._eval = lambda x: 0
         f0._grad = lambda x: x
@@ -49,6 +56,19 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(ret['solver'], 'douglas_rachford')
         self.assertRaises(NotImplementedError, solvers.solve,
                           [f0, f1, f2], **param)
+
+        # Return values.
+        f = functions.norm_l2(y=y)
+        ret = solvers.solve([f], **param)
+        self.assertEqual(len(ret), 8)
+        self.assertIsInstance(ret['sol'], np.ndarray)
+        self.assertIsInstance(ret['solver'], str)
+        self.assertIsInstance(ret['niter'], int)
+        self.assertIsInstance(ret['time'], float)
+        self.assertIsInstance(ret['eval'], float)
+        self.assertIsInstance(ret['objective'], list)
+        self.assertIsInstance(ret['crit'], str)
+        self.assertIsInstance(ret['rel'], float)
 
     def test_forward_backward_fista(self):
         """
