@@ -55,11 +55,11 @@ class FunctionsTestCase(unittest.TestCase):
         f = functions.dummy()
         self.assertEqual(f.eval(34), 0)
         nptest.assert_array_equal(f.grad(34), [0])
-        nptest.assert_array_equal(f.prox(34, 1), [17])
+        nptest.assert_array_equal(f.prox(34, 1), [34])
         x = [34, 2, 1.0, -10.2]
         self.assertEqual(f.eval(x), 0)
         nptest.assert_array_equal(f.grad(x), np.zeros(len(x)))
-        nptest.assert_array_equal(f.prox(x, 1), np.array(x)/2.)
+        nptest.assert_array_equal(f.prox(x, 1), x)
 
     def test_norm_l2(self):
         """
