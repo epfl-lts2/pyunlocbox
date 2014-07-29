@@ -16,8 +16,8 @@ import time
 from pyunlocbox.functions import dummy
 
 
-def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
-          convergence_speed=float('-inf'), maxIter=200, verbosity='low'):
+def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
+          convergence_speed=float('-inf'), maxit=200, verbosity='low'):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
@@ -47,19 +47,19 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         :meth:`_algo` and :meth:`_post` methods. If no solver object are
         provided, a standard one will be chosen given the number of convex
         function objects and their implemented methods.
-    relTol : float, optional
+    rtol : float, optional
         The convergence (relative tolerance) stopping criterion. The algorithm
-        stops if :math:`\left|\frac{n(k-1)-n(k)}{n(k)}\right|<reltol` where
+        stops if :math:`\left|\frac{n(k-1)-n(k)}{n(k)}\right|<rtol` where
         :math:`n(k)=f(x)` is the objective function at iteration :math:`k`.
         Default is :math:`10^{-3}`.
-    absTol : float, optional
+    atol : float, optional
         The absolute tolerance stopping criterion. The algorithm stops if
-        :math:`n(k)<abstol`. Default is minus infinity.
+        :math:`n(k)<atol`. Default is minus infinity.
     convergence_speed : float, optional
         The minimum tolerable convergence speed of the objective function. The
         algorithm stops if n(k-1) - n(k) < `convergence_speed`. Default is
         minus infinity (i.e. the objective function may even increase).
-    maxIter : int, optional
+    maxit : int, optional
         The maximum number of iterations. Default is 200.
     verbosity : {'low', 'high', 'none'}, optional
         The log level : ``'none'`` for no log, ``'low'`` for resume at
@@ -97,7 +97,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
 
     >>> import pyunlocbox
     >>> f = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
-    >>> ret = pyunlocbox.solvers.solve([f], [0, 0, 0, 0], absTol=1e-5)
+    >>> ret = pyunlocbox.solvers.solve([f], [0, 0, 0, 0], atol=1e-5)
     INFO: Dummy objective function added.
     INFO: Selected solver : forward_backward
     Solution found after 10 iterations :
@@ -109,7 +109,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
 
     """
 
-    if relTol < 0 or maxIter < 0:
+    if rtol < 0 or maxit < 0:
         raise ValueError('Parameters should be positive numbers.')
     if verbosity not in ['none', 'low', 'high']:
         raise ValueError('Verbosity should be either none, low or high.')
@@ -140,23 +140,23 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         if verbosity in ['low', 'high']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
-    startTime = time.time()
-    stopCrit = None
-    nIter = 0
+    tstart = time.time()
+    crit = None
+    niter = 0
     objective = [[f.eval(x0) for f in functions]]
 
     # Solver specific initialization.
     solver.pre(functions, x0, verbosity)
 
-    while not stopCrit:
+    while not crit:
 
-        nIter += 1
+        niter += 1
 
         if verbosity is 'high':
-            print('Iteration %d of %s :' % (nIter, solver.__class__.__name__))
+            print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
 
         # Solver iterative algorithm.
-        solver.algo(objective, nIter)
+        solver.algo(objective, niter)
 
         objective.append([f.eval(solver.sol) for f in functions])
         current = np.sum(objective[-1])
@@ -175,14 +175,14 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         relative = np.abs((last - current) / div)
 
         # Verify stopping criteria.
-        if current < absTol:
-            stopCrit = 'ABS_TOL'
-        elif relative < relTol:
-            stopCrit = 'REL_TOL'
-        elif nIter >= maxIter:
-            stopCrit = 'MAX_IT'
+        if current < atol:
+            crit = 'ABS_TOL'
+        elif relative < rtol:
+            crit = 'REL_TOL'
+        elif niter >= maxit:
+            crit = 'MAX_IT'
         elif last - current < convergence_speed:
-            stopCrit = 'CONV_SPEED'
+            crit = 'CONV_SPEED'
 
         if verbosity is 'high':
             print('    objective = %.2e, relative = %.2e'
@@ -192,19 +192,19 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     solver.post(verbosity)
 
     if verbosity in ['low', 'high']:
-        print('Solution found after %d iterations :' % (nIter,))
+        print('Solution found after %d iterations :' % (niter,))
         print('    objective function f(sol) = %e' % (current,))
         print('    last relative objective improvement : %e' % (relative,))
-        print('    stopping criterion : %s' % (stopCrit,))
+        print('    stopping criterion : %s' % (crit,))
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
               'solver':    solver.__class__.__name__,  # algo for consistency ?
-              'niter':     nIter,
-              'time':      time.time() - startTime,
+              'niter':     niter,
+              'time':      time.time() - tstart,
               'eval':      current,
               'objective': objective,
-              'crit':      stopCrit,
+              'crit':      crit,
               'rel':       relative}
 
     return result
@@ -327,7 +327,7 @@ class forward_backward(solver):
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
     >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, gamma=1)
-    >>> ret = solvers.solve([f1, f2], x0, solver, absTol=1e-5)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
@@ -417,7 +417,7 @@ class douglas_rachford(solver):
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
     >>> solver = solvers.douglas_rachford(lambda_=1, gamma=1)
-    >>> ret = solvers.solve([f1, f2], x0, solver, absTol=1e-5)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 8 iterations :
         objective function f(sol) = 2.927052e-06
         last relative objective improvement : 8.000000e+00

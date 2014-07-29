@@ -47,7 +47,7 @@ We can now instantiate the solver object :
 And finally solve the problem :
 
 >>> x0 = [0, 0, 0, 0]
->>> ret = solvers.solve([f2, f1], x0, solver, absTol=1e-5, verbosity='high')
+>>> ret = solvers.solve([f2, f1], x0, solver, atol=1e-5, verbosity='high')
 INFO: Forward-backward method : FISTA
 Iteration 1 of forward_backward :
     objective = 1.40e+01, relative = 8.00e+00

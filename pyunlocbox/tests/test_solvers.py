@@ -29,12 +29,12 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Input parameters.
         f = functions.dummy()
-        self.assertRaises(ValueError, solvers.solve, [f], relTol=-1, **param)
-        self.assertRaises(ValueError, solvers.solve, [f], maxIter=-1, **param)
+        self.assertRaises(ValueError, solvers.solve, [f], rtol=-1, **param)
+        self.assertRaises(ValueError, solvers.solve, [f], maxit=-1, **param)
         self.assertRaises(ValueError, solvers.solve, [f], x0, verbosity='??')
 
         # Addition of dummy function.
-        param['maxIter'] = 1
+        param['maxit'] = 1
         self.assertRaises(ValueError, solvers.solve, [], **param)
         solver = solvers.forward_backward()
         solvers.solve([f], solver=solver, **param)
@@ -86,7 +86,7 @@ class FunctionsTestCase(unittest.TestCase):
         x0 = np.zeros(len(y))
         solver = solvers.forward_backward(method='FISTA')
         param = {'x0': x0, 'solver': solver}
-        param['absTol'] = 1e-5
+        param['atol'] = 1e-5
         param['verbosity'] = 'none'
 
         # L2-norm prox and dummy gradient.
@@ -158,7 +158,7 @@ class FunctionsTestCase(unittest.TestCase):
         # Smaller step size and update rate --> slower convergence.
         solver = solvers.forward_backward(method='ISTA', gamma=.8, lambda_=.5)
         param = {'x0': x0, 'solver': solver}
-        param['absTol'] = 1e-5
+        param['atol'] = 1e-5
         param['verbosity'] = 'none'
 
         # L2-norm prox and dummy gradient.

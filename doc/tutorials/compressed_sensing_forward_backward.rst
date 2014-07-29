@@ -107,7 +107,7 @@ starting point `x0`, the problem is solved by the toolbox solving function as
 follow :
 
 >>> x0 = np.zeros(N)
->>> ret = solvers.solve([f1, f2], x0, solver, relTol=1e-4, maxIter=300)
+>>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
 Solution found after 176 iterations :
     objective function f(sol) = 8.221302e+00
     last relative objective improvement : 8.363264e-05
