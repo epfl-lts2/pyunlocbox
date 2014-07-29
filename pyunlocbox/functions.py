@@ -249,8 +249,7 @@ class dummy(func):
     Dummy function object.
 
     This can be used as a second function object when there is only one
-    function to minimize. The :meth:`eval`, :meth:`prox` and :meth:`grad`
-    methods then all return 0.
+    function to minimize. It always evaluates as 0.
 
     Examples
     --------
@@ -261,7 +260,7 @@ class dummy(func):
     dummy evaluation : 0.000000e+00
     0
     >>> f.prox(x, 1)
-    array([ 0.,  0.,  0.,  0.])
+    array([ 0.5,  1. ,  1.5,  2. ])
     >>> f.grad(x)
     array([ 0.,  0.,  0.,  0.])
 
@@ -275,7 +274,7 @@ class dummy(func):
         return 0
 
     def _prox(self, x, T):
-        return np.zeros(np.shape(x))
+        return x / 2.
 
     def _grad(self, x):
         return np.zeros(np.shape(x))
