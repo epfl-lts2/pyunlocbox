@@ -51,9 +51,9 @@ instantiated as follow, while setting the regularization parameter `tau` :
 
 >>> from pyunlocbox import functions
 >>> tau = 1.0
->>> f1 = functions.norm_l1(verbosity='none', lambda_=tau)
+>>> f1 = functions.norm_l1(verbosity='NONE', lambda_=tau)
 
-.. note:: You can also pass a verbosity of ``'low'`` or ``'high'`` if you want
+.. note:: You can also pass a verbosity of ``'LOW'`` or ``'HIGH'`` if you want
     some informations about the norm evaluation. A complete description of the
     constructor parameters and default values is given by the L1-norm object
     :class:`pyunlocbox.functions.norm_l1` reference documentation.
@@ -65,13 +65,13 @@ The second objective function to minimize is defined by
 which can be expressed by the toolbox L2-norm function object. It can be
 instantiated as follow :
 
->>> f2 = functions.norm_l2(y=y, A=A, verbosity='none')
+>>> f2 = functions.norm_l2(y=y, A=A, verbosity='NONE')
 
 or alternatively as follow :
 
 >>> A_ = lambda x: np.dot(A, x)
 >>> At_ = lambda x: np.dot(np.transpose(A), x)
->>> f3 = functions.norm_l2(y=y, A=A_, At=At_, verbosity='none')
+>>> f3 = functions.norm_l2(y=y, A=A_, At=At_, verbosity='NONE')
 
 .. note:: In this case the forward and adjoint operators were passed as
     functions not as matrices.

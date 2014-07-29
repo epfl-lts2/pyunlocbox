@@ -25,7 +25,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
-        param = {'x0': x0, 'verbosity': 'none'}
+        param = {'x0': x0, 'verbosity': 'NONE'}
 
         # Input parameters.
         f = functions.dummy()
@@ -87,7 +87,7 @@ class FunctionsTestCase(unittest.TestCase):
         solver = solvers.forward_backward(method='FISTA')
         param = {'x0': x0, 'solver': solver}
         param['atol'] = 1e-5
-        param['verbosity'] = 'none'
+        param['verbosity'] = 'NONE'
 
         # L2-norm prox and dummy gradient.
         f1 = functions.norm_l2(y=y)
@@ -159,7 +159,7 @@ class FunctionsTestCase(unittest.TestCase):
         solver = solvers.forward_backward(method='ISTA', gamma=.8, lambda_=.5)
         param = {'x0': x0, 'solver': solver}
         param['atol'] = 1e-5
-        param['verbosity'] = 'none'
+        param['verbosity'] = 'NONE'
 
         # L2-norm prox and dummy gradient.
         f1 = functions.norm_l2(y=y)
@@ -186,7 +186,7 @@ class FunctionsTestCase(unittest.TestCase):
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
         solver = solvers.douglas_rachford()
-        param = {'x0': x0, 'solver': solver, 'verbosity': 'none'}
+        param = {'x0': x0, 'solver': solver, 'verbosity': 'NONE'}
 
         # L2-norm prox and dummy prox.
         f1 = functions.norm_l2(y=y)

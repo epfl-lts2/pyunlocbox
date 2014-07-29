@@ -106,9 +106,9 @@ class func(object):
         function. Default is 1e-3.
     maxit : int, optional
         The maximum number of iterations. Default is 200.
-    verbosity : {'none', 'low', 'high'}, optional
-        The log level : ``'none'`` for no log, ``'low'`` for resume at
-        convergence, ``'high'`` for info at all steps. Default is ``'low'``.
+    verbosity : {'NONE', 'LOW', 'HIGH'}, optional
+        The log level : ``'NONE'`` for no log, ``'LOW'`` for resume at
+        convergence, ``'HIGH'`` for info at all steps. Default is ``'LOW'``.
 
     Examples
     --------
@@ -131,7 +131,7 @@ class func(object):
     """
 
     def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
-                 maxit=200, verbosity='none'):
+                 maxit=200, verbosity='NONE'):
 
         self.y = np.array(y)
 
@@ -161,7 +161,7 @@ class func(object):
         self.tol = tol
         self.maxit = maxit
 
-        if verbosity not in ['none', 'low', 'high']:
+        if verbosity not in ['NONE', 'LOW', 'HIGH']:
             raise ValueError('Verbosity should be either none, low or high.')
         else:
             self.verbosity = verbosity
@@ -186,7 +186,7 @@ class func(object):
         function to evaluate the objective function.
         """
         sol = self._eval(np.array(x))
-        if self.verbosity in ['low', 'high']:
+        if self.verbosity in ['LOW', 'HIGH']:
             print('    %s evaluation : %e' % (self.__class__.__name__, sol))
         return sol
 
@@ -551,7 +551,7 @@ class proj_b2(proj):
                 res = self.A(sol) - self.y
                 norm_res = np.linalg.norm(res, 2)
 
-                if self.verbosity is 'high':
+                if self.verbosity is 'HIGH':
                     print('    proj_b2 iteration %3d : epsilon = %.2e, '
                           '||y-A(z)||_2 = %.2e'
                           % (niter, self.epsilon, norm_res))
@@ -580,7 +580,7 @@ class proj_b2(proj):
                 elif niter >= self.maxit:
                     crit = 'MAX_IT'
 
-            if self.verbosity in ['low', 'high']:
+            if self.verbosity in ['LOW', 'HIGH']:
                 norm_res = np.linalg.norm(self.y - self.A(sol), 2)
                 print('    proj_b2 : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
                       '%s, niter = %d' % (self.epsilon, norm_res, crit, niter))

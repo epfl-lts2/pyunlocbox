@@ -67,7 +67,7 @@ class FunctionsTestCase(unittest.TestCase):
         We test the three methods : eval, grad and prox.
         First with default class properties, then custom ones.
         """
-        f = functions.norm_l2(lambda_=3, verbosity='none')
+        f = functions.norm_l2(lambda_=3, verbosity='NONE')
         self.assertEqual(f.eval([10, 0]), 300)
         self.assertEqual(f.eval(np.array([-10, 0])), 300)
         nptest.assert_allclose(f.grad([10, 0]), [60, 0])
@@ -78,11 +78,11 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(f.grad([3, -4]), [18, -24])
         self.assertEqual(f.prox(0, 1), 0)
         self.assertEqual(f.prox(7, 1./6), 3.5)
-        f = functions.norm_l2(lambda_=4, verbosity='none')
+        f = functions.norm_l2(lambda_=4, verbosity='NONE')
         nptest.assert_allclose(f.prox([7, -22], .125), [3.5, -11])
 
         f = functions.norm_l2(lambda_=1, A=lambda x: 2*x, At=lambda x: x/2,
-                              y=[8, 12], verbosity='none')
+                              y=[8, 12], verbosity='NONE')
         self.assertEqual(f.eval([4, 6]), 0)
         self.assertEqual(f.eval([5, -2]), 256+4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
@@ -92,7 +92,7 @@ class FunctionsTestCase(unittest.TestCase):
         f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4])/np.sqrt(2),
                               A=lambda x: np.fft.fft(x)/np.sqrt(x.size),
                               At=lambda x: np.fft.ifft(x)*np.sqrt(x.size),
-                              verbosity='none')
+                              verbosity='NONE')
 #        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
 #        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
         nptest.assert_allclose(f.grad([2, 4]), 0)
@@ -124,7 +124,7 @@ class FunctionsTestCase(unittest.TestCase):
         We test the two methods : eval and prox.
         First with default class properties, then custom ones.
         """
-        f = functions.norm_l1(lambda_=3, verbosity='none')
+        f = functions.norm_l1(lambda_=3, verbosity='NONE')
         self.assertEqual(f.eval([10, 0]), 30)
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
         self.assertEqual(f.eval([3, 4]), 21)

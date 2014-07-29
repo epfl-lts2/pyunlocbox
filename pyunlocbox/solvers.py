@@ -17,7 +17,7 @@ from pyunlocbox.functions import dummy
 
 
 def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
-          convergence_speed=float('-inf'), maxit=200, verbosity='low'):
+          convergence_speed=float('-inf'), maxit=200, verbosity='LOW'):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
@@ -61,9 +61,9 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         minus infinity (i.e. the objective function may even increase).
     maxit : int, optional
         The maximum number of iterations. Default is 200.
-    verbosity : {'low', 'high', 'none'}, optional
-        The log level : ``'none'`` for no log, ``'low'`` for resume at
-        convergence, ``'high'`` for info at all steps. Default is ``'low'``.
+    verbosity : {'LOW', 'HIGH', 'NONE'}, optional
+        The log level : ``'NONE'`` for no log, ``'LOW'`` for resume at
+        convergence, ``'HIGH'`` for info at all steps. Default is ``'LOW'``.
 
     Returns
     -------
@@ -107,7 +107,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
 
     if rtol < 0 or maxit < 0:
         raise ValueError('Parameters should be positive numbers.')
-    if verbosity not in ['none', 'low', 'high']:
+    if verbosity not in ['NONE', 'LOW', 'HIGH']:
         raise ValueError('Verbosity should be either none, low or high.')
 
     # Add a second dummy convex function if only one function is provided.
@@ -115,7 +115,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         raise ValueError('At least 1 convex function should be provided.')
     elif len(functions) == 1:
         functions.append(dummy())
-        if verbosity in ['low', 'high']:
+        if verbosity in ['LOW', 'HIGH']:
             print('INFO: Dummy objective function added.')
 
     # Choose a solver if none provided.
@@ -133,7 +133,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         elif len(functions) > 2:
             raise NotImplementedError('No solver able to minimize more than 2 '
                                       'functions for now.')
-        if verbosity in ['low', 'high']:
+        if verbosity in ['LOW', 'HIGH']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
     tstart = time.time()
@@ -148,7 +148,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
 
         niter += 1
 
-        if verbosity is 'high':
+        if verbosity is 'HIGH':
             print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
 
         # Solver iterative algorithm.
@@ -161,7 +161,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         # Prevent division by 0.
         div = current
         if div == 0:
-            if verbosity in ['low', 'high']:
+            if verbosity in ['LOW', 'HIGH']:
                 print('WARNING: objective function is equal to 0 !')
             if last != 0:
                 div = last
@@ -180,14 +180,14 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         elif last - current < convergence_speed:
             crit = 'CONV_SPEED'
 
-        if verbosity is 'high':
+        if verbosity is 'HIGH':
             print('    objective = %.2e, relative = %.2e'
                   % (current, relative))
 
     # Solver specific post-processing.
     solver.post(verbosity)
 
-    if verbosity in ['low', 'high']:
+    if verbosity in ['LOW', 'HIGH']:
         print('Solution found after %d iterations :' % (niter,))
         print('    objective function f(sol) = %e' % (current,))
         print('    last relative objective improvement : %e' % (relative,))
@@ -340,7 +340,7 @@ class forward_backward(solver):
 
     def _pre(self, functions, x0, verbosity):
 
-        if verbosity is 'high':
+        if verbosity is 'HIGH':
             print('INFO: Forward-backward method : %s' % (self.method,))
 
         if self.lambda_ < 0 or self.lambda_ > 1:
