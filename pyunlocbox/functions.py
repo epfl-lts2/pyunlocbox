@@ -489,7 +489,7 @@ class proj_b2(proj):
         if self.tight:
             tmp1 = self.A(x) - self.y
             tmp2 = tmp1 * min(1, self.epsilon/np.linalg.norm(tmp1))  # Scaling.
-            sol = x + 1./self.nu * self.At(tmp2 - tmp1)
+            sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'
             u = np.nan
 
@@ -520,7 +520,7 @@ class proj_b2(proj):
                 niter += 1
 
                 # Residual.
-                res = self.y - self.A(sol)
+                res = self.A(sol) - self.y
                 norm_res = np.linalg.norm(res, 2)
 
                 if self.verbosity is 'high':
@@ -529,7 +529,8 @@ class proj_b2(proj):
                           % (niter, self.epsilon, norm_res))
 
                 # Scaling for projection.
-                norm_proj = np.linalg.norm(res + u * self.nu, 2)
+                res += u * self.nu
+                norm_proj = np.linalg.norm(res, 2)
 
                 ratio = min(1, self.epsilon/norm_proj)
                 v = 1. / self.nu * (res - res*ratio)
