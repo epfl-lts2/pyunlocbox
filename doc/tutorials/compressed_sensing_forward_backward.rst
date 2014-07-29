@@ -131,10 +131,10 @@ Let's display the results :
 >>> _ = plt.legend(numpoints=1)
 >>> _ = plt.xlabel('Signal dimension number')
 >>> _ = plt.ylabel('Signal value')
->>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_results.pdf')
->>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_results.png')
+>>> _ = plt.savefig('doc/tutorials/cs_fb_results.pdf')
+>>> _ = plt.savefig('doc/tutorials/cs_fb_results.png')
 
-.. image:: compressed_sensing_1_results.*
+.. image:: cs_fb_results.*
 
 The above figure shows a good reconstruction which is both sparse (thanks to
 the L1-norm objective) and close to the measurements (thanks to the L2-norm
@@ -152,7 +152,7 @@ Let's display the convergence of the two objective functions :
 >>> _ = plt.legend()
 >>> _ = plt.xlabel('Iteration number')
 >>> _ = plt.ylabel('Objective function value')
->>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_convergence.pdf')
->>> _ = plt.savefig('doc/tutorials/compressed_sensing_1_convergence.png')
+>>> _ = plt.savefig('doc/tutorials/cs_fb_convergence.pdf')
+>>> _ = plt.savefig('doc/tutorials/cs_fb_convergence.png')
 
-.. image:: compressed_sensing_1_convergence.*
+.. image:: cs_fb_convergence.*
