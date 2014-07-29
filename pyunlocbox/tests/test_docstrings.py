@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Test suite for the documentation of the pyunlocbox package.
+Test suite for the docstrings of the pyunlocbox package.
 """
 
 import doctest
@@ -17,14 +17,6 @@ files = []
 base = os.path.join(os.path.dirname(__file__), os.path.pardir)
 base = os.path.abspath(base)
 files.extend(glob.glob(os.path.join(base, '*.py')))
-files.extend(glob.glob(os.path.join(base, '*', '*.py')))
-
-# Test examples in documentation.
-base = os.path.join(os.path.dirname(__file__), os.path.pardir)
-base = os.path.join(base, os.path.pardir, 'doc')
-base = os.path.abspath(base)
-files.extend(glob.glob(os.path.join(base, '*.rst')))
-files.extend(glob.glob(os.path.join(base, '*', '*.rst')))
 
 assert files
 
