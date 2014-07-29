@@ -98,7 +98,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     >>> import pyunlocbox
     >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
     >>> ret = pyunlocbox.solvers.solve([f1], [0, 0, 0, 0], absTol=1e-5)
-    INFO: Added dummy objective function.
+    INFO: Dummy objective function added.
     INFO: Selected solver : forward_backward
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
