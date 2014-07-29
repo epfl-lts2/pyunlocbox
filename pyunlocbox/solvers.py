@@ -425,6 +425,6 @@ class douglas_rachford(solver):
         self.sol = np.array(x0)
 
     def _algo(self):
-        tmp = self.f1.prox(2 * self.sol * - self.yn, self.gamma)
+        tmp = self.f1.prox(2 * self.sol - self.yn, self.gamma)
         self.yn += self.lambda_ * (tmp - self.sol)
         self.sol = self.f2.prox(self.yn, self.gamma)
