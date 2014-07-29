@@ -405,6 +405,24 @@ class douglas_rachford(solver):
     -----
     This algorithm requires the two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers
+    >>> import numpy as np
+    >>> y = [4, 5, 6, 7]
+    >>> x0 = np.zeros(len(y))
+    >>> f1 = functions.norm_l2(y=y)
+    >>> f2 = functions.dummy()
+    >>> solver = solvers.douglas_rachford(lambda_=1, gamma=1)
+    >>> ret = solvers.solve([f1, f2], x0, solver, absTol=1e-5)
+    Solution found after 8 iterations :
+        objective function f(sol) = 2.927052e-06
+        last relative objective improvement : 8.000000e+00
+        stopping criterion : ABS_TOL
+    >>> ret['sol']
+    array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
+
     """
 
     def __init__(self, lambda_=1, *args, **kwargs):
