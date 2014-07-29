@@ -343,9 +343,9 @@ class forward_backward(solver):
         # ISTA and FISTA initialization.
         self.sol = np.array(x0)
 
-        if self.method == 'ISTA':
+        if self.method is 'ISTA':
             self._algo = self._ista
-        elif self.method == 'FISTA':
+        elif self.method is 'FISTA':
             self._algo = self._fista
             self.un = np.array(x0)
             self.tn = 1.
@@ -407,23 +407,22 @@ class douglas_rachford(solver):
     """
 
     def __init__(self, lambda_=1, *args, **kwargs):
-
         super(douglas_rachford, self).__init__(*args, **kwargs)
-
-        if lambda_ < 0 or lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
         self.lambda_ = lambda_
 
     def _pre(self, functions, x0, verbosity):
 
-        self.yn = np.array(x0)
-        self.sol = np.array(x0)
+        if self.lambda_ < 0 or self.lambda_ > 1:
+            raise ValueError('Lambda is bounded by 0 and 1.')
 
         if len(functions) != 2:
             raise ValueError('Douglas-Rachford requires two convex functions.')
 
         self.f1 = functions[0]
         self.f2 = functions[1]
+
+        self.yn = np.array(x0)
+        self.sol = np.array(x0)
 
     def _algo(self):
         tmp = self.f1.prox(2 * self.sol * - self.yn, self.gamma)
