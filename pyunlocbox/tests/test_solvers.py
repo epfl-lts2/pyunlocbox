@@ -21,7 +21,7 @@ class FunctionsTestCase(unittest.TestCase):
 
     def test_forward_backward(self):
         """
-        Test forward-backward solver with L2-norm and dummy functions.
+        Test forward-backward solver with L1-norm, L2-norm and dummy functions.
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
@@ -55,6 +55,38 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
         self.assertEqual(ret['crit'], 'MAX_IT')
+
+        # L1-norm prox and dummy gradient.
+        f1 = functions.norm_l1(y=y)
+        f2 = functions.dummy()
+        sol = y
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['niter'], 6)
+
+        # Dummy prox and L1-norm gradient. As L1-norm possesses no gradient,
+        # the algorithm exchanges the functions : exact same solution.
+        f1 = functions.dummy()
+        f2 = functions.norm_l1(y=y)
+        sol = y
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['niter'], 6)
+
+        # L1-norm prox and L1-norm gradient. L1-norm possesses no gradient.
+        f1 = functions.norm_l1(y=y)
+        f2 = functions.norm_l1(y=y)
+        self.assertRaises(ValueError, solvers.solve, [f1, f2], **param)
+
+        # L1-norm prox and L2-norm gradient.
+        f1 = functions.norm_l1(y=y, lambda_=1.0)
+        f2 = functions.norm_l2(y=y, lambda_=0.8)
+        sol = y
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'ABS_TOL')
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
