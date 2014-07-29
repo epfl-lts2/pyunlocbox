@@ -121,6 +121,32 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(ret['crit'], 'ABS_TOL')
         self.assertEqual(ret['niter'], 21)
 
+    def test_douglas_rachford(self):
+        """
+        Test douglas-rachford solver with L1-norm, L2-norm and dummy functions.
+        """
+        y = [4, 5, 6, 7]
+        x0 = np.zeros(len(y))
+        solver = solvers.douglas_rachford()
+        param = {'x0': x0, 'solver': solver, 'verbosity': 'none'}
+
+        # L2-norm prox and dummy prox.
+        f1 = functions.norm_l2(y=y)
+        f2 = functions.dummy()
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['crit'], 'REL_TOL')
+        self.assertEqual(ret['niter'], 35)
+
+        # L2-norm prox and L1-norm prox.
+        f1 = functions.norm_l2(y=y)
+        f2 = functions.norm_l1(y=y)
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['crit'], 'REL_TOL')
+        self.assertEqual(ret['niter'], 4)
+
+
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
 
 
