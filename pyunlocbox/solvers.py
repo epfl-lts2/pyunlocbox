@@ -114,20 +114,20 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
     if verbosity not in ['none', 'low', 'high']:
         raise ValueError('Verbosity should be either none, low or high.')
 
+    # Add a second dummy convex function if only one function is provided.
+    if len(functions) < 1:
+        raise ValueError('At least 1 convex function should be provided.')
+    elif len(functions) is 1:
+        functions.append(dummy())
+        if verbosity in ['low', 'high']:
+            print('INFO: Dummy objective function added.')
+    elif len(functions) > 2:
+        raise NotImplementedError('No solver able to minimize more than 2 '
+                                  'functions for now.')
+
     # Choose a solver if none provided.
     if not solver:
-        if len(functions) < 1:
-            raise ValueError('At least 1 convex function should be passed.')
-        elif len(functions) == 1:
-            functions.append(dummy())
-            solver = forward_backward()
-            if verbosity in ['low', 'high']:
-                print('INFO: Added dummy objective function.')
-        elif len(functions) == 2:
-            solver = forward_backward()
-        else:
-            raise NotImplementedError('No solver able to minimize more than 2 '
-                                      'functions for now.')
+        solver = forward_backward()
         if verbosity in ['low', 'high']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
