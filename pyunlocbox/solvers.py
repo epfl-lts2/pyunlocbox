@@ -49,7 +49,7 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         function objects and their implemented methods.
     relTol : float, optional
         The convergence (relative tolerance) stopping criterion. The algorithm
-        stops if :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
+        stops if :math:`\left|\frac{n(k-1)-n(k)}{n(k)}\right|<reltol` where
         :math:`n(k)=f(x)` is the objective function at iteration :math:`k`.
         Default is :math:`10^{-3}`.
     absTol : float, optional
@@ -154,15 +154,16 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         last = np.sum(objective[-2])
 
         # Prevent division by 0.
-        eps = 0.0
-        if current == 0:
+        div = current
+        if div == 0:
             if verbosity in ['low', 'high']:
-                print('WARNING: objective function is equal to 0 ! '
-                      'Adding some epsilon to continue.')
-            # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
-            eps = np.spacing(1.0)
+                print('WARNING: objective function is equal to 0 !')
+            if last != 0:
+                div = last
+            else:
+                div = 1.0  # Result will be zero anyway.
 
-        relative = np.abs((current - last) / (current + eps))
+        relative = np.abs((last - current) / div)
 
         # Verify stopping criteria.
         if current < absTol:
