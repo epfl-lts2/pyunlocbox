@@ -25,7 +25,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
-        solver = solvers.forward_backward(method='FISTA', lambda_=1, gamma=1)
+        solver = solvers.forward_backward(method='FISTA')
         param = {'x0': x0, 'solver': solver}
         param['absTol'] = 1e-5
         param['verbosity'] = 'none'
@@ -41,12 +41,12 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Dummy prox and L2-norm gradient.
         f1 = functions.dummy()
-        f2 = functions.norm_l2(y=y)
-        sol = y
+        f2 = functions.norm_l2(y=y, lambda_=0.6)
+        sol = [3.99867319, 4.99834148, 5.99800978, 6.99767808]
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
         self.assertEqual(ret['crit'], 'ABS_TOL')
-        self.assertEqual(ret['niter'], 1)
+        self.assertEqual(ret['niter'], 10)
 
         # L2-norm prox and L2-norm gradient.
         f1 = functions.norm_l2(y=y)

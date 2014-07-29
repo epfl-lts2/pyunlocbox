@@ -274,7 +274,7 @@ class dummy(func):
         return 0
 
     def _prox(self, x, T):
-        return x / 2.
+        return x
 
     def _grad(self, x):
         return np.zeros(np.shape(x))
