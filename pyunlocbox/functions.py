@@ -541,7 +541,7 @@ class proj_b2(proj):
             # Check if we are already in the L2-ball.
             norm_res = np.linalg.norm(self.y - self.A(sol), 2)
             if norm_res <= epsilon_up:
-                crit = 'IN_BALL'
+                crit = 'INBALL'
 
             # Projection onto the L2-ball
             while not crit:
@@ -579,7 +579,7 @@ class proj_b2(proj):
                 if norm_res >= epsilon_low and norm_res <= epsilon_up:
                     crit = 'TOL'
                 elif niter >= self.maxit:
-                    crit = 'MAX_IT'
+                    crit = 'MAXIT'
 
             if self.verbosity in ['LOW', 'HIGH']:
                 norm_res = np.linalg.norm(self.y - self.A(sol), 2)
