@@ -10,11 +10,10 @@ python:
   - "3.4"
 #  - "pypy" fails to install numpy
 
-# Install dependencies
-# Need no more than numpy and matplotlib which are expressed dependencies in
-# the package. Matplotlib however fails to automatically install one of its
-# dependency which is thus expressed in our requirements.txt (tornado).
-install: pip install -r requirements.txt
+install:
+    # Backport of new unittest features for Python 2.6.
+    - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
+    # Real dependencies (numpy and matplotlib) expressed in the package.
+    - python setup.py install
 
-# Run tests.
 script: python setup.py test
