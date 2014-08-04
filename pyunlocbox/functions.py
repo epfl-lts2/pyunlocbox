@@ -252,7 +252,10 @@ class func(object):
         Parameters
         ----------
         x : array_like
-            The evaluation point.
+            The evaluation point. Not really needed, but this function calls
+            the methods of the object to test if they can properly execute
+            without raising an exception. Therefore it needs some evaluation
+            point with a consistent size.
 
         Returns
         -------
