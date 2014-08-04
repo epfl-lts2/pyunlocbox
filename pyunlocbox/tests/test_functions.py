@@ -129,6 +129,39 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval([3, 4]), 21)
         self.assertEqual(f.eval(np.array([-3, 4])), 21)
 
+    def test_proj_b2(self):
+        """
+        Test the projection on the L2-ball.
+        ISTA and FISTA algorithms for tight and non-tight frames.
+        """
+
+        tol = 1e-7
+
+        # Tight frame.
+        y = [0, 2]
+        x = [5, 4]
+        f = functions.proj_b2(y=y, epsilon=tol)
+        nptest.assert_allclose(f.prox(x, 0), y, atol=tol)
+
+        # Always evaluate to zero.
+        self.assertEqual(f.eval(x), 0)
+
+        # Non-tight frame : compare FISTA and ISTA results.
+        nx = 30
+        ny = 15
+        np.random.seed(1)
+        x = np.random.standard_normal(nx)
+        y = np.random.standard_normal(ny)
+        A = np.random.standard_normal((ny, nx))
+        nu = np.linalg.norm(A, ord=2)**2
+        f = functions.proj_b2(y=y, A=A, nu=nu, tight=False, method='FISTA',
+                              epsilon=5, tol=tol/10.)
+        sol_fista = f.prox(x, 0)
+        f.method = 'ISTA'
+        sol_ista = f.prox(x, 0)
+        err = np.linalg.norm(sol_fista - sol_ista) / np.linalg.norm(sol_fista)
+        self.assertLess(err, tol)
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
 
