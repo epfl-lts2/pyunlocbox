@@ -27,11 +27,13 @@ Features
 * Solvers
 
   * Forward-backward splitting algorithm
+  * Douglas-Rachford splitting algorithm
 
 * Proximal operators
 
   * L1-norm
   * L2-norm
+  * Projection on the L2-ball
 
 Installation
 ------------

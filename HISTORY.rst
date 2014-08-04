@@ -4,11 +4,29 @@
 History
 =======
 
+0.2.0 (2014-08-04)
+------------------
+
+Second usable version, available on GitHub and released on PyPI.
+Still experimental.
+
+New features :
+
+* Douglas-Rachford splitting algorithm
+* Projection on the L2-ball for tight and non tight frames
+* Compressed sensing tutorial using L2-ball, L2-norm and Douglas-Rachford
+* Automatic solver selection
+
+Infrastructure :
+
+* Unit tests for all functions and solvers
+* Continuous integration testing on Python 2.6, 2.7, 3.2, 3.3 and 3.4
+
 0.1.0 (2014-06-08)
 ------------------
 
-First usable version, available on GitHub and released on PyPI. Still
-experimental.
+First usable version, available on GitHub and released on PyPI.
+Still experimental.
 
 Features :
 

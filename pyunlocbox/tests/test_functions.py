@@ -16,6 +16,7 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+
 class FunctionsTestCase(unittest.TestCase):
 
     def setUp(self):
