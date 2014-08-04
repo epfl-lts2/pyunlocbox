@@ -1,10 +1,10 @@
 # Required for usage.
 numpy
-matplotlib
 
 # Required to build documentation.
 sphinx
 numpydoc
+matplotlib
 
 # Required for packaging.
 wheel

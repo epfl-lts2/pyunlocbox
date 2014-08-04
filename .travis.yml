@@ -13,7 +13,7 @@ python:
 install:
     # Backport of new unittest features for Python 2.6.
     - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
-    # Real dependencies (numpy and matplotlib) expressed in the package.
+    # Usage dependencies expressed in the package.
     - python setup.py install
 
 script: python setup.py test

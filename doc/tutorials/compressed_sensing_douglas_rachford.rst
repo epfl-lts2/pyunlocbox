@@ -85,20 +85,23 @@ Solution found after 35 iterations :
 
 Let's display the results :
 
->>> import matplotlib, sys
->>> cmd_backend = 'matplotlib.use("AGG")'
->>> _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
->>> import matplotlib.pyplot as plt
->>> _ = plt.figure()
->>> _ = plt.plot(x, 'o', label='Original')
->>> _ = plt.plot(ret['sol'], 'xr', label='Reconstructed')
->>> _ = plt.grid(True)
->>> _ = plt.title('Achieved reconstruction')
->>> _ = plt.legend(numpoints=1)
->>> _ = plt.xlabel('Signal dimension number')
->>> _ = plt.ylabel('Signal value')
->>> _ = plt.savefig('doc/tutorials/cs_dr_results.pdf')
->>> _ = plt.savefig('doc/tutorials/cs_dr_results.png')
+>>> try:
+...     import matplotlib, sys
+...     cmd_backend = 'matplotlib.use("AGG")'
+...     _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
+...     import matplotlib.pyplot as plt
+...     _ = plt.figure()
+...     _ = plt.plot(x, 'o', label='Original')
+...     _ = plt.plot(ret['sol'], 'xr', label='Reconstructed')
+...     _ = plt.grid(True)
+...     _ = plt.title('Achieved reconstruction')
+...     _ = plt.legend(numpoints=1)
+...     _ = plt.xlabel('Signal dimension number')
+...     _ = plt.ylabel('Signal value')
+...     _ = plt.savefig('doc/tutorials/cs_dr_results.pdf')
+...     _ = plt.savefig('doc/tutorials/cs_dr_results.png')
+... except:
+...     pass
 
 .. image:: cs_dr_results.*
 
@@ -108,15 +111,18 @@ constraint).
 
 Let's display the convergence of the objective function :
 
->>> objective = np.array(ret['objective'])
->>> _ = plt.figure()
->>> _ = plt.semilogy(objective[:, 0], label='L1-norm objective')
->>> _ = plt.grid(True)
->>> _ = plt.title('Convergence')
->>> _ = plt.legend()
->>> _ = plt.xlabel('Iteration number')
->>> _ = plt.ylabel('Objective function value')
->>> _ = plt.savefig('doc/tutorials/cs_dr_convergence.pdf')
->>> _ = plt.savefig('doc/tutorials/cs_dr_convergence.png')
+>>> try:
+...     objective = np.array(ret['objective'])
+...     _ = plt.figure()
+...     _ = plt.semilogy(objective[:, 0], label='L1-norm objective')
+...     _ = plt.grid(True)
+...     _ = plt.title('Convergence')
+...     _ = plt.legend()
+...     _ = plt.xlabel('Iteration number')
+...     _ = plt.ylabel('Objective function value')
+...     _ = plt.savefig('doc/tutorials/cs_dr_convergence.pdf')
+...     _ = plt.savefig('doc/tutorials/cs_dr_convergence.png')
+... except:
+...     pass
 
 .. image:: cs_dr_convergence.*
