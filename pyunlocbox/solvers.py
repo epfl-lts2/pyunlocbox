@@ -81,9 +81,9 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         The final evaluation of the objective function :math:`f(x)`.
     crit : {'MAX_IT', 'ABS_TOL', 'REL_TOL', 'CONV_SPEED'}
         The used stopping criterion. 'MAX_IT' if the maximum number of
-        iterations `maxIter` is reached, 'ABS_TOL' if the objective function
-        value is smaller than `absTol`, 'REL_TOL' if the relative objective
-        function improvement was smaller than `relTol` (i.e. the algorithm
+        iterations `maxit` is reached, 'ABS_TOL' if the objective function
+        value is smaller than `atol`, 'REL_TOL' if the relative objective
+        function improvement was smaller than `rtol` (i.e. the algorithm
         converged), 'CONV_SPEED' if the objective function improvement is
         smaller than `convergence_speed`.
     rel : float
