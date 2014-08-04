@@ -81,7 +81,7 @@ follow :
 Solution found after 35 iterations :
     objective function f(sol) = 8.508725e+00
     last relative objective improvement : 6.016694e-05
-    stopping criterion : REL_TOL
+    stopping criterion : RTOL
 
 Let's display the results :
 

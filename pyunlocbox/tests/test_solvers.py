@@ -101,7 +101,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = [3.99996922, 4.99996153, 5.99995383, 6.99994614]
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 10)
 
         # Dummy prox and L2-norm gradient.
@@ -110,7 +110,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = [3.99867319, 4.99834148, 5.99800978, 6.99767808]
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 10)
 
         # L2-norm prox and L2-norm gradient.
@@ -119,7 +119,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = [3.99904855, 4.99881069, 5.99857282, 6.99833496]
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'MAX_IT')
+        self.assertEqual(ret['crit'], 'MAXIT')
 
         # L1-norm prox and dummy gradient.
         f1 = functions.norm_l1(y=y)
@@ -127,7 +127,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = y
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 6)
 
         # Dummy prox and L1-norm gradient. As L1-norm possesses no gradient,
@@ -137,7 +137,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = y
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 6)
 
         # L1-norm prox and L1-norm gradient. L1-norm possesses no gradient.
@@ -151,7 +151,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = y
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 4)
 
     def test_forward_backward_ista(self):
@@ -173,7 +173,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = [3.99915094, 4.99893867, 5.9987264, 6.99851414]
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 23)
 
         # L1-norm prox and L2-norm gradient.
@@ -182,7 +182,7 @@ class FunctionsTestCase(unittest.TestCase):
         sol = [3.99999825, 4.9999979, 5.99999756, 6.99999723]
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], sol)
-        self.assertEqual(ret['crit'], 'ABS_TOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 21)
 
     def test_douglas_rachford(self):
@@ -199,7 +199,7 @@ class FunctionsTestCase(unittest.TestCase):
         f2 = functions.dummy()
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], y)
-        self.assertEqual(ret['crit'], 'REL_TOL')
+        self.assertEqual(ret['crit'], 'RTOL')
         self.assertEqual(ret['niter'], 35)
 
         # L2-norm prox and L1-norm prox.
@@ -207,7 +207,7 @@ class FunctionsTestCase(unittest.TestCase):
         f2 = functions.norm_l1(y=y)
         ret = solvers.solve([f1, f2], **param)
         nptest.assert_allclose(ret['sol'], y)
-        self.assertEqual(ret['crit'], 'REL_TOL')
+        self.assertEqual(ret['crit'], 'RTOL')
         self.assertEqual(ret['niter'], 4)
 
 

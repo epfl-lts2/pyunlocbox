@@ -94,7 +94,7 @@ Iteration 10 of forward_backward :
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
-    stopping criterion : ABS_TOL
+    stopping criterion : ATOL
 
 The solving function returns several values, one is the found solution :
 

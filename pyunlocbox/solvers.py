@@ -79,12 +79,12 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         The execution time in seconds.
     eval : float
         The final evaluation of the objective function :math:`f(x)`.
-    crit : {'MAX_IT', 'ABS_TOL', 'REL_TOL', 'CONV_SPEED'}
-        The used stopping criterion. 'MAX_IT' if the maximum number of
-        iterations `maxit` is reached, 'ABS_TOL' if the objective function
-        value is smaller than `atol`, 'REL_TOL' if the relative objective
+    crit : {'MAXIT', 'ATOL', 'RTOL', 'CONVSPEED'}
+        The used stopping criterion. 'MAXIT' if the maximum number of
+        iterations `maxit` is reached, 'ATOL' if the objective function
+        value is smaller than `atol`, 'RTOL' if the relative objective
         function improvement was smaller than `rtol` (i.e. the algorithm
-        converged), 'CONV_SPEED' if the objective function improvement is
+        converged), 'CONVSPEED' if the objective function improvement is
         smaller than `convergence_speed`.
     rel : float
         The relative objective improvement at convergence.
@@ -101,7 +101,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
-        stopping criterion : ABS_TOL
+        stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
@@ -183,13 +183,13 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
 
         # Verify stopping criteria.
         if current < atol:
-            crit = 'ABS_TOL'
+            crit = 'ATOL'
         elif relative < rtol:
-            crit = 'REL_TOL'
+            crit = 'RTOL'
         elif niter >= maxit:
-            crit = 'MAX_IT'
+            crit = 'MAXIT'
         elif last - current < convergence_speed:
-            crit = 'CONV_SPEED'
+            crit = 'CONVSPEED'
 
         if verbosity in ['HIGH', 'ALL']:
             print('    objective = %.2e, relative = %.2e'
@@ -342,7 +342,7 @@ class forward_backward(solver):
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
-        stopping criterion : ABS_TOL
+        stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
@@ -432,7 +432,7 @@ class douglas_rachford(solver):
     Solution found after 8 iterations :
         objective function f(sol) = 2.927052e-06
         last relative objective improvement : 8.000000e+00
-        stopping criterion : ABS_TOL
+        stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
 

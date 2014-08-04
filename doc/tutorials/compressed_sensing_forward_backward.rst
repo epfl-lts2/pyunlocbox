@@ -107,7 +107,7 @@ follow :
 Solution found after 176 iterations :
     objective function f(sol) = 8.221302e+00
     last relative objective improvement : 8.363264e-05
-    stopping criterion : REL_TOL
+    stopping criterion : RTOL
 
 .. note:: A complete description of the parameters, their default values and
     the returned values is given by the solving function

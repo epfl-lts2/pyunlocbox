@@ -31,7 +31,7 @@ by a call to the solving function.
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
-    stopping criterion : ABS_TOL
+    stopping criterion : ATOL
 >>> ret['sol']
 array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
