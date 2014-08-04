@@ -106,9 +106,6 @@ class func(object):
         function. Default is 1e-3.
     maxit : int, optional
         The maximum number of iterations. Default is 200.
-    verbosity : {'NONE', 'LOW', 'HIGH'}, optional
-        The log level : ``'NONE'`` for no log, ``'LOW'`` for resume at
-        convergence, ``'HIGH'`` for info at all steps. Default is ``'LOW'``.
 
     Examples
     --------
@@ -131,7 +128,7 @@ class func(object):
     """
 
     def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
-                 maxit=200, verbosity='NONE'):
+                 maxit=200):
 
         self.y = np.array(y)
 
@@ -161,10 +158,8 @@ class func(object):
         self.tol = tol
         self.maxit = maxit
 
-        if verbosity not in ['NONE', 'LOW', 'HIGH']:
-            raise ValueError('Verbosity should be either none, low or high.')
-        else:
-            self.verbosity = verbosity
+        # Should be initialized if called alone, updated by solve().
+        self.verbosity = 'NONE'
 
     def eval(self, x):
         r"""
@@ -262,6 +257,8 @@ class func(object):
         cap : list of string
             A list of capabilities ('EVAL', 'GRAD', 'PROX').
         """
+        tmp = self.verbosity
+        self.verbosity = 'NONE'
         cap = ['EVAL', 'GRAD', 'PROX']
         try:
             self.eval(x)
@@ -275,6 +272,7 @@ class func(object):
             self.prox(x, 1)
         except NotImplementedError:
             cap.remove('PROX')
+        self.verbosity = tmp
         return cap
 
 

@@ -51,12 +51,7 @@ instantiated as follow, while setting the regularization parameter `tau` :
 
 >>> from pyunlocbox import functions
 >>> tau = 1.0
->>> f1 = functions.norm_l1(verbosity='NONE', lambda_=tau)
-
-.. note:: You can also pass a verbosity of ``'LOW'`` or ``'HIGH'`` if you want
-    some informations about the norm evaluation. A complete description of the
-    constructor parameters and default values is given by the L1-norm object
-    :class:`pyunlocbox.functions.norm_l1` reference documentation.
+>>> f1 = functions.norm_l1(lambda_=tau)
 
 The second objective function to minimize is defined by
 
@@ -65,13 +60,13 @@ The second objective function to minimize is defined by
 which can be expressed by the toolbox L2-norm function object. It can be
 instantiated as follow :
 
->>> f2 = functions.norm_l2(y=y, A=A, verbosity='NONE')
+>>> f2 = functions.norm_l2(y=y, A=A)
 
 or alternatively as follow :
 
 >>> A_ = lambda x: np.dot(A, x)
 >>> At_ = lambda x: np.dot(np.transpose(A), x)
->>> f3 = functions.norm_l2(y=y, A=A_, At=At_, verbosity='NONE')
+>>> f3 = functions.norm_l2(y=y, A=A_, At=At_)
 
 .. note:: In this case the forward and adjoint operators were passed as
     functions not as matrices.
@@ -87,7 +82,8 @@ A third alternative would be to define the function object by hand :
 
 Now that the two function objects to minimize (the L1-norm and the L2-norm) are
 instantiated, we can instantiate the solver object. The step size for optimal
-convergence is :math:`\frac{1}{\beta}` where :math:`\beta` is the Lipschitz constant of the gradient of `f2`, `f3`, `f4` given by:
+convergence is :math:`\frac{1}{\beta}` where :math:`\beta` is the Lipschitz
+constant of the gradient of `f2`, `f3`, `f4` given by:
 
 .. math:: \beta = 2 \cdot \|A\|_{\text{op}}^2 = 2 \cdot \lambda_{max} (A^*A).
 

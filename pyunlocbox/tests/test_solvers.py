@@ -27,8 +27,14 @@ class FunctionsTestCase(unittest.TestCase):
         x0 = np.zeros(len(y))
         param = {'x0': x0, 'verbosity': 'NONE'}
 
-        # Input parameters.
+        # Function verbosity.
         f = functions.dummy()
+        self.assertEqual(f.verbosity, 'NONE')
+        f.verbosity = 'LOW'
+        solvers.solve([f], **param)
+        self.assertEqual(f.verbosity, 'LOW')
+
+        # Input parameters.
         self.assertRaises(ValueError, solvers.solve, [f], rtol=-1, **param)
         self.assertRaises(ValueError, solvers.solve, [f], maxit=-1, **param)
         self.assertRaises(ValueError, solvers.solve, [f], x0, verbosity='??')

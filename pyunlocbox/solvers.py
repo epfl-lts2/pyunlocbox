@@ -61,9 +61,11 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         minus infinity (i.e. the objective function may even increase).
     maxit : int, optional
         The maximum number of iterations. Default is 200.
-    verbosity : {'LOW', 'HIGH', 'NONE'}, optional
+    verbosity : {'NONE', 'LOW', 'HIGH', 'ALL'}, optional
         The log level : ``'NONE'`` for no log, ``'LOW'`` for resume at
-        convergence, ``'HIGH'`` for info at all steps. Default is ``'LOW'``.
+        convergence, ``'HIGH'`` for info at all solving steps, ``'ALL'`` for
+        all possible outputs, including at each steps of the proximal operators
+        computation. Default is ``'LOW'``.
 
     Returns
     -------
@@ -107,15 +109,15 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
 
     if rtol < 0 or maxit < 0:
         raise ValueError('Parameters should be positive numbers.')
-    if verbosity not in ['NONE', 'LOW', 'HIGH']:
-        raise ValueError('Verbosity should be either none, low or high.')
+    if verbosity not in ['NONE', 'LOW', 'HIGH', 'ALL']:
+        raise ValueError('Verbosity should be either NONE, LOW, HIGH or ALL.')
 
     # Add a second dummy convex function if only one function is provided.
     if len(functions) < 1:
         raise ValueError('At least 1 convex function should be provided.')
     elif len(functions) == 1:
         functions.append(dummy())
-        if verbosity in ['LOW', 'HIGH']:
+        if verbosity in ['LOW', 'HIGH', 'ALL']:
             print('INFO: Dummy objective function added.')
 
     # Choose a solver if none provided.
@@ -133,8 +135,17 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         elif len(functions) > 2:
             raise NotImplementedError('No solver able to minimize more than 2 '
                                       'functions for now.')
-        if verbosity in ['LOW', 'HIGH']:
+        if verbosity in ['LOW', 'HIGH', 'ALL']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
+
+    # Set solver and functions verbosity.
+    translation = {'ALL': 'HIGH', 'HIGH': 'HIGH', 'LOW': 'LOW', 'NONE': 'NONE'}
+    solver.verbosity = translation[verbosity]
+    translation = {'ALL': 'HIGH', 'HIGH': 'LOW', 'LOW': 'NONE', 'NONE': 'NONE'}
+    functions_verbosity = []
+    for f in functions:
+        functions_verbosity.append(f.verbosity)
+        f.verbosity = translation[verbosity]
 
     tstart = time.time()
     crit = None
@@ -142,13 +153,13 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     objective = [[f.eval(x0) for f in functions]]
 
     # Solver specific initialization.
-    solver.pre(functions, x0, verbosity)
+    solver.pre(functions, x0)
 
     while not crit:
 
         niter += 1
 
-        if verbosity is 'HIGH':
+        if verbosity in ['HIGH', 'ALL']:
             print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
 
         # Solver iterative algorithm.
@@ -161,7 +172,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         # Prevent division by 0.
         div = current
         if div == 0:
-            if verbosity in ['LOW', 'HIGH']:
+            if verbosity in ['LOW', 'HIGH', 'ALL']:
                 print('WARNING: objective function is equal to 0 !')
             if last != 0:
                 div = last
@@ -180,14 +191,18 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         elif last - current < convergence_speed:
             crit = 'CONV_SPEED'
 
-        if verbosity is 'HIGH':
+        if verbosity in ['HIGH', 'ALL']:
             print('    objective = %.2e, relative = %.2e'
                   % (current, relative))
 
     # Solver specific post-processing.
-    solver.post(verbosity)
+    solver.post()
 
-    if verbosity in ['LOW', 'HIGH']:
+    # Restore verbosity for functions. In case they are called outside solve().
+    for k, f in enumerate(functions):
+        f.verbosity = functions_verbosity[k]
+
+    if verbosity in ['LOW', 'HIGH', 'ALL']:
         print('Solution found after %d iterations :' % (niter,))
         print('    objective function f(sol) = %e' % (current,))
         print('    last relative objective improvement : %e' % (relative,))
@@ -253,14 +268,14 @@ class solver(object):
         else:
             self.post_sol = lambda gamma, sol, objective, niter: sol
 
-    def pre(self, functions, x0, verbosity):
+    def pre(self, functions, x0):
         """
         Solver specific initialization. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._pre(functions, x0, verbosity)
+        self._pre(functions, x0)
 
-    def _pre(self, x0, verbosity):
+    def _pre(self, x0):
         raise NotImplementedError("Class user should define this method.")
 
     def algo(self, objective, niter):
@@ -277,14 +292,14 @@ class solver(object):
     def _algo(self):
         raise NotImplementedError("Class user should define this method.")
 
-    def post(self, verbosity):
+    def post(self):
         """
         Solver specific post-processing. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._post(verbosity)
+        self._post()
 
-    def _post(self, verbosity):
+    def _post(self):
         # Do not need to be necessarily implemented by class user.
         pass
 
@@ -338,9 +353,9 @@ class forward_backward(solver):
         self.method = method
         self.lambda_ = lambda_
 
-    def _pre(self, functions, x0, verbosity):
+    def _pre(self, functions, x0):
 
-        if verbosity is 'HIGH':
+        if self.verbosity is 'HIGH':
             print('INFO: Forward-backward method : %s' % (self.method,))
 
         if self.lambda_ < 0 or self.lambda_ > 1:
@@ -427,7 +442,7 @@ class douglas_rachford(solver):
         super(douglas_rachford, self).__init__(*args, **kwargs)
         self.lambda_ = lambda_
 
-    def _pre(self, functions, x0, verbosity):
+    def _pre(self, functions, x0):
 
         if self.lambda_ < 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
