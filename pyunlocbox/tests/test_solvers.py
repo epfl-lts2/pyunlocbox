@@ -5,25 +5,18 @@
 Test suite for the functions module of the pyunlocbox package.
 """
 
-import unittest
+import sys
 import numpy as np
 import numpy.testing as nptest
 from pyunlocbox import functions, solvers
 
-
-# Support for Python 2.6.
-if hasattr(unittest.TestCase, 'assertIsInstance'):
-    class _Compat:
-        pass
+# Use the unittest2 backport on Python 2.6 to profit from the new features.
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
 else:
-    class _Compat:
-        def assertIsInstance(self, obj, cls, msg=None):
-            if not isinstance(obj, cls):
-                standardMsg = '%s is not an instance of %r' % (repr(obj), cls)
-                self.fail(self._formatMessage(msg, standardMsg))
+    import unittest
 
-
-class FunctionsTestCase(unittest.TestCase, _Compat):
+class FunctionsTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
