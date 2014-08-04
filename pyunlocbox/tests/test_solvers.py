@@ -11,7 +11,19 @@ import numpy.testing as nptest
 from pyunlocbox import functions, solvers
 
 
-class FunctionsTestCase(unittest.TestCase):
+# Support for Python 2.6.
+if hasattr(unittest.TestCase, 'assertIsInstance'):
+    class _Compat:
+        pass
+else:
+    class _Compat:
+        def assertIsInstance(self, obj, cls, msg=None):
+            if not isinstance(obj, cls):
+                standardMsg = '%s is not an instance of %r' % (repr(obj), cls)
+                self.fail(self._formatMessage(msg, standardMsg))
+
+
+class FunctionsTestCase(unittest.TestCase, _Compat):
 
     def setUp(self):
         pass
