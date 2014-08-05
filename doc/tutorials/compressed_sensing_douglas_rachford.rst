@@ -70,7 +70,7 @@ instantiated, we can instantiate the solver object. To solve this problem, we
 use the douglas-rachford splitting algorithm which is instantiated as follow :
 
 >>> from pyunlocbox import solvers
->>> solver = solvers.douglas_rachford(gamma=1e-2)
+>>> solver = solvers.douglas_rachford(step=1e-2)
 
 After the instantiations of the functions and solver objects, the setting of a
 starting point `x0`, the problem is solved by the toolbox solving function as

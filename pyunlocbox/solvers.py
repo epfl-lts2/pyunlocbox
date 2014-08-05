@@ -234,39 +234,39 @@ class solver(object):
 
     Parameters
     ----------
-    gamma : float
+    step : float
         The step size. This parameter is upper bounded by
         :math:`\frac{1}{\beta}` where the second convex function (gradient ?)
         is :math:`\beta` Lipschitz continuous. Default is 1.
-    post_gamma : function
+    post_step : function
         User defined function to post-process the step size. This function is
         called every iteration and permits the user to alter the solver
         algorithm. The user may start with a high step size and progressively
         lower it while the algorithm runs to accelerate the convergence. The
-        function parameters are the following : `gamma` (current step size),
+        function parameters are the following : `step` (current step size),
         `sol` (current problem solution), `objective` (list of successive
         evaluations of the objective function), `niter` (current iteration
-        number). The function should return a new value for `gamma`. Default is
+        number). The function should return a new value for `step`. Default is
         to return an unchanged value.
     post_sol : function
         User defined function to post-process the problem solution. This
         function is called every iteration and permits the user to alter the
-        solver algorithm. Same parameter as :func:`post_gamma`. Default is to
+        solver algorithm. Same parameter as :func:`post_step`. Default is to
         return an unchanged value.
     """
 
-    def __init__(self, gamma=1, post_gamma=None, post_sol=None):
-        if gamma < 0:
+    def __init__(self, step=1, post_step=None, post_sol=None):
+        if step < 0:
             raise ValueError('Gamma should be a positive number.')
-        self.gamma = gamma
-        if post_gamma:
-            self.post_gamma = post_gamma
+        self.step = step
+        if post_step:
+            self.post_step = post_step
         else:
-            self.post_gamma = lambda gamma, sol, objective, niter: gamma
+            self.post_step = lambda step, sol, objective, niter: step
         if post_sol:
             self.post_sol = post_sol
         else:
-            self.post_sol = lambda gamma, sol, objective, niter: sol
+            self.post_sol = lambda step, sol, objective, niter: sol
 
     def pre(self, functions, x0):
         """
@@ -281,13 +281,13 @@ class solver(object):
     def algo(self, objective, niter):
         """
         Call the solver iterative algorithm while allowing the user to alter
-        it. This makes it possible to dynamically change the `gamma` step size
+        it. This makes it possible to dynamically change the `step` step size
         while the algorithm is running.  See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self._algo()
-        self.gamma = self.post_gamma(self.gamma, self.sol, objective, niter)
-        self.sol = self.post_sol(self.gamma, self.sol, objective, niter)
+        self.step = self.post_step(self.step, self.sol, objective, niter)
+        self.sol = self.post_sol(self.step, self.sol, objective, niter)
 
     def _algo(self):
         raise NotImplementedError("Class user should define this method.")
@@ -337,7 +337,7 @@ class forward_backward(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, gamma=1)
+    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, step=1)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
@@ -387,12 +387,12 @@ class forward_backward(solver):
                              'implement prox() and the other grad().')
 
     def _ista(self):
-        yn = self.sol - self.gamma * self.f2.grad(self.sol)
-        self.sol += self.lambda_ * (self.f1.prox(yn, self.gamma) - self.sol)
+        yn = self.sol - self.step * self.f2.grad(self.sol)
+        self.sol += self.lambda_ * (self.f1.prox(yn, self.step) - self.sol)
 
     def _fista(self):
-        xn = self.un - self.gamma * self.f2.grad(self.un)
-        xn = self.f1.prox(xn, self.gamma)
+        xn = self.un - self.step * self.f2.grad(self.un)
+        xn = self.f1.prox(xn, self.step)
         tn1 = (1. + np.sqrt(1.+4.*self.tn**2.)) / 2.
         self.un = xn + (self.tn-1) / tn1 * (xn-self.sol)
         self.tn = tn1
@@ -427,7 +427,7 @@ class douglas_rachford(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.douglas_rachford(lambda_=1, gamma=1)
+    >>> solver = solvers.douglas_rachford(lambda_=1, step=1)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 8 iterations :
         objective function f(sol) = 2.927052e-06
@@ -457,6 +457,6 @@ class douglas_rachford(solver):
         self.sol = np.array(x0)
 
     def _algo(self):
-        tmp = self.f1.prox(2 * self.sol - self.yn, self.gamma)
+        tmp = self.f1.prox(2 * self.sol - self.yn, self.step)
         self.yn += self.lambda_ * (tmp - self.sol)
-        self.sol = self.f2.prox(self.yn, self.gamma)
+        self.sol = self.f2.prox(self.yn, self.step)

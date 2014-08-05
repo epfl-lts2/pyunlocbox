@@ -90,9 +90,9 @@ constant of the gradient of `f2`, `f3`, `f4` given by:
 To solve this problem, we use the forward-backward splitting algorithm which is
 instantiated as follow :
 
->>> gamma = 0.5 / np.linalg.norm(A, ord=2)**2
+>>> step = 0.5 / np.linalg.norm(A, ord=2)**2
 >>> from pyunlocbox import solvers
->>> solver = solvers.forward_backward(method='FISTA', gamma=gamma)
+>>> solver = solvers.forward_backward(method='FISTA', step=step)
 
 .. note:: A complete description of the constructor parameters and default
     values is given by the solver object

@@ -163,12 +163,12 @@ class FunctionsTestCase(unittest.TestCase):
     def test_forward_backward_ista(self):
         """
         Test ISTA algorithm of forward-backward solver with L1-norm, L2-norm
-        and dummy functions. Test the effect of gamma and lambda parameters.
+        and dummy functions. Test the effect of step and lambda parameters.
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
         # Smaller step size and update rate --> slower convergence.
-        solver = solvers.forward_backward(method='ISTA', gamma=.8, lambda_=.5)
+        solver = solvers.forward_backward(method='ISTA', step=.8, lambda_=.5)
         param = {'x0': x0, 'solver': solver}
         param['atol'] = 1e-5
         param['verbosity'] = 'NONE'
