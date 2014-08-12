@@ -458,5 +458,5 @@ class douglas_rachford(solver):
 
     def _algo(self):
         tmp = self.f1.prox(2 * self.sol - self.yn, self.step)
-        self.yn += self.lambda_ * (tmp - self.sol)
+        self.yn = self.yn + self.lambda_ * (tmp - self.sol)
         self.sol = self.f2.prox(self.yn, self.step)
