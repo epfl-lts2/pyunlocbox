@@ -4,6 +4,16 @@
 History
 =======
 
+0.2.1 (2014-08-20)
+------------------
+
+Bug fix version. Still experimental.
+
+Bug fixes :
+
+* Avoid complex casting to real
+* Do not stop iterating if the objective function stays at zero
+
 0.2.0 (2014-08-04)
 ------------------
 
