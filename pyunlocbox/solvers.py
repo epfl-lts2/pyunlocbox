@@ -151,6 +151,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     crit = None
     niter = 0
     objective = [[f.eval(x0) for f in functions]]
+    only_zeros = True
 
     # Solver specific initialization.
     solver.pre(functions, x0)
@@ -178,13 +179,15 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
                 div = last
             else:
                 div = 1.0  # Result will be zero anyway.
+        else:
+            only_zeros = False
 
         relative = np.abs((last - current) / div)
 
         # Verify stopping criteria.
         if current < atol:
             crit = 'ATOL'
-        elif relative < rtol:
+        elif relative < rtol and not only_zeros:
             crit = 'RTOL'
         elif niter >= maxit:
             crit = 'MAXIT'
