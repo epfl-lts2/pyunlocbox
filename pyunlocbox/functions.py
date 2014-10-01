@@ -239,9 +239,9 @@ class func(object):
 
     def _grad(self, x):
         dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
-                       np.zeros((1, np.shape(x)[1])), axis=0)
+                       np.zeros((1, np.shape(x)[1], np.shape(x)[2])), axis=0)
         dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
-                       np.zeros((np.shape(x)[0], 1)), axis=1)
+                       np.zeros((np.shape(x)[0], 1, np.shape(x)[2])), axis=1)
 
         return dx, dy
 
