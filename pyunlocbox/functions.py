@@ -219,7 +219,7 @@ class func(object):
 
     def grad(self, x):
         r"""
-        Function gradient.
+        Function gradient in 2 dimensions.
 
         Parameters
         ----------
@@ -228,7 +228,7 @@ class func(object):
 
         Returns
         -------
-        z : ndarray
+        dx, dy : array of ndarray
             The objective function gradient evaluated at `x`.
 
         Notes
@@ -238,7 +238,104 @@ class func(object):
         return self._grad(np.array(x))
 
     def _grad(self, x):
-        raise NotImplementedError("Class user should define this method.")
+        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
+                       np.zeros((1, np.shape(x)[1])), axis=0)
+        dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
+                       np.zeros((np.shape(x)[0], 1)), axis=1)
+
+        return dx, dy
+
+    def grad1d(self, x):
+        r"""
+        Function gradient in 1 dimensions.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        dx : array of ndarray
+            The objective function gradient evaluated at `x`.
+
+        Notes
+        -----
+        This method is required by some solvers.
+        """
+        return self._grad1d(np.array(x))
+
+    def _grad1d(self, x):
+        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
+                       np.zeros((1, np.shape(x)[1])), axis=0)
+        return dx
+
+    def grad3d(self, x):
+        r"""
+        Function gradient in 3 dimensions.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        dx, dy, dz : array of ndarray
+            The objective function gradient evaluated at `x`.
+
+        Notes
+        -----
+        This method is required by some solvers.
+        """
+        return self._grad3d(np.array(x))
+
+    def _grad3d(self, x):
+        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
+                       np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                 np.shape(x)[3])), axis=0)
+        dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
+                       np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                 np.shape(x)[3])), axis=1)
+        dz = np.append(np.delete(x, 0, 2)-np.delete(x, np.shape(x)[2]-1, 2),
+                       np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                 1, np.shape(x)[3])), axis=2)
+        return dx, dy, dz
+
+    def grad4d(self, x):
+        r"""
+        Function gradient in 4 dimensions.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        dx, dy, dz, dt : array of ndarray
+            The objective function gradient evaluated at `x`.
+
+        Notes
+        -----
+        This method is required by some solvers.
+        """
+        return self._grad4d(np.array(x))
+
+    def _grad4d(self, x):
+        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
+                       np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                 np.shape(x)[3], np.shape(x)[4])), axis=0)
+        dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
+                       np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                 np.shape(x)[3], np.shape(x)[4])), axis=1)
+        dz = np.append(np.delete(x, 0, 2)-np.delete(x, np.shape(x)[2]-1, 2),
+                       np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                 np.shape(x)[3], 1, np.shape(x)[4])), axis=2)
+        dt = np.append(np.delete(x, 0, 3)-np.delete(x, np.shape(x)[3] - 1, 3),
+                       np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                 np.shape(x)[2], 1, np.shape(x)[4])))
+        return dx, dy, dz, dt
 
     def cap(self, x):
         r"""
