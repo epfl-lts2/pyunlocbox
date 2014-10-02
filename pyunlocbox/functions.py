@@ -409,8 +409,22 @@ class func(object):
         return x
 
     def div3d(self, dx, dy, dz):
-        """
-        TODO DOC
+        r"""
+        Divergence operator in three dimensions.
+
+        Parameters
+        ----------
+        dx, dy, dz : array_like
+            Gradients following their axis.
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
         """
         return self._div3d(np.array(dx), np.array(dy), np.array(dz))
 
@@ -432,10 +446,25 @@ class func(object):
         return x
 
     def div4d(self, dx, dy, dz, dt):
+        r"""
+        Divergence operator in three dimensions.
+
+        Parameters
+        ----------
+        dx, dy, dz, dt : array_like
+            Gradients following their axis.
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
         """
-        TODO DOC
-        """
-        return self._div4d(np.array(dx), np.array(dy), np.array(dz), np.array(dt))
+        return self._div4d(np.array(dx), np.array(dy), np.array(dz),
+                           np.array(dt))
 
     def _div4d(self, dx, dy, dz, dt):
         x = np.concatenate((np.expand_dims(dx[1, :, :, :, :], axis=0)),
