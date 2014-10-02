@@ -341,7 +341,7 @@ class func(object):
 
         dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
                             np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      np.shape(x)[3], 1, np.shape(x)[4]))),
+                                      1, np.shape(x)[3], np.shape(x)[4]))),
                             axis=2)
 
         dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
@@ -428,20 +428,20 @@ class func(object):
         """
         return self._div3d(np.array(dx), np.array(dy), np.array(dz))
 
-    def _div3d(self, dx, dy, dz, dt):
-        x = np.concatenate((np.expand_dims(dx[1, :, :, :], axis=0)),
+    def _div3d(self, dx, dy, dz):
+        x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
                            dx[1:-1, :, :, :] - dx[:-2, :, :, :],
-                           np.expand_dims(-dx[-1, :, :, :], axis=0),
+                           np.expand_dims(-dx[-1, :, :, :], axis=0)),
                            axis=0)
 
-        x = x + np.concatenate((np.expand_dims(dy[:, 1, :, :], axis=1)),
+        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :], axis=1)),
                                dy[:, 1:-1, :, :] - dy[:, :-2, :, :],
-                               np.expand_dims(-dy[:, -1, :, :], axis=1),
+                               np.expand_dims(-dy[:, -1, :, :], axis=1)),
                                axis=1)
 
-        x = x + np.concatenate((np.expand_dims(dz[:, :, 1, :], axis=2)),
+        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :], axis=2)),
                                dz[:, :, 1:-1, :] - dz[:, :, :-2, :],
-                               np.expand_dims(-dz[:, :, -1, :], axis=2),
+                               np.expand_dims(-dz[:, :, -1, :], axis=2)),
                                axis=2)
         return x
 
@@ -467,24 +467,24 @@ class func(object):
                            np.array(dt))
 
     def _div4d(self, dx, dy, dz, dt):
-        x = np.concatenate((np.expand_dims(dx[1, :, :, :, :], axis=0)),
+        x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
                            dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
-                           np.expand_dims(-dx[-1, :, :, :, :], axis=0),
+                           np.expand_dims(-dx[-1, :, :, :, :], axis=0)),
                            axis=0)
 
-        x = x + np.concatenate((np.expand_dims(dy[:, 1, :, :, :], axis=1)),
+        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :, :], axis=1)),
                                dy[:, 1:-1, :, :, :] - dy[:, :-2, :, :, :],
-                               np.expand_dims(-dy[:, -1, :, :, :], axis=1),
+                               np.expand_dims(-dy[:, -1, :, :, :], axis=1)),
                                axis=1)
 
-        x = x + np.concatenate((np.expand_dims(dz[:, :, 1, :, :], axis=2)),
+        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :, :], axis=2)),
                                dz[:, :, 1:-1, :, :] - dz[:, :, :-2, :, :],
-                               np.expand_dims(-dz[:, :, -1, :, :], axis=2),
+                               np.expand_dims(-dz[:, :, -1, :, :], axis=2)),
                                axis=2)
 
-        x = x + np.concatenate((np.expand_dims(dt[:, :, :, 1, :], axis=3)),
+        x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 1, :], axis=3)),
                                dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
-                               np.expand_dims(-dt[:, :, :, -1, :], axis=3),
+                               np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
                                axis=3)
         return x
 
