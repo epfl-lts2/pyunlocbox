@@ -217,38 +217,7 @@ class func(object):
     def _prox(self, x, T):
         raise NotImplementedError("Class user should define this method.")
 
-    def grad(self, x):
-        r"""
-        Function gradient in 2 dimensions.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        Returns
-        -------
-        dx, dy : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method is required by some solvers.
-        """
-        return self._grad(np.array(x))
-
-    def _grad(self, x):
-        dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
-                             np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
-                            axis=0)
-
-        dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
-                             np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
-                            axis=1)
-
-        return dx, dy
-
-    def grad1d(self, x):
+    def grad1d(self, x, *arg):
         r"""
         Function gradient in 1 dimensions.
 
@@ -256,6 +225,9 @@ class func(object):
         ----------
         x : array_like
             The evaluation point.
+
+        wx : array_like
+            The weight(s) along the axis (optional)
 
         Returns
         -------
@@ -266,14 +238,48 @@ class func(object):
         -----
         This method is required by some solvers.
         """
-        return self._grad1d(np.array(x))
+        return self._grad1d(np.array(x), *arg)
 
-    def _grad1d(self, x):
+    def _grad1d(self, x, *arg):
         dx = np.concatenate((x[1:, :] - x[:-1, :],
                              np.zeros((1, np.shape(x)[1]))))
         return dx
 
-    def grad3d(self, x):
+    def grad(self, x, *arg):
+        r"""
+        Function gradient in 2 dimensions.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        wx, wy : array_like
+            The weight(s) along the axis (optional)
+
+        Returns
+        -------
+        dx, dy : array of ndarray
+            The objective function gradient evaluated at `x`.
+
+        Notes
+        -----
+        This method is required by some solvers.
+        """
+        return self._grad(np.array(x), *arg)
+
+    def _grad(self, x, *arg):
+        dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
+                             np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
+                            axis=0)
+
+        dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
+                             np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
+                            axis=1)
+
+        return dx, dy
+
+    def grad3d(self, x, *arg):
         r"""
         Function gradient in 3 dimensions.
 
@@ -281,6 +287,9 @@ class func(object):
         ----------
         x : array_like
             The evaluation point.
+
+        wx, wy, wz : array_like
+            The weight(s) along the axis (optional)
 
         Returns
         -------
@@ -291,9 +300,9 @@ class func(object):
         -----
         This method is required by some solvers.
         """
-        return self._grad3d(np.array(x))
+        return self._grad3d(np.array(x), *arg)
 
-    def _grad3d(self, x):
+    def _grad3d(self, x, *arg):
         dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
                             np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                       np.shape(x)[3]))), axis=0)
@@ -308,7 +317,7 @@ class func(object):
 
         return dx, dy, dz
 
-    def grad4d(self, x):
+    def grad4d(self, x, *arg):
         r"""
         Function gradient in 4 dimensions.
 
@@ -316,6 +325,9 @@ class func(object):
         ----------
         x : array_like
             The evaluation point.
+
+        wx, wy, wz , wt : array_like
+            The weight(s) along the axis (optional)
 
         Returns
         -------
@@ -326,9 +338,9 @@ class func(object):
         -----
         This method is required by some solvers.
         """
-        return self._grad4d(np.array(x))
+        return self._grad4d(np.array(x), *arg)
 
-    def _grad4d(self, x):
+    def _grad4d(self, x, *arg):
         dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
                             np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                       np.shape(x)[3], np.shape(x)[4]))),
@@ -351,7 +363,36 @@ class func(object):
 
         return dx, dy, dz, dt
 
-    def div(self, dx, dy):
+    def div1d(self, dx, *arg):
+        r"""
+        Divergence operator in two dimensions.
+
+        Parameters
+        ----------
+        dx : array_like
+            Gradients following their axis.
+        wx : array_like
+            The weight(s) along the axis (optional)
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
+        """
+        return self._div1d(np.array(dx), *arg)
+
+    def _div1d(self, dx, *arg):
+        x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
+                            dx[1:-1, :] - dx[:-2, :],
+                            np.expand_dims(-dx[-1, :], axis=0)),
+                           axis=0)
+        return x
+
+    def div(self, dx, dy, *arg):
         r"""
         Divergence operator in two dimensions.
 
@@ -359,6 +400,9 @@ class func(object):
         ----------
         dx, dy : array_like
             Gradients following their axis.
+
+        wx, wy : array_like
+            The weight(s) along the axis (optional)
 
         Returns
         -------
@@ -369,9 +413,9 @@ class func(object):
         -----
         TODO
         """
-        return self._div(np.array(dx), np.array(dy))
+        return self._div(np.array(dx), np.array(dy), *arg)
 
-    def _div(self, dx, dy):
+    def _div(self, dx, dy, *arg):
         x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
                             dx[1:-1, :, :] - dx[:-2, :, :],
                             np.expand_dims(-dx[-1, :, :], axis=0)), axis=0)
@@ -381,34 +425,7 @@ class func(object):
 
         return x
 
-    def div1d(self, dx):
-        r"""
-        Divergence operator in two dimensions.
-
-        Parameters
-        ----------
-        dx : array_like
-            Gradients following their axis.
-
-        Returns
-        -------
-        x : ndarray
-            Divergence image.
-
-        Notes
-        -----
-        TODO.
-        """
-        return self._div1d(np.array(dx))
-
-    def _div1d(self, dx):
-        x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
-                            dx[1:-1, :] - dx[:-2, :],
-                            np.expand_dims(-dx[-1, :], axis=0)),
-                           axis=0)
-        return x
-
-    def div3d(self, dx, dy, dz):
+    def div3d(self, dx, dy, dz, *arg):
         r"""
         Divergence operator in three dimensions.
 
@@ -417,6 +434,9 @@ class func(object):
         dx, dy, dz : array_like
             Gradients following their axis.
 
+        wx, wy, wz : array_like
+            The weight(s) along the axis (optional)
+
         Returns
         -------
         x : ndarray
@@ -426,9 +446,9 @@ class func(object):
         -----
         TODO.
         """
-        return self._div3d(np.array(dx), np.array(dy), np.array(dz))
+        return self._div3d(np.array(dx), np.array(dy), np.array(dz), *arg)
 
-    def _div3d(self, dx, dy, dz):
+    def _div3d(self, dx, dy, dz, *arg):
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
                            dx[1:-1, :, :, :] - dx[:-2, :, :, :],
                            np.expand_dims(-dx[-1, :, :, :], axis=0)),
@@ -445,7 +465,7 @@ class func(object):
                                axis=2)
         return x
 
-    def div4d(self, dx, dy, dz, dt):
+    def div4d(self, dx, dy, dz, dt, *arg):
         r"""
         Divergence operator in three dimensions.
 
@@ -453,6 +473,9 @@ class func(object):
         ----------
         dx, dy, dz, dt : array_like
             Gradients following their axis.
+
+        wx, wy, wz , wt : array_like
+            The weight(s) along the axis (optional)
 
         Returns
         -------
@@ -464,9 +487,9 @@ class func(object):
         TODO.
         """
         return self._div4d(np.array(dx), np.array(dy), np.array(dz),
-                           np.array(dt))
+                           np.array(dt), *arg)
 
-    def _div4d(self, dx, dy, dz, dt):
+    def _div4d(self, dx, dy, dz, dt, *arg):
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
                            dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
                            np.expand_dims(-dx[-1, :, :, :, :], axis=0)),
