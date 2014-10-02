@@ -408,6 +408,58 @@ class func(object):
                            axis=0)
         return x
 
+    def div3d(self, dx, dy, dz):
+        """
+        TODO DOC
+        """
+        return self._div3d(np.array(dx), np.array(dy), np.array(dz))
+
+    def _div3d(self, dx, dy, dz, dt):
+        x = np.concatenate((np.expand_dims(dx[1, :, :, :], axis=0)),
+                           dx[1:-1, :, :, :] - dx[:-2, :, :, :],
+                           np.expand_dims(-dx[-1, :, :, :], axis=0),
+                           axis=0)
+
+        x = x + np.concatenate((np.expand_dims(dy[:, 1, :, :], axis=1)),
+                               dy[:, 1:-1, :, :] - dy[:, :-2, :, :],
+                               np.expand_dims(-dy[:, -1, :, :], axis=1),
+                               axis=1)
+
+        x = x + np.concatenate((np.expand_dims(dz[:, :, 1, :], axis=2)),
+                               dz[:, :, 1:-1, :] - dz[:, :, :-2, :],
+                               np.expand_dims(-dz[:, :, -1, :], axis=2),
+                               axis=2)
+        return x
+
+    def div4d(self, dx, dy, dz, dt):
+        """
+        TODO DOC
+        """
+        return self._div4d(np.array(dx), np.array(dy), np.array(dz), np.array(dt))
+
+    def _div4d(self, dx, dy, dz, dt):
+        x = np.concatenate((np.expand_dims(dx[1, :, :, :, :], axis=0)),
+                           dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
+                           np.expand_dims(-dx[-1, :, :, :, :], axis=0),
+                           axis=0)
+
+        x = x + np.concatenate((np.expand_dims(dy[:, 1, :, :, :], axis=1)),
+                               dy[:, 1:-1, :, :, :] - dy[:, :-2, :, :, :],
+                               np.expand_dims(-dy[:, -1, :, :, :], axis=1),
+                               axis=1)
+
+        x = x + np.concatenate((np.expand_dims(dz[:, :, 1, :, :], axis=2)),
+                               dz[:, :, 1:-1, :, :] - dz[:, :, :-2, :, :],
+                               np.expand_dims(-dz[:, :, -1, :, :], axis=2),
+                               axis=2)
+
+        x = x + np.concatenate((np.expand_dims(dt[:, :, :, 1, :], axis=3)),
+                               dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
+                               np.expand_dims(-dt[:, :, :, -1, :], axis=3),
+                               axis=3)
+        return x
+
+
     def cap(self, x):
         r"""
         Test the capabilities of the function object.
