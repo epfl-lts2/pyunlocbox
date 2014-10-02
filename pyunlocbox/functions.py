@@ -238,10 +238,13 @@ class func(object):
         return self._grad(np.array(x))
 
     def _grad(self, x):
-        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
-                       np.zeros((1, np.shape(x)[1], np.shape(x)[2])), axis=0)
-        dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
-                       np.zeros((np.shape(x)[0], 1, np.shape(x)[2])), axis=1)
+        dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
+                             np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
+                            axis=0)
+
+        dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
+                             np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
+                            axis=1)
 
         return dx, dy
 
@@ -266,8 +269,8 @@ class func(object):
         return self._grad1d(np.array(x))
 
     def _grad1d(self, x):
-        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
-                       np.zeros((1, np.shape(x)[1])), axis=0)
+        dx = np.concatenate((x[1:, :] - x[:-1, :],
+                             np.zeros((1, np.shape(x)[1]))))
         return dx
 
     def grad3d(self, x):
@@ -291,15 +294,18 @@ class func(object):
         return self._grad3d(np.array(x))
 
     def _grad3d(self, x):
-        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
-                       np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                 np.shape(x)[3])), axis=0)
-        dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
-                       np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                 np.shape(x)[3])), axis=1)
-        dz = np.append(np.delete(x, 0, 2)-np.delete(x, np.shape(x)[2]-1, 2),
-                       np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                 1, np.shape(x)[3])), axis=2)
+        dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
+                            np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                      np.shape(x)[3]))), axis=0)
+
+        dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
+                            np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                      np.shape(x)[3]))), axis=1)
+
+        dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
+                            np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                      1, np.shape(x)[3]))), axis=2)
+
         return dx, dy, dz
 
     def grad4d(self, x):
@@ -323,19 +329,84 @@ class func(object):
         return self._grad4d(np.array(x))
 
     def _grad4d(self, x):
-        dx = np.append(np.delete(x, 0, 0)-np.delete(x, np.shape(x)[0]-1, 0),
-                       np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                 np.shape(x)[3], np.shape(x)[4])), axis=0)
-        dy = np.append(np.delete(x, 0, 1)-np.delete(x, np.shape(x)[1]-1, 1),
-                       np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                 np.shape(x)[3], np.shape(x)[4])), axis=1)
-        dz = np.append(np.delete(x, 0, 2)-np.delete(x, np.shape(x)[2]-1, 2),
-                       np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                 np.shape(x)[3], 1, np.shape(x)[4])), axis=2)
-        dt = np.append(np.delete(x, 0, 3)-np.delete(x, np.shape(x)[3] - 1, 3),
-                       np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                 np.shape(x)[2], 1, np.shape(x)[4])))
+        dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
+                            np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                      np.shape(x)[3], np.shape(x)[4]))),
+                            axis=0)
+
+        dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
+                            np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                      np.shape(x)[3], np.shape(x)[4]))),
+                            axis=1)
+
+        dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
+                            np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                      np.shape(x)[3], 1, np.shape(x)[4]))),
+                            axis=2)
+
+        dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
+                            np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                      np.shape(x)[2], 1, np.shape(x)[4]))),
+                            axis=3)
+
         return dx, dy, dz, dt
+
+    def div(self, dx, dy):
+        r"""
+        Divergence operator in two dimensions.
+
+        Parameters
+        ----------
+        dx, dy : array_like
+            Gradients following their axis.
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO
+        """
+        return self._div(np.array(dx), np.array(dy))
+
+    def _div(self, dx, dy):
+        x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
+                            dx[1:-1, :, :] - dx[:-2, :, :],
+                            np.expand_dims(-dx[-1, :, :], axis=0)), axis=0)
+        x = x - np.concatenate((np.expand_dims(dy[:, 1, :], axis=1),
+                                dy[:, 1:-1, :] - dy[:, 0:-2, :],
+                               np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
+
+        return x
+
+    def div1d(self, dx):
+        r"""
+        Divergence operator in two dimensions.
+
+        Parameters
+        ----------
+        dx : array_like
+            Gradients following their axis.
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
+        """
+        return self._div1d(np.array(dx))
+
+    def _div1d(self, dx):
+        x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
+                            dx[1:-1, :] - dx[:-2, :],
+                            np.expand_dims(-dx[-1, :], axis=0)),
+                           axis=0)
+        return x
 
     def cap(self, x):
         r"""
