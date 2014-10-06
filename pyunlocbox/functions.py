@@ -197,7 +197,7 @@ class func(object):
         x : array_like
             The evaluation point.
         T : float
-            The regularization parameter.
+            The regularization parameter
 
         Returns
         -------
@@ -217,36 +217,21 @@ class func(object):
     def _prox(self, x, T):
         raise NotImplementedError("Class user should define this method.")
 
-    def grad(self, x):
+    def grad(self, x, dim):
         r"""
-        Function gradient in 2 dimensions.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        Returns
-        -------
-        dx, dy : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method is required by some solvers.
+        TODO doc
         """
-        return self._grad(np.array(x))
+        return self._grad(x, dim)
 
-    def _grad(self, x):
-        dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
-                             np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
-                            axis=0)
-
-        dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
-                             np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
-                            axis=1)
-
-        return dx, dy
+    def _grad(self, x, dim):
+        if len(x.shape) == 2:
+            return self._grad1d(x, dim)
+        elif len(x.shape) == 3:
+            return self._grad2d(x, dim)
+        elif len(x.shape) == 4:
+            return self._grad3d(x, dim)
+        elif len(x.shape) == 5:
+            return self._grad4d(x, dim)
 
     def grad1d(self, x):
         r"""
@@ -268,10 +253,56 @@ class func(object):
         """
         return self._grad1d(np.array(x))
 
-    def _grad1d(self, x):
-        dx = np.concatenate((x[1:, :] - x[:-1, :],
-                             np.zeros((1, np.shape(x)[1]))))
-        return dx
+    def _grad1d(self, x, dim):
+        if dim >= 1:
+            dx = np.concatenate((x[1:, :] - x[:-1, :],
+                                 np.zeros((1, np.shape(x)[1]))), axis=0)
+            # TODO find better way to handle more dimensions
+            dy = None
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:] - x[:, :-1],
+                                 np.zeros((np.shape(x)[0], 1))), axis=1)
+        return dx, dy
+
+    def grad2d(self, x):
+        r"""
+        Function gradient in 2 dimensions.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        Returns
+        -------
+        dx, dy : array of ndarray
+            The objective function gradient evaluated at `x`.
+
+        Notes
+        -----
+        This method is required by some solvers.
+        """
+        return self._grad2d(np.array(x))
+
+    def _grad2d(self, x, dim):
+        if dim >= 1:
+            dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
+                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
+                                axis=0)
+            dy = None
+            dz = None
+
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
+                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
+                                axis=1)
+
+        if dim >= 3:
+            dz = np.concatenate((x[:, :, 1:] - x[:, :, :-1],
+                                 np.zeros((np.shape(x)[0], np.shape(x)[1], 1))),
+                                axis=2)
+
+        return dx, dy, dz
 
     def grad3d(self, x):
         r"""
@@ -293,20 +324,32 @@ class func(object):
         """
         return self._grad3d(np.array(x))
 
-    def _grad3d(self, x):
-        dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
-                            np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                      np.shape(x)[3]))), axis=0)
+    def _grad3d(self, x, dim):
+        if dim >= 1:
+            dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
+                                np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                          np.shape(x)[3]))), axis=0)
 
-        dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
-                            np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                      np.shape(x)[3]))), axis=1)
+            dy = None
+            dz = None
+            dt = None
 
-        dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
-                            np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      1, np.shape(x)[3]))), axis=2)
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
+                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                          np.shape(x)[3]))), axis=1)
 
-        return dx, dy, dz
+        if dim >= 3:
+            dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          1, np.shape(x)[3]))), axis=2)
+
+        if dim >= 4:
+            dt = np.concatenate((x[:, :, :, 1:] - x[:, :, :, :-1],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          np.shape(x)[2], 1))), axis=3)
+
+        return dx, dy, dz, dt
 
     def grad4d(self, x):
         r"""
@@ -328,26 +371,33 @@ class func(object):
         """
         return self._grad4d(np.array(x))
 
-    def _grad4d(self, x):
-        dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
-                            np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                      np.shape(x)[3], np.shape(x)[4]))),
-                            axis=0)
+    def _grad4d(self, x, dim):
+        if dim <= 1:
+            dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
+                                np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                          np.shape(x)[3], np.shape(x)[4]))),
+                                axis=0)
+            dy = None
+            dz = None
+            dt = None
 
-        dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
-                            np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                      np.shape(x)[3], np.shape(x)[4]))),
-                            axis=1)
+        if dim <= 2:
+            dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
+                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                          np.shape(x)[3], np.shape(x)[4]))),
+                                axis=1)
+        
+        if dim <= 3:
+            dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          1, np.shape(x)[3], np.shape(x)[4]))),
+                                axis=2)
 
-        dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
-                            np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      1, np.shape(x)[3], np.shape(x)[4]))),
-                            axis=2)
-
-        dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
-                            np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      np.shape(x)[2], 1, np.shape(x)[4]))),
-                            axis=3)
+        if dim <= 4:
+            dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          np.shape(x)[2], 1, np.shape(x)[4]))),
+                                axis=3)
 
         return dx, dy, dz, dt
 
@@ -486,8 +536,62 @@ class func(object):
                                dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
                                np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
                                axis=3)
+
         return x
 
+    def norm_tv(self, x):
+        r"""
+        TODO doc
+        """
+        return self._norm_tv(x)
+
+    def _norm_tv(self, x):
+
+        dx, dy = self.grad(x)
+        # TODO do not use temp var
+        temp = np.sqrt(np.power(abs(dx), 2) + np.power(abs(dy), 2))
+        y = np.sum(np.sum(temp, 0), 0)
+        return y
+
+    def norm_tv1d(self, x):
+        r"""
+        """
+        return self._norm_tv1d(x)
+
+    def _norm_tv1d(self,x):
+        dx = self.grad1d(x)
+        y = np.sum(dx, 0)
+        return y
+
+    def norm_tv3d(self, x):
+        r"""
+        """
+        return self._norm_tv3d(x)
+
+    def _norm_tv3d(self, x):
+        dx, dy, dz = self.grad3d(x)
+        # TODO remove temp var
+        temp = np.sqrt(np.power(abs(dx), 2) +
+                       np.power(abs(dy), 2) +
+                       np.power(abs(dz), 2))
+
+        y = np.sum(np.sum(np.sum(temp, 0), 0), 0)
+        return y
+
+    def norm_tv4d(self, x):
+        r"""
+        """
+        return self._grad4d(x)
+
+    def _norm_tv4d(self, x):
+        dx, dy, dz, dt = self.grad4d(x)
+        # TODO remove temp var
+        temp = np.sqrt(np.power(abs(dx), 2) +
+                       np.power(abs(dy), 2) +
+                       np.power(abs(dz), 2) +
+                       np.power(abs(dt), 2))
+
+        y = np.sum(np.sum(np.sum(np.sum(tem, 0), 0), 0), 0)
 
     def cap(self, x):
         r"""
@@ -706,6 +810,15 @@ class proj(func):
         super(proj, self).__init__(**kwargs)
         self.epsilon = epsilon
         self.method = method
+
+
+class norm_tv(norm):
+    r"""
+    TODO implement norm as a class
+    """
+
+    def __init__(self, **kwargs):
+        super(norm_tv, self).__init__(**kwargs)
 
 
 class proj_b2(proj):
