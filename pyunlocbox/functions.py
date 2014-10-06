@@ -196,7 +196,7 @@ class func(object):
         ----------
         x : array_like
             The evaluation point.
-        T : float
+        T : floatveille
             The regularization parameter.
 
         Returns
@@ -243,6 +243,11 @@ class func(object):
     def _grad1d(self, x, *arg):
         dx = np.concatenate((x[1:, :] - x[:-1, :],
                              np.zeros((1, np.shape(x)[1]))))
+
+        if len(arg) > 2:
+            print "Too much argument"
+        if len(arg) == 1:
+            dx *= arg[0]
         return dx
 
     def grad(self, x, *arg):
@@ -277,6 +282,13 @@ class func(object):
                              np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
                             axis=1)
 
+        if len(arg) < 2 and len(arg) > 0:
+            print "Please write all the wights for all the axis (even if it's 1)"
+        if len(arg) > 2:
+            print "Too much argument"
+        if len(arg) == 2:
+            dx *= arg[0]
+            dy *= arg[1]
         return dx, dy
 
     def grad3d(self, x, *arg):
@@ -315,6 +327,14 @@ class func(object):
                             np.zeros((np.shape(x)[0], np.shape(x)[1],
                                       1, np.shape(x)[3]))), axis=2)
 
+        if len(arg) < 3 and len(arg) > 0:
+            print "Please write all the wights for all the axis (even if it's 1)"
+        if len(arg) > 3:
+            print "Too much argument"
+        if len(arg) == 3:
+            dx *= arg[0]
+            dy *= arg[1]
+            dz *= arg[2]
         return dx, dy, dz
 
     def grad4d(self, x, *arg):
@@ -327,7 +347,9 @@ class func(object):
             The evaluation point.
 
         wx, wy, wz , wt : array_like
-            The weight(s) along the axis (optional)
+            The weight(s) along the axis
+            Note: the weigts are optional, but you need to
+            to show them all to use them
 
         Returns
         -------
@@ -361,6 +383,15 @@ class func(object):
                                       np.shape(x)[2], 1, np.shape(x)[4]))),
                             axis=3)
 
+        if len(arg) < 4 and len(arg) > 0:
+            print "Please write all the wights for all the axis (even if it's 1)"
+        if len(arg) > 4:
+            print "Too much argument"
+        if len(arg) == 4:
+            dx *= arg[0]
+            dy *= arg[1]
+            dz *= arg[2]
+            dt *= arg[3]
         return dx, dy, dz, dt
 
     def div1d(self, dx, *arg):
@@ -386,6 +417,13 @@ class func(object):
         return self._div1d(np.array(dx), *arg)
 
     def _div1d(self, dx, *arg):
+
+        if len(arg) > 1:
+            print "Too much argument"
+
+        if len(arg) == 1:
+            dx *= np.conjugate(arg[0])
+
         x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
                             dx[1:-1, :] - dx[:-2, :],
                             np.expand_dims(-dx[-1, :], axis=0)),
@@ -416,12 +454,21 @@ class func(object):
         return self._div(np.array(dx), np.array(dy), *arg)
 
     def _div(self, dx, dy, *arg):
+
+        if len(arg) > 2:
+            print "Too much argument"
+        if len(arg) == 1:
+            print "Please write all the wights for all the axis (even if one of the weigts is 1)"
+        if len(arg) == 2:
+            dx *= np.conjugate(arg[0])
+            dy *= np.conjugate(arg[1])
+
         x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
                             dx[1:-1, :, :] - dx[:-2, :, :],
                             np.expand_dims(-dx[-1, :, :], axis=0)), axis=0)
         x = x - np.concatenate((np.expand_dims(dy[:, 1, :], axis=1),
                                 dy[:, 1:-1, :] - dy[:, 0:-2, :],
-                               np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
+                                np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
 
         return x
 
@@ -449,6 +496,16 @@ class func(object):
         return self._div3d(np.array(dx), np.array(dy), np.array(dz), *arg)
 
     def _div3d(self, dx, dy, dz, *arg):
+
+        if len(arg) > 3:
+            print "Too much argument"
+        if len(arg) < 3 and len(arg) > 0:
+            print "Please write all the wights for all the axis (even if one of the weigts is 1)"
+        if len(arg) == 3:
+            dx *= np.conjugate(arg[0])
+            dy *= np.conjugate(arg[1])
+            dz *= np.conjugate(arg[2])
+
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
                            dx[1:-1, :, :, :] - dx[:-2, :, :, :],
                            np.expand_dims(-dx[-1, :, :, :], axis=0)),
@@ -490,6 +547,17 @@ class func(object):
                            np.array(dt), *arg)
 
     def _div4d(self, dx, dy, dz, dt, *arg):
+
+        if len(arg) > 4:
+            print "Too much argument"
+        if len(arg) < 4 and len(arg) > 0:
+            print "Please write all the wights for all the axis (even if one of the weigts is 1)"
+        if len(arg) == 4:
+            dx *= np.conjugate(arg[0])
+            dy *= np.conjugate(arg[1])
+            dz *= np.conjugate(arg[2])
+            dt *= np.conjugate(arg[3])
+
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
                            dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
                            np.expand_dims(-dx[-1, :, :, :, :], axis=0)),
@@ -510,7 +578,6 @@ class func(object):
                                np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
                                axis=3)
         return x
-
 
     def cap(self, x):
         r"""
