@@ -591,7 +591,8 @@ class func(object):
                        np.power(abs(dz), 2) +
                        np.power(abs(dt), 2))
 
-        y = np.sum(np.sum(np.sum(np.sum(tem, 0), 0), 0), 0)
+        y = np.sum(np.sum(np.sum(np.sum(temp, 0), 0), 0), 0)
+        return y
 
     def cap(self, x):
         r"""
