@@ -196,8 +196,8 @@ class func(object):
         ----------
         x : array_like
             The evaluation point.
-        T : floatveille
-            The regularization parameter.
+        T : float
+            The regularization parameter
 
         Returns
         -------
@@ -217,17 +217,22 @@ class func(object):
     def _prox(self, x, T):
         raise NotImplementedError("Class user should define this method.")
 
-    def grad1d(self, x, *arg):
+    def grad(self, x, dim, *args):
         r"""
-        Function gradient in 1 dimensions.
+        Function gradient in all dimensions.
 
         Parameters
         ----------
         x : array_like
             The evaluation point.
 
-        wx : array_like
-            The weight(s) along the axis (optional)
+        dim : int
+            The dimension of gradient that you want to aply on x.
+
+        wx, wy, wz, wt: array_like (optional)
+            The weight(s) along the axis
+            ! the number of weights must match with the dimension of the gradient !
+            (exemple dim = 2 --> wx, wy )
 
         Returns
         -------
@@ -238,19 +243,74 @@ class func(object):
         -----
         This method is required by some solvers.
         """
-        return self._grad1d(np.array(x), *arg)
+        return self._grad(x, dim, *args)
 
-    def _grad1d(self, x, *arg):
-        dx = np.concatenate((x[1:, :] - x[:-1, :],
-                             np.zeros((1, np.shape(x)[1]))))
+    def _grad(self, x, dim, *args):
+        if len(x.shape) == 2:
+            return self._grad1d(x, dim, *args)
+        elif len(x.shape) == 3:
+            return self._grad2d(x, dim, *args)
+        elif len(x.shape) == 4:
+            return self._grad3d(x, dim, *args)
+        elif len(x.shape) == 5:
+            return self._grad4d(x, dim, *args)
 
-        if len(arg) > 2:
-            print "Too much argument"
-        if len(arg) == 1:
-            dx *= arg[0]
-        return dx
+    def grad1d(self, x, dim, *args):
+        r"""
+        Function gradient in 1 dimensions.
 
-    def grad(self, x, *arg):
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point.
+
+        dim : int
+            The dimension of gradient that you want to aply on x. (1 or 2)
+
+        wx, wy : array_like
+            The weight(s) along the axis (optional)
+            ! the number of weights must match with the dimension of the gradient !
+
+        Returns
+        -------
+        dx : array of ndarray
+            The objective function gradient evaluated at `x`.
+
+        Notes
+        -----
+        This methode should not be use directly. To avoid some bug with dim and problem with shape, please use the methode grad(x, dim, weights)!.
+        """
+        return self._grad1d(np.array(x), dim, *args)
+
+    def _grad1d(self, x, dim, *args):
+        if len(args) > 0 and len(args) < dim:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+            dimtest = False
+        if len(args) == dim:
+            print "Caculating the grad with the Weights"
+            dimtest = True
+        if len(args) > 0 and len(args) > dim:
+            print("More wights than axis; Can not caculate the grad with the weights")
+            dimtest = False
+
+        if dim >= 1:
+            dx = np.concatenate((x[1:, :] - x[:-1, :],
+                                 np.zeros((1, np.shape(x)[1]))), axis=0)
+
+            if len(args) >= 1 and dimtest:
+                dx *= args[0]
+            # TODO find better way to handle more dimensions
+            dy = None
+
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:] - x[:, :-1],
+                                 np.zeros((np.shape(x)[0], 1))), axis=1)
+            if len(args) >= 2 and dimtest:
+                dy *= args[1]
+
+        return dx, dy
+
+    def grad2d(self, x, dim, *args):
         r"""
         Function gradient in 2 dimensions.
 
@@ -259,7 +319,11 @@ class func(object):
         x : array_like
             The evaluation point.
 
-        wx, wy : array_like
+        dim : int
+            The dimension of gradient that you want to aply on x. (1, 2 or 3)
+            ! the number of weights must match with the dimension of the gradient !
+
+        wx, wy, wz : array_like
             The weight(s) along the axis (optional)
 
         Returns
@@ -269,29 +333,47 @@ class func(object):
 
         Notes
         -----
-        This method is required by some solvers.
+        This methode should not be use directly. To avoid some bug with dim and problem with shape, please use the methode grad(x, dim, weights)!.
         """
-        return self._grad(np.array(x), *arg)
+        return self._grad2d(np.array(x), dim, *args)
 
-    def _grad(self, x, *arg):
-        dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
-                             np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
-                            axis=0)
+    def _grad2d(self, x, dim, *args):
+        if len(args) > 0 and len(args) < dim:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+            dimtest = False
+        if len(args) == dim:
+            print "Caculating the grad with the Weights"
+            dimtest = True
+        if len(args) > 0 and len(args) > dim:
+            print("More wights than axis; Can not caculate the grad with the weights")
+            dimtest = False
 
-        dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
-                             np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
-                            axis=1)
+        if dim >= 1:
+            dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
+                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
+                                axis=0)
+            dy = None
+            dz = None
+            if len(args) >= 1 and dimtest:
+                dx *= args[0]
 
-        if len(arg) < 2 and len(arg) > 0:
-            print "Please write all the wights for all the axis (even if it's 1)"
-        if len(arg) > 2:
-            print "Too much argument"
-        if len(arg) == 2:
-            dx *= arg[0]
-            dy *= arg[1]
-        return dx, dy
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
+                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
+                                axis=1)
+            if len(args) >= 2 and dimtest:
+                dy *= args[1]
 
-    def grad3d(self, x, *arg):
+        if dim >= 3:
+            dz = np.concatenate((x[:, :, 1:] - x[:, :, :-1],
+                                 np.zeros((np.shape(x)[0], np.shape(x)[1], 1))),
+                                axis=2)
+            if len(args) >= 3 and dimtest:
+                dz *= args[2]
+
+        return dx, dy, dz
+
+    def grad3d(self, x, dim, *args):
         r"""
         Function gradient in 3 dimensions.
 
@@ -300,7 +382,11 @@ class func(object):
         x : array_like
             The evaluation point.
 
-        wx, wy, wz : array_like
+        dim : int
+            The dimension of gradient that you want to aply on x. (1, 2, 3 or 4)
+            ! the number of weights must match with the dimension of the gradient !
+
+        wx, wy, wz. wt : array_like
             The weight(s) along the axis (optional)
 
         Returns
@@ -310,34 +396,56 @@ class func(object):
 
         Notes
         -----
-        This method is required by some solvers.
+        This methode should not be use directly. To avoid some bug with dim and problem with shape, please use the methode grad(x, dim, weights)!.
         """
-        return self._grad3d(np.array(x), *arg)
+        return self._grad3d(np.array(x), dim, *args)
 
-    def _grad3d(self, x, *arg):
-        dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
-                            np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                      np.shape(x)[3]))), axis=0)
+    def _grad3d(self, x, dim, *args):
+        if len(args) > 0 and len(args) < dim:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+            dimtest = False
+        if len(args) == dim:
+            print "Caculating the grad with the Weights"
+            dimtest = True
+        if len(args) > 0 and len(args) > dim:
+            print("More wights than axis; Can not caculate the grad with the weights")
+            dimtest = False
 
-        dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
-                            np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                      np.shape(x)[3]))), axis=1)
+        if dim >= 1:
+            dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
+                                np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                          np.shape(x)[3]))), axis=0)
 
-        dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
-                            np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      1, np.shape(x)[3]))), axis=2)
+            dy = None
+            dz = None
+            dt = None
+            if len(args) >= 1 and dimtest:
+                dx *= args[0]
 
-        if len(arg) < 3 and len(arg) > 0:
-            print "Please write all the wights for all the axis (even if it's 1)"
-        if len(arg) > 3:
-            print "Too much argument"
-        if len(arg) == 3:
-            dx *= arg[0]
-            dy *= arg[1]
-            dz *= arg[2]
-        return dx, dy, dz
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
+                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                          np.shape(x)[3]))), axis=1)
+            if len(args) >= 2 and dimtest:
+                dy *= args[1]
 
-    def grad4d(self, x, *arg):
+        if dim >= 3:
+            dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          1, np.shape(x)[3]))), axis=2)
+            if len(args) >= 3 and dimtest:
+                dz *= args[2]
+
+        if dim >= 4:
+            dt = np.concatenate((x[:, :, :, 1:] - x[:, :, :, :-1],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          np.shape(x)[2], 1))), axis=3)
+            if len(args) >= 4 and dimtest:
+                dt *= args[3]
+
+        return dx, dy, dz, dt
+
+    def grad4d(self, x, dim, *args):
         r"""
         Function gradient in 4 dimensions.
 
@@ -345,6 +453,10 @@ class func(object):
         ----------
         x : array_like
             The evaluation point.
+
+        dim : int
+            The dimension of gradient that you want to aply on x. (1, 2, 3 or 4)
+            ! the number of weights must match with the dimension of the gradient !
 
         wx, wy, wz , wt : array_like
             The weight(s) along the axis
@@ -358,50 +470,67 @@ class func(object):
 
         Notes
         -----
-        This method is required by some solvers.
+        This methode should not be use directly. To avoid some bug with dim and problem with shape, please use the methode grad(x, dim, weights)!
         """
-        return self._grad4d(np.array(x), *arg)
+        return self._grad4d(np.array(x), dim, *args)
 
-    def _grad4d(self, x, *arg):
-        dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
-                            np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                      np.shape(x)[3], np.shape(x)[4]))),
-                            axis=0)
+    def _grad4d(self, x, dim, *args):
+        if len(args) > 0 and len(args) < dim:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+            dimtest = False
+        if len(args) == dim:
+            print "Caculating the grad with the Weights"
+            dimtest = True
+        if len(args) > 0 and len(args) > dim:
+            print("More wights than axis; Can not caculate the grad with the weights")
+            dimtest = False
 
-        dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
-                            np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                      np.shape(x)[3], np.shape(x)[4]))),
-                            axis=1)
+        if dim <= 1:
+            dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
+                                np.zeros((1, np.shape(x)[1], np.shape(x)[2],
+                                          np.shape(x)[3], np.shape(x)[4]))),
+                                axis=0)
+            dy = None
+            dz = None
+            dt = None
+            if len(args) >= 1 and dimtest:
+                dx *= args[0]
 
-        dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
-                            np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      1, np.shape(x)[3], np.shape(x)[4]))),
-                            axis=2)
+        if dim <= 2:
+            dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
+                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                          np.shape(x)[3], np.shape(x)[4]))),
+                                axis=1)
+            if len(args) >= 2 and dimtest:
+                dy *= args[1]
 
-        dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
-                            np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                      np.shape(x)[2], 1, np.shape(x)[4]))),
-                            axis=3)
+        if dim <= 3:
+            dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          1, np.shape(x)[3], np.shape(x)[4]))),
+                                axis=2)
+            if len(args) >= 3 and dimtest:
+                dz *= args[2]
 
-        if len(arg) < 4 and len(arg) > 0:
-            print "Please write all the wights for all the axis (even if it's 1)"
-        if len(arg) > 4:
-            print "Too much argument"
-        if len(arg) == 4:
-            dx *= arg[0]
-            dy *= arg[1]
-            dz *= arg[2]
-            dt *= arg[3]
+        if dim <= 4:
+            dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          np.shape(x)[2], 1, np.shape(x)[4]))),
+                                axis=3)
+            if len(args) >= 4 and dimtest:
+                dt *= args[3]
+
         return dx, dy, dz, dt
 
-    def div1d(self, dx, *arg):
+    def div1d(self, dx, *args):
         r"""
-        Divergence operator in two dimensions.
+        Divergence operator in one dimensions.
 
         Parameters
         ----------
         dx : array_like
             Gradients following their axis.
+
         wx : array_like
             The weight(s) along the axis (optional)
 
@@ -414,15 +543,14 @@ class func(object):
         -----
         TODO.
         """
-        return self._div1d(np.array(dx), *arg)
+        return self._div1d(np.array(dx), *args)
 
-    def _div1d(self, dx, *arg):
-
-        if len(arg) > 1:
-            print "Too much argument"
-
-        if len(arg) == 1:
-            dx *= np.conjugate(arg[0])
+    def _div1d(self, dx, *args):
+        if len(args) > 1:
+            print "Too much argument; Can not caculate the grad with the weights"
+        if len(args) == 1:
+            print "Caculating the grad with the Weights"
+            dx *= np.conjugate(args[0])
 
         x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
                             dx[1:-1, :] - dx[:-2, :],
@@ -430,7 +558,7 @@ class func(object):
                            axis=0)
         return x
 
-    def div(self, dx, dy, *arg):
+    def div2d(self, dx, dy, *args):
         r"""
         Divergence operator in two dimensions.
 
@@ -451,28 +579,28 @@ class func(object):
         -----
         TODO
         """
-        return self._div(np.array(dx), np.array(dy), *arg)
+        return self._div(np.array(dx), np.array(dy), *args)
 
-    def _div(self, dx, dy, *arg):
-
-        if len(arg) > 2:
-            print "Too much argument"
-        if len(arg) == 1:
-            print "Please write all the wights for all the axis (even if one of the weigts is 1)"
-        if len(arg) == 2:
-            dx *= np.conjugate(arg[0])
-            dy *= np.conjugate(arg[1])
+    def _div2d(self, dx, dy, *args):
+        if len(args) > 2:
+            print "Too much argument; Can not caculate the grad with the weights"
+        if len(args) == 1:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+        if len(args) == 2:
+            print "Caculating the grad with the Weights"
+            dx *= np.conjugate(args[0])
+            dy *= np.conjugate(args[1])
 
         x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
                             dx[1:-1, :, :] - dx[:-2, :, :],
                             np.expand_dims(-dx[-1, :, :], axis=0)), axis=0)
         x = x - np.concatenate((np.expand_dims(dy[:, 1, :], axis=1),
                                 dy[:, 1:-1, :] - dy[:, 0:-2, :],
-                                np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
+                               np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
 
         return x
 
-    def div3d(self, dx, dy, dz, *arg):
+    def div3d(self, dx, dy, dz, *args):
         r"""
         Divergence operator in three dimensions.
 
@@ -493,18 +621,18 @@ class func(object):
         -----
         TODO.
         """
-        return self._div3d(np.array(dx), np.array(dy), np.array(dz), *arg)
+        return self._div3d(np.array(dx), np.array(dy), np.array(dz), *args)
 
-    def _div3d(self, dx, dy, dz, *arg):
-
-        if len(arg) > 3:
-            print "Too much argument"
-        if len(arg) < 3 and len(arg) > 0:
-            print "Please write all the wights for all the axis (even if one of the weigts is 1)"
-        if len(arg) == 3:
-            dx *= np.conjugate(arg[0])
-            dy *= np.conjugate(arg[1])
-            dz *= np.conjugate(arg[2])
+    def _div3d(self, dx, dy, dz, *args):
+        if len(args) > 3:
+            print "Too much argument; Can not caculate the grad with the weights"
+        if len(args) < 3 and len(args) > 0:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+        if len(args) == 3:
+            print "Caculating the grad with the Weights"
+            dx *= np.conjugate(args[0])
+            dy *= np.conjugate(args[1])
+            dz *= np.conjugate(args[2])
 
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
                            dx[1:-1, :, :, :] - dx[:-2, :, :, :],
@@ -522,9 +650,9 @@ class func(object):
                                axis=2)
         return x
 
-    def div4d(self, dx, dy, dz, dt, *arg):
+    def div4d(self, dx, dy, dz, dt, *args):
         r"""
-        Divergence operator in three dimensions.
+        Divergence operator in four dimensions.
 
         Parameters
         ----------
@@ -542,21 +670,22 @@ class func(object):
         Notes
         -----
         TODO.
+        TODO.
         """
         return self._div4d(np.array(dx), np.array(dy), np.array(dz),
-                           np.array(dt), *arg)
+                           np.array(dt), *args)
 
-    def _div4d(self, dx, dy, dz, dt, *arg):
-
-        if len(arg) > 4:
-            print "Too much argument"
-        if len(arg) < 4 and len(arg) > 0:
-            print "Please write all the wights for all the axis (even if one of the weigts is 1)"
-        if len(arg) == 4:
-            dx *= np.conjugate(arg[0])
-            dy *= np.conjugate(arg[1])
-            dz *= np.conjugate(arg[2])
-            dt *= np.conjugate(arg[3])
+    def _div4d(self, dx, dy, dz, dt, *args):
+        if len(args) > 4:
+            print "Too much argument; Can not caculate the grad with the weights"
+        if len(args) < 4 and len(args) > 0:
+            print "Missnig some wights along axis; Can not caculate the grad with the weights"
+        if len(args) == 4:
+            print "Caculating the grad with the Weights"
+            dx *= np.conjugate(args[0])
+            dy *= np.conjugate(args[1])
+            dz *= np.conjugate(args[2])
+            dt *= np.conjugate(args[3])
 
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
                            dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
@@ -577,7 +706,63 @@ class func(object):
                                dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
                                np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
                                axis=3)
+
         return x
+
+    def norm_tv(self, x):
+        r"""
+        TODO doc
+        """
+        return self._norm_tv(x)
+
+    def _norm_tv(self, x):
+
+        dx, dy = self.grad(x)
+        # TODO do not use temp var
+        temp = np.sqrt(np.power(abs(dx), 2) + np.power(abs(dy), 2))
+        y = np.sum(np.sum(temp, 0), 0)
+        return y
+
+    def norm_tv1d(self, x):
+        r"""
+        """
+        return self._norm_tv1d(x)
+
+    def _norm_tv1d(self, x):
+        dx = self.grad1d(x)
+        y = np.sum(dx, 0)
+        return y
+
+    def norm_tv3d(self, x):
+        r"""
+        """
+        return self._norm_tv3d(x)
+
+    def _norm_tv3d(self, x):
+        dx, dy, dz = self.grad3d(x)
+        # TODO remove temp var
+        temp = np.sqrt(np.power(abs(dx), 2) +
+                       np.power(abs(dy), 2) +
+                       np.power(abs(dz), 2))
+
+        y = np.sum(np.sum(np.sum(temp, 0), 0), 0)
+        return y
+
+    def norm_tv4d(self, x):
+        r"""
+        """
+        return self._grad4d(x)
+
+    def _norm_tv4d(self, x):
+        dx, dy, dz, dt = self.grad4d(x)
+        # TODO remove temp var
+        temp = np.sqrt(np.power(abs(dx), 2) +
+                       np.power(abs(dy), 2) +
+                       np.power(abs(dz), 2) +
+                       np.power(abs(dt), 2))
+
+        y = np.sum(np.sum(np.sum(np.sum(temp, 0), 0), 0), 0)
+        return y
 
     def cap(self, x):
         r"""
@@ -796,6 +981,15 @@ class proj(func):
         super(proj, self).__init__(**kwargs)
         self.epsilon = epsilon
         self.method = method
+
+
+class norm_tv(norm):
+    r"""
+    TODO implement norm as a class
+    """
+
+    def __init__(self, **kwargs):
+        super(norm_tv, self).__init__(**kwargs)
 
 
 class proj_b2(proj):
