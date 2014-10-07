@@ -547,7 +547,7 @@ class func(object):
 
     def _norm_tv(self, x):
 
-        dx, dy = self.grad(x)
+        dx, dy = self.grad(x,2)
         # TODO do not use temp var
         temp = np.sqrt(np.power(abs(dx), 2) + np.power(abs(dy), 2))
         y = np.sum(np.sum(temp, 0), 0)
@@ -559,7 +559,7 @@ class func(object):
         return self._norm_tv1d(x)
 
     def _norm_tv1d(self,x):
-        dx = self.grad1d(x)
+        dx = self.grad(x, 1)
         y = np.sum(dx, 0)
         return y
 
@@ -569,7 +569,7 @@ class func(object):
         return self._norm_tv3d(x)
 
     def _norm_tv3d(self, x):
-        dx, dy, dz = self.grad3d(x)
+        dx, dy, dz = self.grad(x, 3)
         # TODO remove temp var
         temp = np.sqrt(np.power(abs(dx), 2) +
                        np.power(abs(dy), 2) +
@@ -581,10 +581,10 @@ class func(object):
     def norm_tv4d(self, x):
         r"""
         """
-        return self._grad4d(x)
+        return self._norm_tv4d(x)
 
     def _norm_tv4d(self, x):
-        dx, dy, dz, dt = self.grad4d(x)
+        dx, dy, dz, dt = self.grad(x, 4)
         # TODO remove temp var
         temp = np.sqrt(np.power(abs(dx), 2) +
                        np.power(abs(dy), 2) +
