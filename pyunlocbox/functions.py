@@ -22,6 +22,8 @@ inherit from it implement the methods. These classes include :
 
 """
 
+from sys import stderr
+from time import time
 import numpy as np
 
 
@@ -188,7 +190,7 @@ class func(object):
     def _eval(self, x):
         raise NotImplementedError("Class user should define this method.")
 
-    def prox(self, x, T):
+    def prox_tv(self, x, T, **kwargs):
         r"""
         Function proximal operator.
 
@@ -198,6 +200,9 @@ class func(object):
             The evaluation point.
         T : float
             The regularization parameter
+        TODO 
+        *args : 
+            More parameters
 
         Returns
         -------
@@ -212,10 +217,101 @@ class func(object):
         :math:`\operatorname{prox}_{f,\gamma}(x) = \operatorname{arg\,min}
         \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
         """
-        return self._prox(np.array(x), T)
+        return self._prox(np.array(x), T, **kwargs)
 
-    def _prox(self, x, T):
-        raise NotImplementedError("Class user should define this method.")
+    def _prox_tv(self, x, T, **kwargs):
+        # Time counter
+        t_init = time()
+
+        # Check for additional parameters and default values if not
+        if kwargs is not None:
+            list_param = ['tol', 'verbose', 'maxit', 'weights']
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, ", param, " is not a valid parameter",
+                          file=stderr)
+
+            try:
+                tol = kwargs[tol]
+            except NameError:
+                tol = 10**-4
+            try:
+                verbose = kwargs[verbose]
+            except NameError:
+                verbose = True
+            try:
+                maxit = kwargs[maxit]
+            except NameError:
+                maxit = 200
+            try:
+                weights = kwargs[weights]
+            except NameError:
+                weights = None
+
+        # TODO implement test_gamma
+        # Initialization
+        r, s = self.grad(x, 2)
+        pold, qold = r, s
+        told, prev_obj = 1, 0
+
+        if weights:
+            # TODO weights attribution
+            raise NotImplementedError("Class user should define this method.")
+        else:
+            weights = np.ones(x.shape)
+            wx = None
+            wy = None
+            mt = None
+
+        if verbose:
+            print("Proximal TV Operator")
+
+        iter = 0
+        while iter <= maxit:
+            # Current Solution
+            sol = x - T.dot(self.div2d(r, s, wx, wy))
+
+            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * norm_tv(sol, wx, wy)
+            rel_obj = np.abs(obj - prev_obj.divide(obj))
+            prev_obj = obj
+
+            if verbose:
+                print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
+
+            if rel_obj < tol:
+                crit = "TOL_EPS"
+                break
+
+            # Vector Update
+            dx, dy = self.grad(x, 2, wx, wy)
+
+            r = r - (1/(8*T)/mt**2).dot(dx)
+            s = s - (1/(8*T)/mt**2).dot(dy)
+
+            weights = np.amax(np.sqrt(np.abs(r)**2 + np.abs(s)**2))
+
+            p = r / weights
+            q = s / weights
+
+            # FISTA?
+            t = (1 + np.sqrt(4*told**2))/2
+            r = p + (told - 1)/t * (p - pold)
+            s = q + (told - 1)/t * (q - qold)
+            pold, qold = p, q
+            told = t
+
+        try:
+            type(crit) == str
+        except NameError:
+            crit = "MAX_IT"
+
+        t_end = time()
+        exec_time = t_end - t_init
+
+        if verbose:
+                print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
+                      iter = {3}".format(obj, rel_obj, crit, iter))
+                print("exec_time = ", exec_time)
 
     def grad(self, x, dim, *args):
         r"""
