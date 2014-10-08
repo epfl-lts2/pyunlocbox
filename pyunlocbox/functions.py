@@ -288,16 +288,16 @@ class func(object):
 
     def _grad1d(self, x, dim, *args):
         if len(args) > 0 and len(args) < dim:
-            print("Missing some weights along the axis; \
-                  Cannot calculate the grad with the weights")
+            raise ValueError("Missing some weights along the axis; \
+                  Cannot calculate the gradient with the weights")
+            dimtest = False
+        if len(args) > 0 and len(args) > dim:
+            raise ValueError("More weights than axis; Cannot calculate \
+                  the gradient with the weights")
             dimtest = False
         if len(args) == dim:
-            print("Calculating the grad with the weights")
+            """Calculating the grad with the weights"""
             dimtest = True
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis; Cannot calculate \
-                  the grad with the weights")
-            dimtest = False
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :] - x[:-1, :],
@@ -345,16 +345,16 @@ class func(object):
 
     def _grad2d(self, x, dim, *args):
         if len(args) > 0 and len(args) < dim:
-            print("Missing some weights along the axis; Cannot calculate \
-                  the grad with the weights")
+            raise ValueError("Missing some weights along the axis; Cannot \
+                calculate the gradient with the weights")
+            dimtest = False
+        if len(args) > 0 and len(args) > dim:
+            raise ValueError("More weights than axis; Cannot calculate \
+                  the gradient with the weights")
             dimtest = False
         if len(args) == dim:
-            print("Calculating the grad with the weights")
+            """Calculating the gradient with the weights"""
             dimtest = True
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis; Cannot calculate \
-                  the grad with the weights")
-            dimtest = False
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
@@ -411,16 +411,16 @@ class func(object):
 
     def _grad3d(self, x, dim, *args):
         if len(args) > 0 and len(args) < dim:
-            print("Missing some wights along axis; Cannot calculate \
+            raise ValueError("Missing some weights along axis; Cannot calculate \
                   the grad with the weights")
             dimtest = False
-        if len(args) == dim:
-            print("Caculating the grad with the Weights")
-            dimtest = True
         if len(args) > 0 and len(args) > dim:
-            print("More wights than axis; Can not caculate the grad \
+            raise ValueError("More weights than axis; Cannot calculate the gradient \
                   with the weights")
             dimtest = False
+        if len(args) == dim:
+            """Calculate the gradient with the weights"""
+            dimtest = True
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
@@ -488,16 +488,16 @@ class func(object):
 
     def _grad4d(self, x, dim, *args):
         if len(args) > 0 and len(args) < dim:
-            print("Missing some weights along axis; Cannot calculate \
-                  the grad with the weights")
+            raise ValueError("Missing some weights along axis; Cannot \
+                calculate the gradient with the weights")
+            dimtest = False
+        if len(args) > 0 and len(args) > dim:
+            raise ValueError("More weights than axis; Cannot calculate \
+                  the gradient with the weights")
             dimtest = False
         if len(args) == dim:
-            print("Calculating the grad with the weights")
+            """Calculate the gradient with the weights"""
             dimtest = True
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis; Cannot calculate \
-                  the grad with the weights")
-            dimtest = False
 
         if dim <= 1:
             dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
@@ -561,10 +561,10 @@ class func(object):
 
     def _div1d(self, dx, *args):
         if len(args) > 1:
-            print("Too much arguments; \
+            raise ValueError("Too much arguments; \
                   Cannot calculate the grad with the weights")
         if len(args) == 1:
-            print("Calculating the grad with the weights")
+            """Calculate the gradient with the weights"""
             dx *= np.conjugate(args[0])
 
         x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
@@ -598,13 +598,13 @@ class func(object):
 
     def _div2d(self, dx, dy, *args):
         if len(args) > 2:
-            print("Too much argument; Cannot calculate \
-                  the grad with the weights")
+            raise ValueError("Too much argument; Cannot calculate \
+                  the gradient with the weights")
         if len(args) == 1:
-            print("Missing some weights along axis; \
-                  Cannot calculate the grad with the weights")
+            raise ValueError("Missing some weights along axis; \
+                  Cannot calculate the gradient with the weights")
         if len(args) == 2:
-            print("Caculating the grad with the weights")
+            """Calculate the gradient with the weights"""
             dx *= np.conjugate(args[0])
             dy *= np.conjugate(args[1])
 
@@ -642,13 +642,13 @@ class func(object):
 
     def _div3d(self, dx, dy, dz, *args):
         if len(args) > 3:
-            print("Too much argument; \
-                  Cannot calculate the grad with the weights")
+            raise ValueError("Too much argument; \
+                  Cannot calculate the gradient with the weights")
         if len(args) < 3 and len(args) > 0:
-            print("Missing some wights along axis; \
-                  Cannot calculate the grad with the weights")
+            raise ValueError("Missing some wights along axis; \
+                  Cannot calculate the gradient with the weights")
         if len(args) == 3:
-            print("Calculating the grad with the weights")
+            """Calculate the gradient with the weights"""
             dx *= np.conjugate(args[0])
             dy *= np.conjugate(args[1])
             dz *= np.conjugate(args[2])
@@ -696,13 +696,13 @@ class func(object):
 
     def _div4d(self, dx, dy, dz, dt, *args):
         if len(args) > 4:
-            print("Too much argument; \
-                  Cannot calculate the grad with the weights")
+            raise ValueError("Too much argument; \
+                  Cannot calculate the gradient with the weights")
         if len(args) < 4 and len(args) > 0:
-            print("Missing some weights along axis; \
-                  Cannot calculate the grad with the weights")
+            raise ValueError("Missing some weights along axis; \
+                  Cannot calculate the gradient with the weights")
         if len(args) == 4:
-            print("Calculating the grad with the Weights")
+            """Calculate the gradient with the weights"""
             dx *= np.conjugate(args[0])
             dy *= np.conjugate(args[1])
             dz *= np.conjugate(args[2])
