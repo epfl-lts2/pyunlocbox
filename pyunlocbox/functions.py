@@ -219,100 +219,6 @@ class func(object):
         """
         return self._prox(np.array(x), T, **kwargs)
 
-    def _prox_tv(self, x, T, **kwargs):
-        # Time counter
-        t_init = time()
-
-        # Check for additional parameters and default values if not
-        if kwargs is not None:
-            list_param = ['tol', 'verbose', 'maxit', 'weights']
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, ", param, " is not a valid parameter",
-                          file=stderr)
-
-            try:
-                tol = kwargs[tol]
-            except NameError:
-                tol = 10**-4
-            try:
-                verbose = kwargs[verbose]
-            except NameError:
-                verbose = True
-            try:
-                maxit = kwargs[maxit]
-            except NameError:
-                maxit = 200
-            try:
-                weights = kwargs[weights]
-            except NameError:
-                weights = None
-
-        # TODO implement test_gamma
-        # Initialization
-        r, s = self.grad(x, 2)
-        pold, qold = r, s
-        told, prev_obj = 1, 0
-
-        if weights:
-            # TODO weights attribution
-            raise NotImplementedError("Class user should define this method.")
-        else:
-            weights = np.ones(x.shape)
-            wx = None
-            wy = None
-            mt = None
-
-        if verbose:
-            print("Proximal TV Operator")
-
-        iter = 0
-        while iter <= maxit:
-            # Current Solution
-            sol = x - T.dot(self.div2d(r, s, wx, wy))
-
-            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * norm_tv(sol, wx, wy)
-            rel_obj = np.abs(obj - prev_obj.divide(obj))
-            prev_obj = obj
-
-            if verbose:
-                print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
-
-            if rel_obj < tol:
-                crit = "TOL_EPS"
-                break
-
-            # Vector Update
-            dx, dy = self.grad(x, 2, wx, wy)
-
-            r = r - (1/(8*T)/mt**2).dot(dx)
-            s = s - (1/(8*T)/mt**2).dot(dy)
-
-            weights = np.amax(np.sqrt(np.abs(r)**2 + np.abs(s)**2))
-
-            p = r / weights
-            q = s / weights
-
-            # FISTA?
-            t = (1 + np.sqrt(4*told**2))/2
-            r = p + (told - 1)/t * (p - pold)
-            s = q + (told - 1)/t * (q - qold)
-            pold, qold = p, q
-            told = t
-
-        try:
-            type(crit) == str
-        except NameError:
-            crit = "MAX_IT"
-
-        t_end = time()
-        exec_time = t_end - t_init
-
-        if verbose:
-                print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
-                      iter = {3}".format(obj, rel_obj, crit, iter))
-                print("exec_time = ", exec_time)
-
     def grad(self, x, dim, *args):
         r"""
         Function gradient in all dimensions.
@@ -1103,10 +1009,120 @@ class proj(func):
 class norm_tv(norm):
     r"""
     TODO implement norm as a class
+    AND Doc
     """
 
     def __init__(self, **kwargs):
         super(norm_tv, self).__init__(**kwargs)
+
+    def _eval(self, x, dim):
+        f = func()
+        i = 0
+        grads = ['dx', 'dy', 'dz', 'dt']
+        grads[:dim+1] = f.grad(x, dim)
+        y = 0
+        for g in grads:
+            y += np.power(abs(g), 2)
+            y = np.sqrt(y)
+        while i <= dim:
+            y = np.sum(y, 0)
+        return y
+
+    def _prox(self, x, T, dim, **kwargs):
+        # Time counter
+        t_init = time()
+
+        # Check for additional parameters and default values if not
+        if kwargs is not None:
+            list_param = ['tol', 'verbose', 'maxit', 'weights']
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, ", param, " is not a valid parameter",
+                          file=stderr)
+
+            try:
+                tol = kwargs['tol']
+            except KeyError:
+                tol = 10**-4
+            try:
+                verbose = kwargs['verbose']
+            except KeyError:
+                verbose = True
+            try:
+                maxit = kwargs['maxit']
+            except KeyError:
+                maxit = 200
+            try:
+                weights = kwargs['weights']
+            except KeyError:
+                weights = [1, 1]
+
+        # TODO implement test_gamma
+        # Initialization
+        r, s = self.grad(x, dim)
+        pold, qold = r, s
+        told, prev_obj = 1, 0
+
+        if weights:
+            # TODO weights attribution
+            raise NotImplementedError("Class user should define this method.")
+        else:
+            weights = np.ones(x.shape)
+            wx = None
+            wy = None
+            mt = None
+
+        if verbose:
+            print("Proximal TV Operator")
+
+        iter = 0
+        while iter <= maxit:
+            # Current Solution
+            sol = x - T * self.div2d(r, s, wx, wy)
+
+            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * norm_tv(sol, wx, wy)
+            rel_obj = np.abs(obj - prev_obj.divide(obj))
+            prev_obj = obj
+
+            if verbose:
+                print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
+
+            if rel_obj < tol:
+                crit = "TOL_EPS"
+                break
+
+            # Vector Update
+            dx, dy = self.grad(x, dim, wx, wy)
+
+            r = r - (1/(8*T)/mt**2) * dx
+            s = s - (1/(8*T)/mt**2) * dy
+
+            weights = np.amax(np.sqrt(np.abs(r)**2 + np.abs(s)**2))
+
+            p = r / weights
+            q = s / weights
+
+            # FISTA?
+            t = (1 + np.sqrt(4*told**2))/2
+            r = p + (told - 1)/t * (p - pold)
+            s = q + (told - 1)/t * (q - qold)
+            pold, qold = p, q
+            told = t
+
+        try:
+            type(crit) == str
+        except NameError:
+            crit = "MAX_IT"
+
+        t_end = time()
+        exec_time = t_end - t_init
+
+        if verbose:
+                print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
+                      iter = {3}".format(obj, rel_obj, crit, iter))
+                print("exec_time = ", exec_time)
+
+
 
 
 class proj_b2(proj):
