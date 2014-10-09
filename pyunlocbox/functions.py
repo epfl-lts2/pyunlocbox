@@ -217,7 +217,7 @@ class func(object):
     def _prox(self, x, T):
         raise NotImplementedError("Class user should define this method.")
 
-    def grad(self, x, dim, *args):
+    def grad(self, x, dim, **kwargs):
         r"""
         Function gradient in all dimensions.
 
@@ -241,19 +241,19 @@ class func(object):
         -----
         This method is required by some solvers.
         """
-        return self._grad(x, dim, *args)
+        return self._grad(x, dim, **kwargs)
 
-    def _grad(self, x, dim, *args):
+    def _grad(self, x, dim, **kwargs):
         if len(x.shape) == 2:
-            return self._grad1d(x, dim, *args)
+            return self._grad1d(x, dim, **kwargs)
         elif len(x.shape) == 3:
-            return self._grad2d(x, dim, *args)
+            return self._grad2d(x, dim, **kwargs)
         elif len(x.shape) == 4:
-            return self._grad3d(x, dim, *args)
+            return self._grad3d(x, dim, **kwargs)
         elif len(x.shape) == 5:
-            return self._grad4d(x, dim, *args)
+            return self._grad4d(x, dim, **kwargs)
 
-    def grad1d(self, x, dim, *args):
+    def grad1d(self, x, dim, **kwargs):
         r"""
         Function gradient in 1 dimension.
 
@@ -279,34 +279,37 @@ class func(object):
         To avoid some bug with dim and problem with shape,
         please use the method grad(x, dim, weights)!.
         """
-        return self._grad1d(np.array(x), dim, *args)
+        return self._grad1d(np.array(x), dim, **kwargs)
 
-    def _grad1d(self, x, dim, *args):
-        if len(args) != 0 and len(args) < dim:
-            print("Missing some weights along axis.")
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the grad with the weights.")
+    def _grad1d(self, x, dim, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :] - x[:-1, :],
                                  np.zeros((1, np.shape(x)[1]))), axis=0)
 
-            if len(args) >= 1:
-                dx *= args[0]
+            try:
+                dx *= kwargs["wx"]
+            except KeyError:
+                print("No weigths along wx; using default weights")
             # TODO find better way to handle more dimensions
             dy = None
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:] - x[:, :-1],
                                  np.zeros((np.shape(x)[0], 1))), axis=1)
-            if len(args) >= 2:
-                dy *= args[1]
+            try:
+                dy *= kwargs["wy"]
+            except KeyError:
+                print("No weigths along wy; using default weights")
 
         return dx, dy
 
-    def grad2d(self, x, dim, *args):
+    def grad2d(self, x, dim, **kwargs):
         r"""
         Function gradient in 2 dimensions.
 
@@ -331,15 +334,14 @@ class func(object):
         This method should not be use directly. To avoid some bug with dim and
         problem with shape, please use the method grad(x, dim, weights)!.
         """
-        return self._grad2d(np.array(x), dim, *args)
+        return self._grad2d(np.array(x), dim, **kwargs)
 
-    def _grad2d(self, x, dim, *args):
-        if len(args) != 0 and len(args) < dim:
-            print("Missing some weights along axis.")
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the grad with the weights.")
+    def _grad2d(self, x, dim, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
@@ -347,26 +349,32 @@ class func(object):
                                 axis=0)
             dy = None
             dz = None
-            if len(args) >= 1:
-                dx *= args[0]
+            try:
+                dx *= kwargs["wx"]
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
                                  np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
                                 axis=1)
-            if len(args) >= 2:
-                dy *= args[1]
+            try:
+                dy *= kwargs["wy"]
+            except KeyError:
+                print("No weigths along wy; using default weights")
 
         if dim >= 3:
             dz = np.concatenate((x[:, :, 1:] - x[:, :, :-1],
                                  np.zeros((np.shape(x)[0], np.shape(x)[1], 1))),
                                 axis=2)
-            if len(args) >= 3:
-                dz *= args[2]
+            try:
+                dz *= kwargs["wz"]
+            except KeyError:
+                print("No weigths along wz; using default weights")
 
         return dx, dy, dz
 
-    def grad3d(self, x, dim, *args):
+    def grad3d(self, x, dim, **kwargs):
         r"""
         Function gradient in 3 dimensions.
 
@@ -391,15 +399,14 @@ class func(object):
         This methode should not be use directly. To avoid some bug with dim
         and problem with shape, please use the methode grad(x, dim, weights)!.
         """
-        return self._grad3d(np.array(x), dim, *args)
+        return self._grad3d(np.array(x), dim, **kwargs)
 
-    def _grad3d(self, x, dim, *args):
-        if len(args) != 0 and len(args) < dim:
-            print("Missing some weights along axis.")
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the grad with the weights.")
+    def _grad3d(self, x, dim, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz", "wt"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
@@ -408,33 +415,41 @@ class func(object):
             dy = None
             dz = None
             dt = None
-            if len(args) >= 1:
-                dx *= args[0]
+            try:
+                dx *= kwargs["wx"]
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3]))), axis=1)
-            if len(args) >= 2:
-                dy *= args[1]
+            try:
+                dy *= kwargs["wy"]
+            except KeyError:
+                print("No weigths along wy; using default weights")
 
         if dim >= 3:
             dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3]))), axis=2)
-            if len(args) >= 3:
-                dz *= args[2]
+            try:
+                dz *= kwargs["wz"]
+            except KeyError:
+                print("No weigths along wz; using default weights")
 
         if dim >= 4:
             dt = np.concatenate((x[:, :, :, 1:] - x[:, :, :, :-1],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           np.shape(x)[2], 1))), axis=3)
-            if len(args) >= 4:
-                dt *= args[3]
+            try:
+                dt *= kwargs["wt"]
+            except KeyError:
+                print("No weigths along wt; using default weights")
 
         return dx, dy, dz, dt
 
-    def grad4d(self, x, dim, *args):
+    def grad4d(self, x, dim, **kwargs):
         r"""
         Function gradient in 4 dimensions.
 
@@ -460,15 +475,14 @@ class func(object):
         with dim and problems with shape, please use the method
         grad(x, dim, weights)!
         """
-        return self._grad4d(np.array(x), dim, *args)
+        return self._grad4d(np.array(x), dim, **kwargs)
 
-    def _grad4d(self, x, dim, *args):
-        if len(args) != 0 and len(args) < dim:
-            print("Missing some weights along axis.")
-        if len(args) > 0 and len(args) > dim:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the grad with the weights.")
+    def _grad4d(self, x, dim, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz", "wt"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
         if dim <= 1:
             dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
@@ -478,36 +492,44 @@ class func(object):
             dy = None
             dz = None
             dt = None
-            if len(args) >= 1:
-                dx *= args[0]
+            try:
+                dx *= kwargs["wx"]
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
         if dim <= 2:
             dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
                                 axis=1)
-            if len(args) >= 2:
-                dy *= args[1]
+            try:
+                dy *= kwargs["wy"]
+            except KeyError:
+                print("No weigths along wy; using default weights")
 
         if dim <= 3:
             dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3], np.shape(x)[4]))),
                                 axis=2)
-            if len(args) >= 3:
-                dz *= args[2]
+            try:
+                dz *= kwargs["wz"]
+            except KeyError:
+                print("No weigths along wz; using default weights")
 
         if dim <= 4:
             dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           np.shape(x)[2], 1, np.shape(x)[4]))),
                                 axis=3)
-            if len(args) >= 4:
-                dt *= args[3]
+            try:
+                dt *= kwargs["wt"]
+            except KeyError:
+                print("No weigths along wt; using default weights")
 
         return dx, dy, dz, dt
 
-    def div1d(self, dx, *args):
+    def div1d(self, dx, **kwargs):
         r"""
         Divergence operator in one dimensions.
 
@@ -528,16 +550,19 @@ class func(object):
         -----
         TODO.
         """
-        return self._div1d(np.array(dx), *args)
+        return self._div1d(np.array(dx), **kwargs)
 
-    def _div1d(self, dx, *args):
-        if len(args) > 1:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the Divergence with the weights.")
+    def _div1d(self, dx, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
-        if len(args) >= 1:
-            dx *= np.conjugate(args[0])
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
 
         x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
                             dx[1:-1, :] - dx[:-2, :],
@@ -545,7 +570,7 @@ class func(object):
                            axis=0)
         return x
 
-    def div2d(self, dx, dy, *args):
+    def div2d(self, dx, dy, **kwargs):
         r"""
         Divergence operator in two dimensions.
 
@@ -566,20 +591,23 @@ class func(object):
         -----
         TODO
         """
-        return self._div(np.array(dx), np.array(dy), *args)
+        return self._div(np.array(dx), np.array(dy), **kwargs)
 
-    def _div2d(self, dx, dy, *args):
-        if len(args) != 0 and len(args) < 2:
-            print("Missing some weights along axis.")
-        if len(args) > 2:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the Divergence with the weights.")
+    def _div2d(self, dx, dy, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
-        if len(args) >= 1:
-            dx *= np.conjugate(args[0])
-        if len(args) >= 2:
-            dy *= np.conjugate(args[1])
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+        try:
+            dy *= np.conjugate(kwargs["wy"])
+        except KeyError:
+            print("No weigths along wy; using default weights")
 
         x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
                             dx[1:-1, :, :] - dx[:-2, :, :],
@@ -590,7 +618,7 @@ class func(object):
 
         return x
 
-    def div3d(self, dx, dy, dz, *args):
+    def div3d(self, dx, dy, dz, **kwargs):
         r"""
         Divergence operator in three dimensions.
 
@@ -611,22 +639,27 @@ class func(object):
         -----
         TODO.
         """
-        return self._div3d(np.array(dx), np.array(dy), np.array(dz), *args)
+        return self._div3d(np.array(dx), np.array(dy), np.array(dz), **kwargs)
 
-    def _div3d(self, dx, dy, dz, *args):
-        if len(args) != 0 and len(args) < 3:
-            print("Missing some weights along axis.")
-        if len(args) > 3:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the Divergence with the weights.")
+    def _div3d(self, dx, dy, dz, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
-        if len(args) >= 1:
-            dx *= np.conjugate(args[0])
-        if len(args) >= 2:
-            dy *= np.conjugate(args[1])
-        if len(args) >= 3:
-            dz *= np.conjugate(args[2])
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+        try:
+            dy *= np.conjugate(kwargs["wy"])
+        except KeyError:
+            print("No weigths along wy; using default weights")
+        try:
+            dz *= np.conjugate(kwargs["wz"])
+        except KeyError:
+            print("No weigths along wz; using default weights")
 
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
                            dx[1:-1, :, :, :] - dx[:-2, :, :, :],
@@ -644,7 +677,7 @@ class func(object):
                                axis=2)
         return x
 
-    def div4d(self, dx, dy, dz, dt, *args):
+    def div4d(self, dx, dy, dz, dt, **kwargs):
         r"""
         Divergence operator in four dimensions.
 
@@ -667,24 +700,31 @@ class func(object):
         TODO.
         """
         return self._div4d(np.array(dx), np.array(dy), np.array(dz),
-                           np.array(dt), *args)
+                           np.array(dt), **kwargs)
 
-    def _div4d(self, dx, dy, dz, dt, *args):
-        if len(args) != 0 and len(args) < 4:
-            print("Missing some weights along axis.")
-        if len(args) > 4:
-            print("More weights than axis.")
-        if len(args) > 0:
-            print("Calculating the Divergence with the weights.")
+    def _div4d(self, dx, dy, dz, dt, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz", "wt"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
 
-        if len(args) >= 1:
-            dx *= np.conjugate(args[0])
-        if len(args) >= 2:
-            dy *= np.conjugate(args[1])
-        if len(args) >= 3:
-            dz *= np.conjugate(args[2])
-        if len(args) >= 4:
-            dt *= np.conjugate(args[3])
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+        try:
+            dy *= np.conjugate(kwargs["wy"])
+        except KeyError:
+            print("No weigths along wy; using default weights")
+        try:
+            dz *= np.conjugate(kwargs["wz"])
+        except KeyError:
+            print("No weigths along wz; using default weights")
+        try:
+            dt *= np.conjugate(kwargs["wt"])
+        except KeyError:
+            print("No weigths along wt; using default weights")
 
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
                            dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
@@ -708,53 +748,38 @@ class func(object):
 
         return x
 
-    def norm_tv(self, x, *args):
+    def norm_tv(self, x, **kwargs):
         r"""
         TODO doc
         """
-        return self._norm_tv(x, *args)
+        return self._norm_tv(x, **kwargs)
 
-    def _norm_tv(self, x, *args):
-        if len(args) == 1:
-            dx, dy = self.grad(x, 2, args[0])
-        elif len(args) >= 2:
-            dx, dy = self.grad(x, 2, args[0], args[1])
-        else:
-            dx, dy = self.grad(x,  2)
+    def _norm_tv(self, x, **kwargs):
+        dx, dy = self.grad(x,  2, **kwargs)
 
         # TODO do not use temp var
         temp = np.sqrt(np.power(abs(dx), 2) + np.power(abs(dy), 2))
         y = np.sum(np.sum(temp, 0), 0)
         return y
 
-    def norm_tv1d(self, x, *args):
+    def norm_tv1d(self, x, **kwargs):
         r"""
         """
-        return self._norm_tv1d(x, *args)
+        return self._norm_tv1d(x, **kwargs)
 
-    def _norm_tv1d(self, x, *args):
-        if len(args) >= 1:
-            dx = self.grad(x, 1, args[0])
-        else:
-            dx = self.grad(x, 1)
+    def _norm_tv1d(self, x, **kwargs):
+        dx = self.grad(x, 1, **kwargs)
 
         y = np.sum(dx, 0)
         return y
 
-    def norm_tv3d(self, x, *args):
+    def norm_tv3d(self, x, **kwargs):
         r"""
         """
-        return self._norm_tv3d(x, *args)
+        return self._norm_tv3d(x, **kwargs)
 
-    def _norm_tv3d(self, x, *args):
-        if len(args) == 1:
-            dx, dy, dz = self.grad(x, 3, args[0])
-        elif len(args) == 2:
-            dx, dy, dz = self.grad(x, 3, args[0], args[1])
-        elif len(args) >= 3:
-            dx, dy, dz = self.grad(x, 3, args[0], args[1], args[2])
-        else:
-            dx, dy, dz = self.grad(x, 3)
+    def _norm_tv3d(self, x, **kwargs):
+        dx, dy, dz = self.grad(x, 3, **kwargs)
 
         # TODO remove temp var
         temp = np.sqrt(np.power(abs(dx), 2) +
@@ -764,22 +789,13 @@ class func(object):
         y = np.sum(np.sum(np.sum(temp, 0), 0), 0)
         return y
 
-    def norm_tv4d(self, x, *args):
+    def norm_tv4d(self, x, **kwargs):
         r"""
         """
-        return self._norm_tv4d(x, *args)
+        return self._norm_tv4d(x, **kwargs)
 
-    def _norm_tv4d(self, x, *args):
-        if len(args) == 1:
-            dx, dy, dz, dt = self.grad(x, 4, args[0])
-        elif len(args) == 2:
-            dx, dy, dz, dt = self.grad(x, 4, args[0], args[1])
-        elif len(args) == 3:
-            dx, dy, dz, dt = self.grad(x, 4, args[0], args[1], args[2])
-        elif len(args) >= 4:
-            dx, dy, dz, dt = self.grad(x, 4, args[0], args[1], args[2], args[3])
-        else:
-            dx, dy, dz, dt = self.grad(x, 4)
+    def _norm_tv4d(self, x, **kwargs):
+        dx, dy, dz, dt = self.grad(x, 4, **kwargs)
 
         # TODO remove temp var
         temp = np.sqrt(np.power(abs(dx), 2) +
