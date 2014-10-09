@@ -231,9 +231,6 @@ class func(object):
 
         wx, wy, wz, wt: array_like (optional)
             The weight(s) along the axis
-            ! the number of weights must match with the dimension
-            of the gradient !
-            (exemple dim = 2 --> wx, wy )
 
         Returns
         -------
@@ -268,10 +265,8 @@ class func(object):
         dim : int
             The dimension of the gradient that you want to apply on x. (1 or 2)
 
-        wx, wy : array_like
-            The weight(s) along the axis (optional)
-            ! the number of weights must match with the dimension
-            of the gradient !
+        wx, wy : array_like (optional)
+            The weight(s) along the axis
 
         Returns
         -------
@@ -287,23 +282,18 @@ class func(object):
         return self._grad1d(np.array(x), dim, *args)
 
     def _grad1d(self, x, dim, *args):
-        if len(args) > 0 and len(args) < dim:
-            raise ValueError("Missing some weights along the axis; \
-                  Cannot calculate the gradient with the weights")
-            dimtest = False
+        if len(args) != 0 and len(args) < dim:
+            print("Missing some weights along axis.")
         if len(args) > 0 and len(args) > dim:
-            raise ValueError("More weights than axis; Cannot calculate \
-                  the gradient with the weights")
-            dimtest = False
-        if len(args) == dim:
-            """Calculating the grad with the weights"""
-            dimtest = True
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the grad with the weights.")
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :] - x[:-1, :],
                                  np.zeros((1, np.shape(x)[1]))), axis=0)
 
-            if len(args) >= 1 and dimtest:
+            if len(args) >= 1:
                 dx *= args[0]
             # TODO find better way to handle more dimensions
             dy = None
@@ -311,8 +301,10 @@ class func(object):
         if dim >= 2:
             dy = np.concatenate((x[:, 1:] - x[:, :-1],
                                  np.zeros((np.shape(x)[0], 1))), axis=1)
-            if len(args) >= 2 and dimtest:
+            if len(args) >= 2:
                 dy *= args[1]
+
+        return dx, dy
 
     def grad2d(self, x, dim, *args):
         r"""
@@ -325,11 +317,9 @@ class func(object):
 
         dim : int
             The dimension of the gradient that you want to aply on x. (1, 2 or 3)
-            ! The number of weights must match with the dimension
-            of the gradient !
 
-        wx, wy, wz : array_like
-            The weight(s) along the axis (optional)
+        wx, wy, wz : array_like (optional)
+            The weight(s) along the axis
 
         Returns
         -------
@@ -344,17 +334,12 @@ class func(object):
         return self._grad2d(np.array(x), dim, *args)
 
     def _grad2d(self, x, dim, *args):
-        if len(args) > 0 and len(args) < dim:
-            raise ValueError("Missing some weights along the axis; Cannot \
-                calculate the gradient with the weights")
-            dimtest = False
+        if len(args) != 0 and len(args) < dim:
+            print("Missing some weights along axis.")
         if len(args) > 0 and len(args) > dim:
-            raise ValueError("More weights than axis; Cannot calculate \
-                  the gradient with the weights")
-            dimtest = False
-        if len(args) == dim:
-            """Calculating the gradient with the weights"""
-            dimtest = True
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the grad with the weights.")
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
@@ -362,21 +347,21 @@ class func(object):
                                 axis=0)
             dy = None
             dz = None
-            if len(args) >= 1 and dimtest:
+            if len(args) >= 1:
                 dx *= args[0]
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
                                  np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
                                 axis=1)
-            if len(args) >= 2 and dimtest:
+            if len(args) >= 2:
                 dy *= args[1]
 
         if dim >= 3:
             dz = np.concatenate((x[:, :, 1:] - x[:, :, :-1],
                                  np.zeros((np.shape(x)[0], np.shape(x)[1], 1))),
                                 axis=2)
-            if len(args) >= 3 and dimtest:
+            if len(args) >= 3:
                 dz *= args[2]
 
         return dx, dy, dz
@@ -392,10 +377,9 @@ class func(object):
 
         dim : int
             The dimension of gradient that you want to apply on x. (1,2,3 or 4)
-            !The number of weight must match with the dimension of the gradient!
 
-        wx, wy, wz. wt : array_like
-            The weight(s) along the axis (optional)
+        wx, wy, wz. wt : array_like (optional)
+            The weight(s) along the axis
 
         Returns
         -------
@@ -410,17 +394,12 @@ class func(object):
         return self._grad3d(np.array(x), dim, *args)
 
     def _grad3d(self, x, dim, *args):
-        if len(args) > 0 and len(args) < dim:
-            raise ValueError("Missing some weights along axis; Cannot calculate \
-                  the grad with the weights")
-            dimtest = False
+        if len(args) != 0 and len(args) < dim:
+            print("Missing some weights along axis.")
         if len(args) > 0 and len(args) > dim:
-            raise ValueError("More weights than axis; Cannot calculate the gradient \
-                  with the weights")
-            dimtest = False
-        if len(args) == dim:
-            """Calculate the gradient with the weights"""
-            dimtest = True
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the grad with the weights.")
 
         if dim >= 1:
             dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
@@ -429,28 +408,28 @@ class func(object):
             dy = None
             dz = None
             dt = None
-            if len(args) >= 1 and dimtest:
+            if len(args) >= 1:
                 dx *= args[0]
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3]))), axis=1)
-            if len(args) >= 2 and dimtest:
+            if len(args) >= 2:
                 dy *= args[1]
 
         if dim >= 3:
             dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3]))), axis=2)
-            if len(args) >= 3 and dimtest:
+            if len(args) >= 3:
                 dz *= args[2]
 
         if dim >= 4:
             dt = np.concatenate((x[:, :, :, 1:] - x[:, :, :, :-1],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           np.shape(x)[2], 1))), axis=3)
-            if len(args) >= 4 and dimtest:
+            if len(args) >= 4:
                 dt *= args[3]
 
         return dx, dy, dz, dt
@@ -466,12 +445,9 @@ class func(object):
 
         dim : int
             The dimension of gradient that you want to apply on x. (1,2,3 or 4)
-            ! The number of weight must match with the dimension of the gradient!
 
-        wx, wy, wz , wt : array_like
+        wx, wy, wz , wt : array_like  (optional)
             The weight(s) along the axis
-            Note: The weights are optional, but you need to
-            to include them all to use them.
 
         Returns
         -------
@@ -487,17 +463,12 @@ class func(object):
         return self._grad4d(np.array(x), dim, *args)
 
     def _grad4d(self, x, dim, *args):
-        if len(args) > 0 and len(args) < dim:
-            raise ValueError("Missing some weights along axis; Cannot \
-                calculate the gradient with the weights")
-            dimtest = False
+        if len(args) != 0 and len(args) < dim:
+            print("Missing some weights along axis.")
         if len(args) > 0 and len(args) > dim:
-            raise ValueError("More weights than axis; Cannot calculate \
-                  the gradient with the weights")
-            dimtest = False
-        if len(args) == dim:
-            """Calculate the gradient with the weights"""
-            dimtest = True
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the grad with the weights.")
 
         if dim <= 1:
             dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
@@ -507,7 +478,7 @@ class func(object):
             dy = None
             dz = None
             dt = None
-            if len(args) >= 1 and dimtest:
+            if len(args) >= 1:
                 dx *= args[0]
 
         if dim <= 2:
@@ -515,7 +486,7 @@ class func(object):
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
                                 axis=1)
-            if len(args) >= 2 and dimtest:
+            if len(args) >= 2:
                 dy *= args[1]
 
         if dim <= 3:
@@ -523,7 +494,7 @@ class func(object):
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3], np.shape(x)[4]))),
                                 axis=2)
-            if len(args) >= 3 and dimtest:
+            if len(args) >= 3:
                 dz *= args[2]
 
         if dim <= 4:
@@ -531,7 +502,7 @@ class func(object):
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           np.shape(x)[2], 1, np.shape(x)[4]))),
                                 axis=3)
-            if len(args) >= 4 and dimtest:
+            if len(args) >= 4:
                 dt *= args[3]
 
         return dx, dy, dz, dt
@@ -545,7 +516,7 @@ class func(object):
         dx : array_like
             Gradients following their axis.
 
-        wx : array_like
+        wx : array_like  (optional)
             The weight(s) along the axis (optional)
 
         Returns
@@ -561,10 +532,11 @@ class func(object):
 
     def _div1d(self, dx, *args):
         if len(args) > 1:
-            raise ValueError("Too much arguments; \
-                  Cannot calculate the grad with the weights")
-        if len(args) == 1:
-            """Calculate the gradient with the weights"""
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the Divergence with the weights.")
+
+        if len(args) >= 1:
             dx *= np.conjugate(args[0])
 
         x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
@@ -597,15 +569,16 @@ class func(object):
         return self._div(np.array(dx), np.array(dy), *args)
 
     def _div2d(self, dx, dy, *args):
+        if len(args) != 0 and len(args) < 2:
+            print("Missing some weights along axis.")
         if len(args) > 2:
-            raise ValueError("Too much argument; Cannot calculate \
-                  the gradient with the weights")
-        if len(args) == 1:
-            raise ValueError("Missing some weights along axis; \
-                  Cannot calculate the gradient with the weights")
-        if len(args) == 2:
-            """Calculate the gradient with the weights"""
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the Divergence with the weights.")
+
+        if len(args) >= 1:
             dx *= np.conjugate(args[0])
+        if len(args) >= 2:
             dy *= np.conjugate(args[1])
 
         x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
@@ -641,16 +614,18 @@ class func(object):
         return self._div3d(np.array(dx), np.array(dy), np.array(dz), *args)
 
     def _div3d(self, dx, dy, dz, *args):
+        if len(args) != 0 and len(args) < 3:
+            print("Missing some weights along axis.")
         if len(args) > 3:
-            raise ValueError("Too much argument; \
-                  Cannot calculate the gradient with the weights")
-        if len(args) < 3 and len(args) > 0:
-            raise ValueError("Missing some wights along axis; \
-                  Cannot calculate the gradient with the weights")
-        if len(args) == 3:
-            """Calculate the gradient with the weights"""
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the Divergence with the weights.")
+
+        if len(args) >= 1:
             dx *= np.conjugate(args[0])
+        if len(args) >= 2:
             dy *= np.conjugate(args[1])
+        if len(args) >= 3:
             dz *= np.conjugate(args[2])
 
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
@@ -695,17 +670,20 @@ class func(object):
                            np.array(dt), *args)
 
     def _div4d(self, dx, dy, dz, dt, *args):
+        if len(args) != 0 and len(args) < 4:
+            print("Missing some weights along axis.")
         if len(args) > 4:
-            raise ValueError("Too much argument; \
-                  Cannot calculate the gradient with the weights")
-        if len(args) < 4 and len(args) > 0:
-            raise ValueError("Missing some weights along axis; \
-                  Cannot calculate the gradient with the weights")
-        if len(args) == 4:
-            """Calculate the gradient with the weights"""
+            print("More weights than axis.")
+        if len(args) > 0:
+            print("Calculating the Divergence with the weights.")
+
+        if len(args) >= 1:
             dx *= np.conjugate(args[0])
+        if len(args) >= 2:
             dy *= np.conjugate(args[1])
+        if len(args) >= 3:
             dz *= np.conjugate(args[2])
+        if len(args) >= 4:
             dt *= np.conjugate(args[3])
 
         x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
@@ -730,37 +708,54 @@ class func(object):
 
         return x
 
-    def norm_tv(self, x):
+    def norm_tv(self, x, *args):
         r"""
         TODO doc
         """
-        return self._norm_tv(x)
+        return self._norm_tv(x, *args)
 
-    def _norm_tv(self, x):
+    def _norm_tv(self, x, *args):
+        if len(args) == 1:
+            dx, dy = self.grad(x, 2, args[0])
+        elif len(args) >= 2:
+            dx, dy = self.grad(x, 2, args[0], args[1])
+        else:
+            dx, dy = self.grad(x,  2)
 
-        dx, dy = self.grad(x,  2)
         # TODO do not use temp var
         temp = np.sqrt(np.power(abs(dx), 2) + np.power(abs(dy), 2))
         y = np.sum(np.sum(temp, 0), 0)
         return y
 
-    def norm_tv1d(self, x):
+    def norm_tv1d(self, x, *args):
         r"""
         """
-        return self._norm_tv1d(x)
+        return self._norm_tv1d(x, *args)
 
-    def _norm_tv1d(self, x):
-        dx = self.grad(x, 1)
+    def _norm_tv1d(self, x, *args):
+        if len(args) >= 1:
+            dx = self.grad(x, 1, args[0])
+        else:
+            dx = self.grad(x, 1)
+
         y = np.sum(dx, 0)
         return y
 
-    def norm_tv3d(self, x):
+    def norm_tv3d(self, x, *args):
         r"""
         """
-        return self._norm_tv3d(x)
+        return self._norm_tv3d(x, *args)
 
-    def _norm_tv3d(self, x):
-        dx, dy, dz = self.grad(x, 3)
+    def _norm_tv3d(self, x, *args):
+        if len(args) == 1:
+            dx, dy, dz = self.grad(x, 3, args[0])
+        elif len(args) == 2:
+            dx, dy, dz = self.grad(x, 3, args[0], args[1])
+        elif len(args) >= 3:
+            dx, dy, dz = self.grad(x, 3, args[0], args[1], args[2])
+        else:
+            dx, dy, dz = self.grad(x, 3)
+
         # TODO remove temp var
         temp = np.sqrt(np.power(abs(dx), 2) +
                        np.power(abs(dy), 2) +
@@ -769,13 +764,23 @@ class func(object):
         y = np.sum(np.sum(np.sum(temp, 0), 0), 0)
         return y
 
-    def norm_tv4d(self, x):
+    def norm_tv4d(self, x, *args):
         r"""
         """
-        return self._norm_tv4d(x)
+        return self._norm_tv4d(x, *args)
 
-    def _norm_tv4d(self, x):
-        dx, dy, dz, dt = self.grad(x, 4)
+    def _norm_tv4d(self, x, *args):
+        if len(args) == 1:
+            dx, dy, dz, dt = self.grad(x, 4, args[0])
+        elif len(args) == 2:
+            dx, dy, dz, dt = self.grad(x, 4, args[0], args[1])
+        elif len(args) == 3:
+            dx, dy, dz, dt = self.grad(x, 4, args[0], args[1], args[2])
+        elif len(args) >= 4:
+            dx, dy, dz, dt = self.grad(x, 4, args[0], args[1], args[2], args[3])
+        else:
+            dx, dy, dz, dt = self.grad(x, 4)
+
         # TODO remove temp var
         temp = np.sqrt(np.power(abs(dx), 2) +
                        np.power(abs(dy), 2) +
