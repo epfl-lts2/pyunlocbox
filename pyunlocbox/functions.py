@@ -1078,6 +1078,7 @@ class norm_tv(norm):
         iter = 0
         while iter <= maxit:
             # Current Solution
+            # TODO implement unique div
             sol = x - T * self.div2d(r, s, wx, wy)
 
             obj = .5*np.linalg.norm(x[:] - sol[:]) + T * norm_tv(sol, wx, wy)
