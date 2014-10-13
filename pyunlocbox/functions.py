@@ -22,7 +22,6 @@ inherit from it implement the methods. These classes include :
 
 """
 
-from sys import stderr
 from time import time
 import numpy as np
 
@@ -218,6 +217,316 @@ class func(object):
         \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
         """
         return self._prox(np.array(x), T, **kwargs)
+
+    def div1d(self, dx, **kwargs):
+        r"""
+        Divergence operator in one dimensions.
+
+        Parameters
+        ----------
+        dx : array_like
+            Gradients following their axis.
+
+        wx : array_like  (optional)
+            The weight(s) along the axis (optional)
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
+        """
+        return self._div1d(np.array(dx), **kwargs)
+
+    def _div1d(self, dx, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
+
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+
+        x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
+                            dx[1:-1, :] - dx[:-2, :],
+                            np.expand_dims(-dx[-1, :], axis=0)),
+                           axis=0)
+        return x
+
+    def div2d(self, dx, dy, **kwargs):
+        r"""
+        Divergence operator in two dimensions.
+
+        Parameters
+        ----------
+        dx, dy : array_like
+            Gradients following their axis.
+
+        wx, wy : array_like
+            The weight(s) along the axis (optional)
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO
+        """
+        return self._div(np.array(dx), np.array(dy), **kwargs)
+
+    def _div2d(self, dx, dy, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
+
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+        try:
+            dy *= np.conjugate(kwargs["wy"])
+        except KeyError:
+            print("No weigths along wy; using default weights")
+
+        x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
+                            dx[1:-1, :, :] - dx[:-2, :, :],
+                            np.expand_dims(-dx[-1, :, :], axis=0)), axis=0)
+        x = x - np.concatenate((np.expand_dims(dy[:, 1, :], axis=1),
+                                dy[:, 1:-1, :] - dy[:, 0:-2, :],
+                               np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
+
+        return x
+
+    def div3d(self, dx, dy, dz, **kwargs):
+        r"""
+        Divergence operator in three dimensions.
+
+        Parameters
+        ----------
+        dx, dy, dz : array_like
+            Gradients following their axis.
+
+        wx, wy, wz : array_like
+            The weight(s) along the axis (optional)
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
+        """
+        return self._div3d(np.array(dx), np.array(dy), np.array(dz), **kwargs)
+
+    def _div3d(self, dx, dy, dz, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
+
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+        try:
+            dy *= np.conjugate(kwargs["wy"])
+        except KeyError:
+            print("No weigths along wy; using default weights")
+        try:
+            dz *= np.conjugate(kwargs["wz"])
+        except KeyError:
+            print("No weigths along wz; using default weights")
+
+        x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
+                           dx[1:-1, :, :, :] - dx[:-2, :, :, :],
+                           np.expand_dims(-dx[-1, :, :, :], axis=0)),
+                           axis=0)
+
+        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :], axis=1)),
+                               dy[:, 1:-1, :, :] - dy[:, :-2, :, :],
+                               np.expand_dims(-dy[:, -1, :, :], axis=1)),
+                               axis=1)
+
+        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :], axis=2)),
+                               dz[:, :, 1:-1, :] - dz[:, :, :-2, :],
+                               np.expand_dims(-dz[:, :, -1, :], axis=2)),
+                               axis=2)
+        return x
+
+    def div4d(self, dx, dy, dz, dt, **kwargs):
+        r"""
+        Divergence operator in four dimensions.
+
+        Parameters
+        ----------
+        dx, dy, dz, dt : array_like
+            Gradients following their axis.
+
+        wx, wy, wz , wt : array_like
+            The weight(s) along the axis (optional)
+
+        Returns
+        -------
+        x : ndarray
+            Divergence image.
+
+        Notes
+        -----
+        TODO.
+        TODO.
+        """
+        return self._div4d(np.array(dx), np.array(dy), np.array(dz),
+                           np.array(dt), **kwargs)
+
+    def _div4d(self, dx, dy, dz, dt, **kwargs):
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz", "wt"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
+
+        try:
+            dx *= np.conjugate(kwargs["wx"])
+        except KeyError:
+            print("No weigths along wx; using default weights")
+        try:
+            dy *= np.conjugate(kwargs["wy"])
+        except KeyError:
+            print("No weigths along wy; using default weights")
+        try:
+            dz *= np.conjugate(kwargs["wz"])
+        except KeyError:
+            print("No weigths along wz; using default weights")
+        try:
+            dt *= np.conjugate(kwargs["wt"])
+        except KeyError:
+            print("No weigths along wt; using default weights")
+
+        x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
+                           dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
+                           np.expand_dims(-dx[-1, :, :, :, :], axis=0)),
+                           axis=0)
+
+        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :, :], axis=1)),
+                               dy[:, 1:-1, :, :, :] - dy[:, :-2, :, :, :],
+                               np.expand_dims(-dy[:, -1, :, :, :], axis=1)),
+                               axis=1)
+
+        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :, :], axis=2)),
+                               dz[:, :, 1:-1, :, :] - dz[:, :, :-2, :, :],
+                               np.expand_dims(-dz[:, :, -1, :, :], axis=2)),
+                               axis=2)
+
+        x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 1, :], axis=3)),
+                               dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
+                               np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
+                               axis=3)
+
+        return x
+
+    def cap(self, x):
+        r"""
+        Test the capabilities of the function object.
+
+        Parameters
+        ----------
+        x : array_like
+            The evaluation point. Not really needed, but this function calls
+            the methods of the object to test if they can properly execute
+            without raising an exception. Therefore it needs some evaluation
+            point with a consistent size.
+
+        Returns
+        -------
+        cap : list of string
+            A list of capabilities ('EVAL', 'GRAD', 'PROX').
+        """
+        tmp = self.verbosity
+        self.verbosity = 'NONE'
+        cap = ['EVAL', 'GRAD', 'PROX']
+        try:
+            self.eval(x)
+        except NotImplementedError:
+            cap.remove('EVAL')
+        try:
+            self.grad(x)
+        except NotImplementedError:
+            cap.remove('GRAD')
+        try:
+            self.prox(x, 1)
+        except NotImplementedError:
+            cap.remove('PROX')
+        self.verbosity = tmp
+        return cap
+
+
+class dummy(func):
+    r"""
+    Dummy function object.
+
+    This can be used as a second function object when there is only one
+    function to minimize. It always evaluates as 0.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.dummy()
+    >>> x = [1, 2, 3, 4]
+    >>> f.eval(x)
+    0
+    >>> f.prox(x, 1)
+    array([1, 2, 3, 4])
+    >>> f.grad(x)
+    array([ 0.,  0.,  0.,  0.])
+
+    """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(dummy, self).__init__(**kwargs)
+
+    def _eval(self, x):
+        return 0
+
+    def _prox(self, x, T):
+        return x
+
+    def _grad(self, x):
+        return np.zeros(np.shape(x))
+
+
+class norm(func):
+    r"""
+    Base class which defines the attributes of the `norm` objects.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
+
+    Parameters
+    ----------
+    lambda_ : float, optional
+        Regularization parameter :math:`\lambda`. Default is 1.
+    w : array_like, optional
+        Weights for a weighted norm. Default is 1.
+    """
+
+    def __init__(self, lambda_=1, w=1, **kwargs):
+        super(norm, self).__init__(**kwargs)
+        self.lambda_ = lambda_
+        self.w = np.array(w)
 
     def grad(self, x, dim, **kwargs):
         r"""
@@ -531,374 +840,6 @@ class func(object):
 
         return dx, dy, dz, dt
 
-    def div1d(self, dx, **kwargs):
-        r"""
-        Divergence operator in one dimensions.
-
-        Parameters
-        ----------
-        dx : array_like
-            Gradients following their axis.
-
-        wx : array_like  (optional)
-            The weight(s) along the axis (optional)
-
-        Returns
-        -------
-        x : ndarray
-            Divergence image.
-
-        Notes
-        -----
-        TODO.
-        """
-        return self._div1d(np.array(dx), **kwargs)
-
-    def _div1d(self, dx, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-
-        x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
-                            dx[1:-1, :] - dx[:-2, :],
-                            np.expand_dims(-dx[-1, :], axis=0)),
-                           axis=0)
-        return x
-
-    def div2d(self, dx, dy, **kwargs):
-        r"""
-        Divergence operator in two dimensions.
-
-        Parameters
-        ----------
-        dx, dy : array_like
-            Gradients following their axis.
-
-        wx, wy : array_like
-            The weight(s) along the axis (optional)
-
-        Returns
-        -------
-        x : ndarray
-            Divergence image.
-
-        Notes
-        -----
-        TODO
-        """
-        return self._div(np.array(dx), np.array(dy), **kwargs)
-
-    def _div2d(self, dx, dy, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx", "wy"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-        try:
-            dy *= np.conjugate(kwargs["wy"])
-        except KeyError:
-            print("No weigths along wy; using default weights")
-
-        x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
-                            dx[1:-1, :, :] - dx[:-2, :, :],
-                            np.expand_dims(-dx[-1, :, :], axis=0)), axis=0)
-        x = x - np.concatenate((np.expand_dims(dy[:, 1, :], axis=1),
-                                dy[:, 1:-1, :] - dy[:, 0:-2, :],
-                               np.expand_dims(-dy[:, -1, :], axis=1)), axis=1)
-
-        return x
-
-    def div3d(self, dx, dy, dz, **kwargs):
-        r"""
-        Divergence operator in three dimensions.
-
-        Parameters
-        ----------
-        dx, dy, dz : array_like
-            Gradients following their axis.
-
-        wx, wy, wz : array_like
-            The weight(s) along the axis (optional)
-
-        Returns
-        -------
-        x : ndarray
-            Divergence image.
-
-        Notes
-        -----
-        TODO.
-        """
-        return self._div3d(np.array(dx), np.array(dy), np.array(dz), **kwargs)
-
-    def _div3d(self, dx, dy, dz, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx", "wy", "wz"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-        try:
-            dy *= np.conjugate(kwargs["wy"])
-        except KeyError:
-            print("No weigths along wy; using default weights")
-        try:
-            dz *= np.conjugate(kwargs["wz"])
-        except KeyError:
-            print("No weigths along wz; using default weights")
-
-        x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
-                           dx[1:-1, :, :, :] - dx[:-2, :, :, :],
-                           np.expand_dims(-dx[-1, :, :, :], axis=0)),
-                           axis=0)
-
-        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :], axis=1)),
-                               dy[:, 1:-1, :, :] - dy[:, :-2, :, :],
-                               np.expand_dims(-dy[:, -1, :, :], axis=1)),
-                               axis=1)
-
-        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :], axis=2)),
-                               dz[:, :, 1:-1, :] - dz[:, :, :-2, :],
-                               np.expand_dims(-dz[:, :, -1, :], axis=2)),
-                               axis=2)
-        return x
-
-    def div4d(self, dx, dy, dz, dt, **kwargs):
-        r"""
-        Divergence operator in four dimensions.
-
-        Parameters
-        ----------
-        dx, dy, dz, dt : array_like
-            Gradients following their axis.
-
-        wx, wy, wz , wt : array_like
-            The weight(s) along the axis (optional)
-
-        Returns
-        -------
-        x : ndarray
-            Divergence image.
-
-        Notes
-        -----
-        TODO.
-        TODO.
-        """
-        return self._div4d(np.array(dx), np.array(dy), np.array(dz),
-                           np.array(dt), **kwargs)
-
-    def _div4d(self, dx, dy, dz, dt, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx", "wy", "wz", "wt"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-        try:
-            dy *= np.conjugate(kwargs["wy"])
-        except KeyError:
-            print("No weigths along wy; using default weights")
-        try:
-            dz *= np.conjugate(kwargs["wz"])
-        except KeyError:
-            print("No weigths along wz; using default weights")
-        try:
-            dt *= np.conjugate(kwargs["wt"])
-        except KeyError:
-            print("No weigths along wt; using default weights")
-
-        x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
-                           dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
-                           np.expand_dims(-dx[-1, :, :, :, :], axis=0)),
-                           axis=0)
-
-        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :, :], axis=1)),
-                               dy[:, 1:-1, :, :, :] - dy[:, :-2, :, :, :],
-                               np.expand_dims(-dy[:, -1, :, :, :], axis=1)),
-                               axis=1)
-
-        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :, :], axis=2)),
-                               dz[:, :, 1:-1, :, :] - dz[:, :, :-2, :, :],
-                               np.expand_dims(-dz[:, :, -1, :, :], axis=2)),
-                               axis=2)
-
-        x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 1, :], axis=3)),
-                               dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
-                               np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
-                               axis=3)
-
-        return x
-
-    def norm_tv(self, x, **kwargs):
-        r"""
-        TODO doc
-        """
-        return self._norm_tv(x, **kwargs)
-
-    def _norm_tv(self, x, **kwargs):
-        dx, dy = self.grad(x,  2, **kwargs)
-
-        # TODO do not use temp var
-        temp = np.sqrt(np.power(abs(dx), 2) + np.power(abs(dy), 2))
-        y = np.sum(np.sum(temp, 0), 0)
-        return y
-
-    def norm_tv1d(self, x, **kwargs):
-        r"""
-        """
-        return self._norm_tv1d(x, **kwargs)
-
-    def _norm_tv1d(self, x, **kwargs):
-        dx = self.grad(x, 1, **kwargs)
-
-        y = np.sum(dx, 0)
-        return y
-
-    def norm_tv3d(self, x, **kwargs):
-        r"""
-        """
-        return self._norm_tv3d(x, **kwargs)
-
-    def _norm_tv3d(self, x, **kwargs):
-        dx, dy, dz = self.grad(x, 3, **kwargs)
-
-        # TODO remove temp var
-        temp = np.sqrt(np.power(abs(dx), 2) +
-                       np.power(abs(dy), 2) +
-                       np.power(abs(dz), 2))
-
-        y = np.sum(np.sum(np.sum(temp, 0), 0), 0)
-        return y
-
-    def norm_tv4d(self, x, **kwargs):
-        r"""
-        """
-        return self._norm_tv4d(x, **kwargs)
-
-    def _norm_tv4d(self, x, **kwargs):
-        dx, dy, dz, dt = self.grad(x, 4, **kwargs)
-
-        # TODO remove temp var
-        temp = np.sqrt(np.power(abs(dx), 2) +
-                       np.power(abs(dy), 2) +
-                       np.power(abs(dz), 2) +
-                       np.power(abs(dt), 2))
-
-        y = np.sum(np.sum(np.sum(np.sum(temp, 0), 0), 0), 0)
-        return y
-
-    def cap(self, x):
-        r"""
-        Test the capabilities of the function object.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point. Not really needed, but this function calls
-            the methods of the object to test if they can properly execute
-            without raising an exception. Therefore it needs some evaluation
-            point with a consistent size.
-
-        Returns
-        -------
-        cap : list of string
-            A list of capabilities ('EVAL', 'GRAD', 'PROX').
-        """
-        tmp = self.verbosity
-        self.verbosity = 'NONE'
-        cap = ['EVAL', 'GRAD', 'PROX']
-        try:
-            self.eval(x)
-        except NotImplementedError:
-            cap.remove('EVAL')
-        try:
-            self.grad(x)
-        except NotImplementedError:
-            cap.remove('GRAD')
-        try:
-            self.prox(x, 1)
-        except NotImplementedError:
-            cap.remove('PROX')
-        self.verbosity = tmp
-        return cap
-
-
-class dummy(func):
-    r"""
-    Dummy function object.
-
-    This can be used as a second function object when there is only one
-    function to minimize. It always evaluates as 0.
-
-    Examples
-    --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.dummy()
-    >>> x = [1, 2, 3, 4]
-    >>> f.eval(x)
-    0
-    >>> f.prox(x, 1)
-    array([1, 2, 3, 4])
-    >>> f.grad(x)
-    array([ 0.,  0.,  0.,  0.])
-
-    """
-
-    def __init__(self, **kwargs):
-        # Constructor takes keyword-only parameters to prevent user errors.
-        super(dummy, self).__init__(**kwargs)
-
-    def _eval(self, x):
-        return 0
-
-    def _prox(self, x, T):
-        return x
-
-    def _grad(self, x):
-        return np.zeros(np.shape(x))
-
-
-class norm(func):
-    r"""
-    Base class which defines the attributes of the `norm` objects.
-
-    See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.func` base class.
-
-    Parameters
-    ----------
-    lambda_ : float, optional
-        Regularization parameter :math:`\lambda`. Default is 1.
-    w : array_like, optional
-        Weights for a weighted norm. Default is 1.
-    """
-
-    def __init__(self, lambda_=1, w=1, **kwargs):
-        super(norm, self).__init__(**kwargs)
-        self.lambda_ = lambda_
-        self.w = np.array(w)
-
 
 class norm_l1(norm):
     r"""
@@ -1058,8 +999,8 @@ class norm_tv(norm):
             list_param = ['tol', 'verbose', 'maxit', 'weights']
             for param in kwargs:
                 if param not in list_param:
-                    print("Warning, ", param, " is not a valid parameter",
-                          file=stderr)
+                    raise ValueError("Warning, ", param, " is not a valid \
+                                      parameter")
 
             try:
                 tol = kwargs['tol']
@@ -1143,8 +1084,6 @@ class norm_tv(norm):
                 print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
                       iter = {3}".format(obj, rel_obj, crit, iter))
                 print("exec_time = ", exec_time)
-
-
 
 
 class proj_b2(proj):
