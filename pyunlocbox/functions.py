@@ -200,8 +200,8 @@ class func(object):
             The evaluation point.
         T : float
             The regularization parameter
-        TODO 
-        *args : 
+        TODO
+        *args :
             More parameters
 
         Returns
