@@ -540,7 +540,6 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wx; using default weights")
             # TODO find better way to handle more dimensions
-            dy = None
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:] - x[:, :-1],
@@ -550,7 +549,11 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wy; using default weights")
 
-        return dx, dy
+        if dim == 1:
+            return dx
+
+        if dim == 2:
+            return dx, dy
 
     def grad2d(self, x, dim, **kwargs):
         r"""
@@ -590,8 +593,6 @@ class norm_tv(norm):
             dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
                                  np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
                                 axis=0)
-            dy = None
-            dz = None
             try:
                 dx *= kwargs["wx"]
             except KeyError:
@@ -615,7 +616,14 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wz; using default weights")
 
-        return dx, dy, dz
+        if dim == 1:
+            return dx
+
+        if dim == 2:
+            return dx, dy
+
+        if dim == 3:
+            return dx, dy, dz
 
     def grad3d(self, x, dim, **kwargs):
         r"""
@@ -655,9 +663,6 @@ class norm_tv(norm):
             dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                           np.shape(x)[3]))), axis=0)
-            dy = None
-            dz = None
-            dt = None
             try:
                 dx *= kwargs["wx"]
             except KeyError:
@@ -690,7 +695,17 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wt; using default weights")
 
-        return dx, dy, dz, dt
+        if dim == 1:
+            return dx
+
+        if dim == 2:
+            return dx, dy
+
+        if dim == 3:
+            return dx, dy, dz
+
+        if dim == 4:
+            return dx, dy, dz, dt
 
     def grad4d(self, x, dim, **kwargs):
         r"""
@@ -732,9 +747,6 @@ class norm_tv(norm):
                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
                                 axis=0)
-            dy = None
-            dz = None
-            dt = None
             try:
                 dx *= kwargs["wx"]
             except KeyError:
@@ -770,9 +782,17 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wt; using default weights")
 
-        return dx, dy, dz, dt
+        if dim == 1:
+            return dx
 
+        if dim == 2:
+            return dx, dy
 
+        if dim == 3:
+            return dx, dy, dz
+
+        if dim == 4:
+            return dx, dy, dz, dt
 
     def _prox(self, x, T, dim, **kwargs):
         # Time counter
