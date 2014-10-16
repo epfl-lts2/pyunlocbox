@@ -332,6 +332,134 @@ class norm(func):
         self.lambda_ = lambda_
         self.w = np.array(w)
 
+
+class norm_l1(norm):
+    r"""
+    L1-norm function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    * The L1-norm of the vector `x` is given by
+      :math:`\lambda \|w \cdot (A(x)-y)\|_1`.
+    * The L1-norm proximal operator evaluated at `x` is given by
+      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
+      \|w \cdot (A(z)-y)\|_1` where :math:`\gamma = \lambda \cdot T`. This is
+      simply a soft thresholding.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.norm_l1()
+    >>> f.eval([1, 2, 3, 4])
+    10
+    >>> f.prox([1, 2, 3, 4], 1)
+    array([ 0.,  1.,  2.,  3.])
+
+    """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(norm_l1, self).__init__(**kwargs)
+
+    def _eval(self, x):
+        sol = self.A(np.array(x)) - self.y
+        sol = self.lambda_ * np.sum(np.abs(self.w * sol))
+        return sol
+
+    def _prox(self, x, T):
+        # Gamma is T in the matlab UNLocBox implementation.
+        gamma = self.lambda_ * T
+        if self.tight:
+            sol = self.A(x) - self.y
+            sol = _soft_threshold(sol, gamma*self.nu*self.w) - sol
+            sol = x + self.At(sol) / self.nu
+        else:
+            raise NotImplementedError('Not implemented for non tight frame.')
+        return sol
+
+
+class norm_l2(norm):
+    r"""
+    L2-norm function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    * The squared L2-norm of the vector `x` is given by
+      :math:`\lambda \|w \cdot (A(x)-y)\|_2^2`.
+    * The squared L2-norm proximal operator evaluated at `x` is given by
+      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
+      \|w \cdot (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`.
+    * The squared L2-norm gradient evaluated at `x` is given by
+      :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.norm_l2()
+    >>> x = [1, 2, 3, 4]
+    >>> f.eval(x)
+    30
+    >>> f.prox(x, 1)
+    array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
+    >>> f.grad(x)
+    array([2, 4, 6, 8])
+
+    """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(norm_l2, self).__init__(**kwargs)
+
+    def _eval(self, x):
+        sol = self.A(np.array(x)) - self.y
+        sol = self.lambda_ * np.sum((self.w * sol)**2)
+        return sol
+
+    def _prox(self, x, T):
+        # Gamma is T in the matlab UNLocBox implementation.
+        gamma = self.lambda_ * T
+        if self.tight:
+            sol = np.array(x) + 2. * gamma * self.At(self.y * self.w**2)
+            sol /= 1. + 2. * gamma * self.nu * self.w**2
+        else:
+            raise NotImplementedError('Not implemented for non tight frame.')
+        return sol
+
+    def _grad(self, x):
+        sol = self.A(np.array(x)) - self.y
+        return 2 * self.lambda_ * self.w * self.At(sol)
+
+
+class norm_tv(norm):
+    r"""
+    TODO implement norm as a class
+    AND Doc
+    """
+
+    def __init__(self, **kwargs):
+        super(norm_tv, self).__init__(**kwargs)
+
+    def _eval(self, x, dim):
+        f = func()
+        i = 0
+        grads = ['dx', 'dy', 'dz', 'dt']
+        grads[:dim+1] = f.grad(x, dim)
+        y = 0
+        for g in grads:
+            y += np.power(abs(g), 2)
+            y = np.sqrt(y)
+        while i <= dim:
+            y = np.sum(y, 0)
+        return y
+
     def grad(self, x, dim, **kwargs):
         r"""
         Function gradient in all dimensions.
@@ -645,132 +773,6 @@ class norm(func):
         return dx, dy, dz, dt
 
 
-class norm_l1(norm):
-    r"""
-    L1-norm function object.
-
-    See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
-    takes keyword-only parameters.
-
-    Notes
-    -----
-    * The L1-norm of the vector `x` is given by
-      :math:`\lambda \|w \cdot (A(x)-y)\|_1`.
-    * The L1-norm proximal operator evaluated at `x` is given by
-      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
-      \|w \cdot (A(z)-y)\|_1` where :math:`\gamma = \lambda \cdot T`. This is
-      simply a soft thresholding.
-
-    Examples
-    --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l1()
-    >>> f.eval([1, 2, 3, 4])
-    10
-    >>> f.prox([1, 2, 3, 4], 1)
-    array([ 0.,  1.,  2.,  3.])
-
-    """
-
-    def __init__(self, **kwargs):
-        # Constructor takes keyword-only parameters to prevent user errors.
-        super(norm_l1, self).__init__(**kwargs)
-
-    def _eval(self, x):
-        sol = self.A(np.array(x)) - self.y
-        sol = self.lambda_ * np.sum(np.abs(self.w * sol))
-        return sol
-
-    def _prox(self, x, T):
-        # Gamma is T in the matlab UNLocBox implementation.
-        gamma = self.lambda_ * T
-        if self.tight:
-            sol = self.A(x) - self.y
-            sol = _soft_threshold(sol, gamma*self.nu*self.w) - sol
-            sol = x + self.At(sol) / self.nu
-        else:
-            raise NotImplementedError('Not implemented for non tight frame.')
-        return sol
-
-
-class norm_l2(norm):
-    r"""
-    L2-norm function object.
-
-    See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
-    takes keyword-only parameters.
-
-    Notes
-    -----
-    * The squared L2-norm of the vector `x` is given by
-      :math:`\lambda \|w \cdot (A(x)-y)\|_2^2`.
-    * The squared L2-norm proximal operator evaluated at `x` is given by
-      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
-      \|w \cdot (A(z)-y)\|_2^2` where :math:`\gamma = \lambda \cdot T`.
-    * The squared L2-norm gradient evaluated at `x` is given by
-      :math:`2 \lambda \cdot At(w \cdot (A(x)-y))`.
-
-    Examples
-    --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l2()
-    >>> x = [1, 2, 3, 4]
-    >>> f.eval(x)
-    30
-    >>> f.prox(x, 1)
-    array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
-    >>> f.grad(x)
-    array([2, 4, 6, 8])
-
-    """
-
-    def __init__(self, **kwargs):
-        # Constructor takes keyword-only parameters to prevent user errors.
-        super(norm_l2, self).__init__(**kwargs)
-
-    def _eval(self, x):
-        sol = self.A(np.array(x)) - self.y
-        sol = self.lambda_ * np.sum((self.w * sol)**2)
-        return sol
-
-    def _prox(self, x, T):
-        # Gamma is T in the matlab UNLocBox implementation.
-        gamma = self.lambda_ * T
-        if self.tight:
-            sol = np.array(x) + 2. * gamma * self.At(self.y * self.w**2)
-            sol /= 1. + 2. * gamma * self.nu * self.w**2
-        else:
-            raise NotImplementedError('Not implemented for non tight frame.')
-        return sol
-
-    def _grad(self, x):
-        sol = self.A(np.array(x)) - self.y
-        return 2 * self.lambda_ * self.w * self.At(sol)
-
-
-class norm_tv(norm):
-    r"""
-    TODO implement norm as a class
-    AND Doc
-    """
-
-    def __init__(self, **kwargs):
-        super(norm_tv, self).__init__(**kwargs)
-
-    def _eval(self, x, dim):
-        f = func()
-        i = 0
-        grads = ['dx', 'dy', 'dz', 'dt']
-        grads[:dim+1] = f.grad(x, dim)
-        y = 0
-        for g in grads:
-            y += np.power(abs(g), 2)
-            y = np.sqrt(y)
-        while i <= dim:
-            y = np.sum(y, 0)
-        return y
 
     def _prox(self, x, T, dim, **kwargs):
         # Time counter
