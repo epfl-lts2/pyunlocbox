@@ -123,11 +123,6 @@ class FunctionsTestCase(unittest.TestCase):
                 y_test = functions._soft_threshold(x, T, cmplx)
                 nptest.assert_array_equal(y_test, y_gold[k])
 
-    def test_norm(self):
-        f = functions.norm()
-        mat = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
-        self.assertEqual(np.array([[20, -2, 3, 5], [0, 0, 0, 0]]), f.grad, mat)
-
     def test_norm_l1(self):
         """
         Test the norm_l1 derived class.
@@ -139,6 +134,11 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
         self.assertEqual(f.eval([3, 4]), 21)
         self.assertEqual(f.eval(np.array([-3, 4])), 21)
+
+    def test_norm_tv(self):
+        f = functions.norm_tv()
+        mat = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
+        self.assertEqual(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), f.grad(mat, 1))
 
     def test_proj_b2(self):
         """
