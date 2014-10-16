@@ -138,7 +138,9 @@ class FunctionsTestCase(unittest.TestCase):
     def test_norm_tv(self):
         f = functions.norm_tv()
         mat = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
-        self.assertEqual(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), f.grad(mat, 1))
+        dx, dy = f.grad(mat,2)
+        nptest.assert_array_equal(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), dx)
+        nptest.assert_array_equal(np.array([[1, -3, 1, 0], [-21, 3, 1, 0]]),  dy)
 
     def test_proj_b2(self):
         """

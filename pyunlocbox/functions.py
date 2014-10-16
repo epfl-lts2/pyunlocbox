@@ -539,7 +539,6 @@ class norm_tv(norm):
                 dx *= kwargs["wx"]
             except KeyError:
                 print("No weigths along wx; using default weights")
-            # TODO find better way to handle more dimensions
 
         if dim >= 2:
             dy = np.concatenate((x[:, 1:] - x[:, :-1],
