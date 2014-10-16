@@ -53,9 +53,6 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.grad(x), self.grad(x))
         self.assertEqual(f.prox(x, T), self.prox(x, T))
 
-        mat = np.array([[2, 3, 1, 0], [22, 1, 4, 5]])
-        self.assertRaises(np.array([[20, -2, 3, 5], [0, 0, 0, 0]]), f.grad, mat)
-
     def test_dummy(self):
         """
         Test the dummy derived class.
@@ -125,6 +122,11 @@ class FunctionsTestCase(unittest.TestCase):
             for cmplx in [False, True]:
                 y_test = functions._soft_threshold(x, T, cmplx)
                 nptest.assert_array_equal(y_test, y_gold[k])
+
+    def test_norm(self):
+        f = functions.norm()
+        mat = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
+        self.assertEqual(np.array([[20, -2, 3, 5], [0, 0, 0, 0]]), f.grad, mat)
 
     def test_norm_l1(self):
         """

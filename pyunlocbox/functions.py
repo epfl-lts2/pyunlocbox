@@ -241,8 +241,6 @@ class func(object):
     def _grad(self, x):
         raise NotImplementedError("Class user should define this method.")
 
-    
-
     def cap(self, x):
         r"""
         Test the capabilities of the function object.
@@ -752,28 +750,6 @@ class norm_l2(norm):
         return 2 * self.lambda_ * self.w * self.At(sol)
 
 
-class proj(func):
-    r"""
-    Base class which defines the attributes of the `proj` objects.
-
-    See generic attributes descriptions of the
-    :class:`pyunlocbox.functions.func` base class.
-
-    Parameters
-    ----------
-    epsilon : float, optional
-        The radius of the ball. Default is 1e-3.
-    method : {'FISTA', 'ISTA'}, optional
-        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
-        Default is 'FISTA'.
-    """
-
-    def __init__(self, epsilon=1e-3, method='FISTA', **kwargs):
-        super(proj, self).__init__(**kwargs)
-        self.epsilon = epsilon
-        self.method = method
-
-
 class norm_tv(norm):
     r"""
     TODO implement norm as a class
@@ -1109,6 +1085,28 @@ class norm_tv(norm):
                                axis=3)
 
         return x
+
+
+class proj(func):
+    r"""
+    Base class which defines the attributes of the `proj` objects.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
+
+    Parameters
+    ----------
+    epsilon : float, optional
+        The radius of the ball. Default is 1e-3.
+    method : {'FISTA', 'ISTA'}, optional
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
+        Default is 'FISTA'.
+    """
+
+    def __init__(self, epsilon=1e-3, method='FISTA', **kwargs):
+        super(proj, self).__init__(**kwargs)
+        self.epsilon = epsilon
+        self.method = method
 
 
 class proj_b2(proj):
