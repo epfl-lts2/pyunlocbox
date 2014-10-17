@@ -924,8 +924,8 @@ class norm_tv(norm):
             print("No weigths along wx; using default weights")
 
         x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
-                            dx[1:-1, :] - dx[:-2, :],
-                            np.expand_dims(-dx[-1, :], axis=0)),
+                            dx[1:-2, :] - dx[:-3, :],
+                            np.expand_dims(-dx[-2, :], axis=0)),
                            axis=0)
         return x
 
