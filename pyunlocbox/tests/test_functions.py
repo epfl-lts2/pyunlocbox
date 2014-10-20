@@ -140,38 +140,64 @@ class FunctionsTestCase(unittest.TestCase):
 
         # test for a 2dim matrice (testing with a 2x4)
         mat = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
+
         dx = f.grad(mat, 1)
-        nptest.assert_array_equal(np.array([[20, -2, 4, 54], [0, 0, 0, 0]]), dx)
+        nptest.assert_array_equal(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), dx)
 
         dx, dy = f.grad(mat, 2)
         nptest.assert_array_equal(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), dx)
         nptest.assert_array_equal(np.array([[1, -3, 1, 0], [-21, 3, 1, 0]]), dy)
 
-        # test for a 3 dim matrice (testing with a 3x2x2)
-        mat = np.array([[[2, 3], [0, 1]], [[22, 1], [4, 5]], [[3, 10], [8, 4]]])
+        # test for a 3 dim matrice (testing with a 2x3x2)
+        mat = np.array([[[1, 7], [2, 8], [3, 9]], [[4, 10], [5, 11], [6, 12]]])
+
         dx = f.grad(mat, 1)
-        nptest.assert_array_equal(np.array([[[-2, -2], [22, 0]], [[0, 0], [-1, 5]], [[5, -6], [0, 0]]]), dx)
+        nptest.assert_array_equal(np.array([[[3, 3], [3, 3], [3, 3]],
+                                            [[0, 0], [0, 0], [0, 0]]]), dx)
 
         dx, dy = f.grad(mat, 2)
-        nptest.assert_array_equal(np.array([[[-2, -2], [22, 0]], [[0, 0], [-1, 5]], [[5, -6], [0, 0]]]), dx)
-        nptest.assert_array_equal(np.array([[[1, 0], [1, 0]], [[-21, 0], [1, 0]], [[7, 0], [-4, 0]]]), dy)
+        nptest.assert_array_equal(np.array([[[3, 3], [3, 3], [3, 3]],
+                                            [[0, 0], [0, 0], [0, 0]]]), dx)
+        nptest.assert_array_equal(np.array([[[1, 1], [1, 1], [0, 0]],
+                                            [[1, 1], [1, 1], [0, 0]]]), dy)
 
         dx, dy, dz = f.grad(mat, 3)
-        nptest.assert_array_equal(np.array([[[-2, -2], [22, 0]], [[0, 0], [-1, 5]], [[5, -6], [0, 0]]]), dx)
-        nptest.assert_array_equal(np.array([[[1, 0], [1, 0]], [[-21, 0], [1, 0]], [[7, 0], [-4, 0]]]), dy)
-        nptest.assert_array_equal(np.array([[[2, 2], [3, 9]], [[-14, 3], [0, 0]], [[0, 0], [0, 0]]]), dz)
+        nptest.assert_array_equal(np.array([[[3, 3], [3, 3], [3, 3]],
+                                            [[0, 0], [0, 0], [0, 0]]]), dx)
+        nptest.assert_array_equal(np.array([[[1, 1], [1, 1], [0, 0]],
+                                            [[1, 1], [1, 1], [0, 0]]]), dy)
+        nptest.assert_array_equal(np.array([[[6, 0], [6, 0], [6, 0]],
+                                            [[6, 0], [6, 0], [6, 0]]]), dz)
 
+        """
         # test for a 4dim matrice (2x3x2x2)
-        mat = np.array([[[[1, 5], [9, 0]], [[4, 2], [0, 20]], [[5, 3], [7, 1]]], [[[9, 15], [0, 2]], [[13, 3], [4, 1]], [[9, 1], [2, 0]]]])
+        mat = np.array([[[[1, 5], [9, 0]], [[4, 2], [0, 20]], [[5, 3],
+                                                               [7, 1]]],
+                        [[[9, 15], [0, 2]], [[13, 3], [4, 1]], [[9, 1],
+                                                                [2, 0]]]])
         dx = f.grad(mat, 1)
         nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dx)
 
+        dx, dy = f.grad(mat, 2)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dx)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dy)
+
+        dx, dy, dz = f.grad(mat, 3)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dx)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dy)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dz)
+
+        dx, dy, dz, dt = f.grad(mat, 4)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dx)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dy)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dz)
+        nptest.assert_array_equal(np.array([[[[-1, -1], [-7, 0]], [[0, 0], [3, -13]], [[-4, 0], [0, 0]]], [[[-7, -2], [3, 0]], [[0, 0], [-3, 1]], [[-9, 0], [0, 0]]]]), dt)
+        """
     def test_proj_b2(self):
         """
         Test the projection on the L2-ball.
         ISTA and FISTA algorithms for tight and non-tight frames.
         """
-
         tol = 1e-7
 
         # Tight frame.
