@@ -741,7 +741,7 @@ class norm_tv(norm):
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        if dim <= 1:
+        if dim >= 1:
             dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
@@ -751,7 +751,7 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wx; using default weights")
 
-        if dim <= 2:
+        if dim >= 2:
             dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
@@ -761,7 +761,7 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wy; using default weights")
 
-        if dim <= 3:
+        if dim >= 3:
             dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3], np.shape(x)[4]))),
@@ -771,7 +771,7 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wz; using default weights")
 
-        if dim <= 4:
+        if dim >= 4:
             dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           np.shape(x)[2], 1, np.shape(x)[4]))),
