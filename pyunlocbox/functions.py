@@ -937,7 +937,7 @@ class norm_tv(norm):
 
     def _div1d(self, dx, **kwargs):
         if kwargs is not None:
-            list_param = ["wx"]
+            list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
@@ -978,7 +978,7 @@ class norm_tv(norm):
 
     def _div2d(self, dx, dy, **kwargs):
         if kwargs is not None:
-            list_param = ["wx", "wy"]
+            list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
@@ -1026,7 +1026,7 @@ class norm_tv(norm):
 
     def _div3d(self, dx, dy, dz, **kwargs):
         if kwargs is not None:
-            list_param = ["wx", "wy", "wz"]
+            list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
