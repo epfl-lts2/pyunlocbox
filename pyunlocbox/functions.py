@@ -888,6 +888,24 @@ class norm_tv(norm):
                       iter = {3}".format(obj, rel_obj, crit, iter))
                 print("exec_time = ", exec_time)
 
+    def div(self, *args, **kwargs):
+        r"""
+        """
+        return self._div(*args, **kwargs)
+
+    def _div(self, *args, **kwargs):
+        if len(args) == 0:
+            print("Need to input at least one grad")
+            raise
+        if len(args) == 1:
+            return self.div1d(*args, **kwargs)
+        if len(args) == 2:
+            return self.div2d(*args, **kwargs)
+        if len(args) == 3:
+            return self.div3d(*args, **kwargs)
+        if len(args) == 4:
+            return self.div4d(*args, **kwargs)
+
     def div1d(self, dx, **kwargs):
         r"""
         Divergence operator in one dimensions.
