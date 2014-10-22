@@ -447,11 +447,11 @@ class norm_tv(norm):
     def __init__(self, **kwargs):
         super(norm_tv, self).__init__(**kwargs)
 
-    def _eval(self, x, dim):
-        f = func()
+    def _eval(self, x, dim, **kwargs):
+        n = norm_tv()
         i = 0
         grads = ['dx', 'dy', 'dz', 'dt']
-        grads[:dim+1] = f.grad(x, dim)
+        grads[:dim+1] = n.grad(x, dim, **kwargs)
         y = 0
         for g in grads:
             y += np.power(abs(g), 2)
@@ -820,7 +820,7 @@ class norm_tv(norm):
             try:
                 weights = kwargs['weights']
             except KeyError:
-                weights = [1, 1]
+                weights = [1, 1, 1, 1]
 
         # TODO implement test_gamma
         # Initialization
@@ -828,14 +828,19 @@ class norm_tv(norm):
         pold, qold = r, s
         told, prev_obj = 1, 0
 
+        kweights = {}
+        w_name = ['wx', 'wy', 'wz', 'wt']
+        inc = 0
         if weights:
-            # TODO weights attribution
-            raise NotImplementedError("Class user should define this method.")
+            for n in w_name:
+                kweights[n] = weights[inc]
+                inc += 1
+
         else:
-            weights = np.ones(x.shape)
-            wx = None
-            wy = None
-            mt = None
+            weights = 1
+            for n in w_name:
+                kweights[n] = 1
+            mt = 1
 
         if verbose:
             print("Proximal TV Operator")
@@ -844,9 +849,10 @@ class norm_tv(norm):
         while iter <= maxit:
             # Current Solution
             # TODO implement unique div
-            sol = x - T * self.div2d(r, s, wx, wy)
+            sol = x - T * self.div(r, s, **kweights)
 
-            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * norm_tv(sol, wx, wy)
+            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * self._eval(sol, dim,
+                                                                    **kweights)
             rel_obj = np.abs(obj - prev_obj.divide(obj))
             prev_obj = obj
 
@@ -858,7 +864,7 @@ class norm_tv(norm):
                 break
 
             # Vector Update
-            dx, dy = self.grad(x, dim, wx, wy)
+            dx, dy = self.grad(x, dim, **kweights)
 
             r = r - (1/(8*T)/mt**2) * dx
             s = s - (1/(8*T)/mt**2) * dy
