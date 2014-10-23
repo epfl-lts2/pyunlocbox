@@ -848,7 +848,6 @@ class norm_tv(norm):
         iter = 0
         while iter <= maxit:
             # Current Solution
-            # TODO implement unique div
             sol = x - T * self.div(r, s, **kweights)
 
             obj = .5*np.linalg.norm(x[:] - sol[:]) + T * self._eval(sol, dim,
@@ -992,10 +991,10 @@ class norm_tv(norm):
         except KeyError:
             print("No weigths along wy; using default weights")
 
-        x = np.concatenate((np.expand_dims(dx[1, :, :], axis=0),
+        x = np.concatenate((np.expand_dims(dx[0, :, :], axis=0),
                             dx[1:-2, :, :] - dx[:-3, :, :],
                             np.expand_dims(-dx[-2, :, :], axis=0)), axis=0)
-        x = x - np.concatenate((np.expand_dims(dy[:, 1, :], axis=1),
+        x = x - np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
                                 dy[:, 1:-2, :] - dy[:, 0:-3, :],
                                np.expand_dims(-dy[:, -2, :], axis=1)), axis=1)
 
@@ -1044,17 +1043,17 @@ class norm_tv(norm):
         except KeyError:
             print("No weigths along wz; using default weights")
 
-        x = np.concatenate(((np.expand_dims(dx[1, :, :, :], axis=0)),
+        x = np.concatenate(((np.expand_dims(dx[0, :, :, :], axis=0)),
                            dx[1:-2, :, :, :] - dx[:-3, :, :, :],
                            np.expand_dims(-dx[-2, :, :, :], axis=0)),
                            axis=0)
 
-        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :], axis=1)),
+        x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :], axis=1)),
                                dy[:, 1:-2, :, :] - dy[:, :-3, :, :],
                                np.expand_dims(-dy[:, -2, :, :], axis=1)),
                                axis=1)
 
-        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :], axis=2)),
+        x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :], axis=2)),
                                dz[:, :, 1:-3, :] - dz[:, :, :-3, :],
                                np.expand_dims(-dz[:, :, -2, :], axis=2)),
                                axis=2)
@@ -1109,22 +1108,22 @@ class norm_tv(norm):
         except KeyError:
             print("No weigths along wt; using default weights")
 
-        x = np.concatenate(((np.expand_dims(dx[1, :, :, :, :], axis=0)),
+        x = np.concatenate(((np.expand_dims(dx[0, :, :, :, :], axis=0)),
                            dx[1:-2, :, :, :, :] - dx[:-3, :, :, :, :],
                            np.expand_dims(-dx[-2, :, :, :, :], axis=0)),
                            axis=0)
 
-        x = x + np.concatenate(((np.expand_dims(dy[:, 1, :, :, :], axis=1)),
+        x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :, :], axis=1)),
                                dy[:, 1:-2, :, :, :] - dy[:, :-3, :, :, :],
                                np.expand_dims(-dy[:, -2, :, :, :], axis=1)),
                                axis=1)
 
-        x = x + np.concatenate(((np.expand_dims(dz[:, :, 1, :, :], axis=2)),
+        x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :, :], axis=2)),
                                dz[:, :, 1:-2, :, :] - dz[:, :, :-3, :, :],
                                np.expand_dims(-dz[:, :, -2, :, :], axis=2)),
                                axis=2)
 
-        x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 1, :], axis=3)),
+        x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0, :], axis=3)),
                                dt[:, :, :, 1:-2, :] - dt[:, :, :, :-3, :],
                                np.expand_dims(-dt[:, :, :, -2, :], axis=3)),
                                axis=3)
