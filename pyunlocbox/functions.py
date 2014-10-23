@@ -898,20 +898,20 @@ class norm_tv(norm):
         """
         return self._div(*args, **kwargs)
 
-    def _div(self, *args, **kwargs):
+    def _div(self, dim, *args, **kwargs):
         if len(args) == 0:
             print("Need to input at least one grad")
             raise
-        if len(args) == 1:
-            return self.div1d(*args, **kwargs)
-        if len(args) == 2:
-            return self.div2d(*args, **kwargs)
+        if len(args[0].shape) == 2:
+            return self.div1d(dim, *args, **kwargs)
         if len(args) == 3:
-            return self.div3d(*args, **kwargs)
+            return self.div2d(dim, *args, **kwargs)
         if len(args) == 4:
-            return self.div4d(*args, **kwargs)
+            return self.div3d(dim, *args, **kwargs)
+        if len(args) == 5:
+            return self.div4d(dim, *args, **kwargs)
 
-    def div1d(self, dx, **kwargs):
+    def div1d(self, dim, dx, dy, **kwargs):
         r"""
         Divergence operator in one dimensions.
 
@@ -932,27 +932,39 @@ class norm_tv(norm):
         -----
         TODO.
         """
-        return self._div1d(np.array(dx), **kwargs)
+        return self._div1d(dim, np.array(dx), np.array(dy), **kwargs)
 
-    def _div1d(self, dx, **kwargs):
+    def _div1d(self, dim, dx, dy, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
+        if dim >= 1:
+            try:
+                dx *= np.conjugate(kwargs["wx"])
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
-        x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
-                            dx[1:-2, :] - dx[:-3, :],
-                            np.expand_dims(-dx[-2, :], axis=0)),
-                           axis=0)
+            x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
+                                dx[1:-2, :] - dx[:-3, :],
+                                np.expand_dims(-dx[-2, :], axis=0)),
+                               axis=0)
+
+        if dim >= 2:
+            try:
+                dy *= np.conjugate(kwargs["wy"])
+            except KeyError:
+                print("No weigths along wy; using default weights")
+
+            x = x - np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
+                                    dy[:, 1:-2, :] - dy[:, 0:-3, :],
+                                    np.expand_dims(-dy[:, -2, :], axis=1)),
+                                   axis=1)
         return x
 
-    def div2d(self, dx, dy, **kwargs):
+    def div2d(self, dim, dx, dy, dz, **kwargs):
         r"""
         Divergence operator in two dimensions.
 
@@ -973,34 +985,51 @@ class norm_tv(norm):
         -----
         TODO
         """
-        return self._div(np.array(dx), np.array(dy), **kwargs)
+        return self._div(dim, np.array(dx), np.array(dy), np.array(dz), **kwargs)
 
-    def _div2d(self, dx, dy, **kwargs):
+    def _div2d(self, dim, dx, dy, dz, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-        try:
-            dy *= np.conjugate(kwargs["wy"])
-        except KeyError:
-            print("No weigths along wy; using default weights")
+        if dim >= 1:
+            try:
+                dx *= np.conjugate(kwargs["wx"])
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
-        x = np.concatenate((np.expand_dims(dx[0, :, :], axis=0),
-                            dx[1:-2, :, :] - dx[:-3, :, :],
-                            np.expand_dims(-dx[-2, :, :], axis=0)), axis=0)
-        x = x - np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
-                                dy[:, 1:-2, :] - dy[:, 0:-3, :],
-                               np.expand_dims(-dy[:, -2, :], axis=1)), axis=1)
+            x = np.concatenate((np.expand_dims(dx[0, :, :], axis=0),
+                                dx[1:-2, :, :] - dx[:-3, :, :],
+                                np.expand_dims(-dx[-2, :, :], axis=0)),
+                               axis=0)
+
+        if dim >= 2:
+            try:
+                dy *= np.conjugate(kwargs["wy"])
+            except KeyError:
+                print("No weigths along wy; using default weights")
+
+            x = x - np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
+                                    dy[:, 1:-2, :] - dy[:, 0:-3, :],
+                                    np.expand_dims(-dy[:, -2, :], axis=1)),
+                                   axis=1)
+
+        if dim >= 3:
+            try:
+                dz *= np.conjugate(kwargs["wz"])
+            except KeyError:
+                print("No weigths along wz; using default weights")
+
+            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0], axis=2)),
+                                   dz[:, :, 1:-2] - dz[:, :, :-3],
+                                   np.expand_dims(-dz[:, :, -2], axis=2)),
+                                   axis=2)
 
         return x
 
-    def div3d(self, dx, dy, dz, **kwargs):
+    def div3d(self, dim, dx, dy, dz, dt, **kwargs):
         r"""
         Divergence operator in three dimensions.
 
@@ -1021,45 +1050,61 @@ class norm_tv(norm):
         -----
         TODO.
         """
-        return self._div3d(np.array(dx), np.array(dy), np.array(dz), **kwargs)
+        return self._div3d(dim, np.array(dx), np.array(dy), np.array(dz), np.array(dt), **kwargs)
 
-    def _div3d(self, dx, dy, dz, **kwargs):
+    def _div3d(self, dim, dx, dy, dz, dt, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-        try:
-            dy *= np.conjugate(kwargs["wy"])
-        except KeyError:
-            print("No weigths along wy; using default weights")
-        try:
-            dz *= np.conjugate(kwargs["wz"])
-        except KeyError:
-            print("No weigths along wz; using default weights")
+        if dim >= 1:
+            try:
+                dx *= np.conjugate(kwargs["wx"])
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
-        x = np.concatenate(((np.expand_dims(dx[0, :, :, :], axis=0)),
-                           dx[1:-2, :, :, :] - dx[:-3, :, :, :],
-                           np.expand_dims(-dx[-2, :, :, :], axis=0)),
-                           axis=0)
+            x = np.concatenate(((np.expand_dims(dx[0, :, :, :], axis=0)),
+                                dx[1:-2, :, :, :] - dx[:-3, :, :, :],
+                                np.expand_dims(-dx[-2, :, :, :], axis=0)),
+                               axis=0)
 
-        x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :], axis=1)),
-                               dy[:, 1:-2, :, :] - dy[:, :-3, :, :],
-                               np.expand_dims(-dy[:, -2, :, :], axis=1)),
-                               axis=1)
+        if dim >= 2:
+            try:
+                dy *= np.conjugate(kwargs["wy"])
+            except KeyError:
+                print("No weigths along wy; using default weights")
 
-        x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :], axis=2)),
-                               dz[:, :, 1:-3, :] - dz[:, :, :-3, :],
-                               np.expand_dims(-dz[:, :, -2, :], axis=2)),
-                               axis=2)
+            x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :], axis=1)),
+                                   dy[:, 1:-2, :, :] - dy[:, :-3, :, :],
+                                   np.expand_dims(-dy[:, -2, :, :], axis=1)),
+                                   axis=1)
+
+        if dim >= 3:
+            try:
+                dz *= np.conjugate(kwargs["wz"])
+            except KeyError:
+                print("No weigths along wz; using default weights")
+
+            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :], axis=2)),
+                                   dz[:, :, 1:-2, :] - dz[:, :, :-3, :],
+                                   np.expand_dims(-dz[:, :, -2, :], axis=2)),
+                                   axis=2)
+
+        if dim >= 4:
+            try:
+                dt *= np.conjugate(kwargs["wt"])
+            except KeyError:
+                print("No weigths along wt; using default weights")
+
+            x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0], axis=3)),
+                                   dt[:, :, :, 1:-2] - dt[:, :, :, :-3],
+                                   np.expand_dims(-dt[:, :, :, -2], axis=3)),
+                                   axis=3)
         return x
 
-    def div4d(self, dx, dy, dz, dt, **kwargs):
+    def div4d(self, dim, dx, dy, dz, dt, **kwargs):
         r"""
         Divergence operator in four dimensions.
 
@@ -1081,53 +1126,59 @@ class norm_tv(norm):
         TODO.
         TODO.
         """
-        return self._div4d(np.array(dx), np.array(dy), np.array(dz),
+        return self._div4d(dim, np.array(dx), np.array(dy), np.array(dz),
                            np.array(dt), **kwargs)
 
-    def _div4d(self, dx, dy, dz, dt, **kwargs):
+    def _div4d(self, dim, dx, dy, dz, dt, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        try:
-            dx *= np.conjugate(kwargs["wx"])
-        except KeyError:
-            print("No weigths along wx; using default weights")
-        try:
-            dy *= np.conjugate(kwargs["wy"])
-        except KeyError:
-            print("No weigths along wy; using default weights")
-        try:
-            dz *= np.conjugate(kwargs["wz"])
-        except KeyError:
-            print("No weigths along wz; using default weights")
-        try:
-            dt *= np.conjugate(kwargs["wt"])
-        except KeyError:
-            print("No weigths along wt; using default weights")
+        if dim >= 1:
+            try:
+                dx *= np.conjugate(kwargs["wx"])
+            except KeyError:
+                print("No weigths along wx; using default weights")
 
-        x = np.concatenate(((np.expand_dims(dx[0, :, :, :, :], axis=0)),
-                           dx[1:-2, :, :, :, :] - dx[:-3, :, :, :, :],
-                           np.expand_dims(-dx[-2, :, :, :, :], axis=0)),
-                           axis=0)
+            x = np.concatenate(((np.expand_dims(dx[0, :, :, :, :], axis=0)),
+                               dx[1:-2, :, :, :, :] - dx[:-3, :, :, :, :],
+                               np.expand_dims(-dx[-2, :, :, :, :], axis=0)),
+                               axis=0)
 
-        x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :, :], axis=1)),
-                               dy[:, 1:-2, :, :, :] - dy[:, :-3, :, :, :],
-                               np.expand_dims(-dy[:, -2, :, :, :], axis=1)),
-                               axis=1)
+        if dim >= 2:
+            try:
+                dy *= np.conjugate(kwargs["wy"])
+            except KeyError:
+                print("No weigths along wy; using default weights")
 
-        x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :, :], axis=2)),
-                               dz[:, :, 1:-2, :, :] - dz[:, :, :-3, :, :],
-                               np.expand_dims(-dz[:, :, -2, :, :], axis=2)),
-                               axis=2)
+            x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :, :], axis=1)),
+                                   dy[:, 1:-2, :, :, :] - dy[:, :-3, :, :, :],
+                                   np.expand_dims(-dy[:, -2, :, :, :], axis=1)),
+                                   axis=1)
 
-        x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0, :], axis=3)),
-                               dt[:, :, :, 1:-2, :] - dt[:, :, :, :-3, :],
-                               np.expand_dims(-dt[:, :, :, -2, :], axis=3)),
-                               axis=3)
+        if dim >= 3:
+            try:
+                dz *= np.conjugate(kwargs["wz"])
+            except KeyError:
+                print("No weigths along wz; using default weights")
 
+            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :, :], axis=2)),
+                                   dz[:, :, 1:-2, :, :] - dz[:, :, :-3, :, :],
+                                   np.expand_dims(-dz[:, :, -2, :, :], axis=2)),
+                                   axis=2)
+
+        if dim >= 4:
+            try:
+                dt *= np.conjugate(kwargs["wt"])
+            except KeyError:
+                print("No weigths along wt; using default weights")
+
+            x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0, :], axis=3)),
+                                   dt[:, :, :, 1:-2, :] - dt[:, :, :, :-3, :],
+                                   np.expand_dims(-dt[:, :, :, -2, :], axis=3)),
+                                   axis=3)
         return x
 
 
