@@ -903,15 +903,15 @@ class norm_tv(norm):
             print("Need to input at least one grad")
             raise
         if len(args[0].shape) == 2:
-            return self.div1d(dim, *args, **kwargs)
-        if len(args) == 3:
-            return self.div2d(dim, *args, **kwargs)
-        if len(args) == 4:
-            return self.div3d(dim, *args, **kwargs)
-        if len(args) == 5:
-            return self.div4d(dim, *args, **kwargs)
+            return self.div1d(*args, **kwargs)
+        if len(args[0].shape) == 3:
+            return self.div2d(*args, **kwargs)
+        if len(args[0].shape) == 4:
+            return self.div3d(*args, **kwargs)
+        if len(args[0].shape) == 5:
+            return self.div4d(*args, **kwargs)
 
-    def div1d(self, dim, dx, dy, **kwargs):
+    def div1d(self, *args, **kwargs):
         r"""
         Divergence operator in one dimensions.
 
@@ -932,17 +932,18 @@ class norm_tv(norm):
         -----
         TODO.
         """
-        return self._div1d(dim, np.array(dx), np.array(dy), **kwargs)
+        return self._div1d(*args, **kwargs)
 
-    def _div1d(self, dim, dx, dy, **kwargs):
+    def _div1d(self, *args, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        if dim >= 1:
+        if len(args) >= 1:
             try:
+                dx = args[0]
                 dx *= np.conjugate(kwargs["wx"])
             except KeyError:
                 print("No weigths along wx; using default weights")
@@ -952,8 +953,9 @@ class norm_tv(norm):
                                 np.expand_dims(-dx[-2, :], axis=0)),
                                axis=0)
 
-        if dim >= 2:
+        if len(args) >= 2:
             try:
+                dy = args[1]
                 dy *= np.conjugate(kwargs["wy"])
             except KeyError:
                 print("No weigths along wy; using default weights")
@@ -964,7 +966,7 @@ class norm_tv(norm):
                                    axis=1)
         return x
 
-    def div2d(self, dim, dx, dy, dz, **kwargs):
+    def div2d(self, *args, **kwargs):
         r"""
         Divergence operator in two dimensions.
 
@@ -985,16 +987,17 @@ class norm_tv(norm):
         -----
         TODO
         """
-        return self._div(dim, np.array(dx), np.array(dy), np.array(dz), **kwargs)
+        return self._div(*args, **kwargs)
 
-    def _div2d(self, dim, dx, dy, dz, **kwargs):
+    def _div2d(self, *args, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        if dim >= 1:
+        if len(args) >= 1:
+            dx = args[0]
             try:
                 dx *= np.conjugate(kwargs["wx"])
             except KeyError:
@@ -1005,7 +1008,8 @@ class norm_tv(norm):
                                 np.expand_dims(-dx[-2, :, :], axis=0)),
                                axis=0)
 
-        if dim >= 2:
+        if len(args) >= 2:
+            dy = args[1]
             try:
                 dy *= np.conjugate(kwargs["wy"])
             except KeyError:
@@ -1016,7 +1020,8 @@ class norm_tv(norm):
                                     np.expand_dims(-dy[:, -2, :], axis=1)),
                                    axis=1)
 
-        if dim >= 3:
+        if len(args) >= 3:
+            dz = args[2]
             try:
                 dz *= np.conjugate(kwargs["wz"])
             except KeyError:
@@ -1029,7 +1034,7 @@ class norm_tv(norm):
 
         return x
 
-    def div3d(self, dim, dx, dy, dz, dt, **kwargs):
+    def div3d(self, *args, **kwargs):
         r"""
         Divergence operator in three dimensions.
 
@@ -1050,16 +1055,17 @@ class norm_tv(norm):
         -----
         TODO.
         """
-        return self._div3d(dim, np.array(dx), np.array(dy), np.array(dz), np.array(dt), **kwargs)
+        return self._div3d(*args, **kwargs)
 
-    def _div3d(self, dim, dx, dy, dz, dt, **kwargs):
+    def _div3d(self, *args, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        if dim >= 1:
+        if len(args) >= 1:
+            dx = args[0]
             try:
                 dx *= np.conjugate(kwargs["wx"])
             except KeyError:
@@ -1070,7 +1076,8 @@ class norm_tv(norm):
                                 np.expand_dims(-dx[-2, :, :, :], axis=0)),
                                axis=0)
 
-        if dim >= 2:
+        if len(args) >= 2:
+            dy = args[1]
             try:
                 dy *= np.conjugate(kwargs["wy"])
             except KeyError:
@@ -1081,7 +1088,8 @@ class norm_tv(norm):
                                    np.expand_dims(-dy[:, -2, :, :], axis=1)),
                                    axis=1)
 
-        if dim >= 3:
+        if len(args) >= 3:
+            dz = args[2]
             try:
                 dz *= np.conjugate(kwargs["wz"])
             except KeyError:
@@ -1092,7 +1100,8 @@ class norm_tv(norm):
                                    np.expand_dims(-dz[:, :, -2, :], axis=2)),
                                    axis=2)
 
-        if dim >= 4:
+        if len(args) >= 4:
+            dt = args[3]
             try:
                 dt *= np.conjugate(kwargs["wt"])
             except KeyError:
@@ -1104,7 +1113,7 @@ class norm_tv(norm):
                                    axis=3)
         return x
 
-    def div4d(self, dim, dx, dy, dz, dt, **kwargs):
+    def div4d(self, *args, **kwargs):
         r"""
         Divergence operator in four dimensions.
 
@@ -1126,17 +1135,17 @@ class norm_tv(norm):
         TODO.
         TODO.
         """
-        return self._div4d(dim, np.array(dx), np.array(dy), np.array(dz),
-                           np.array(dt), **kwargs)
+        return self._div4d(*args, **kwargs)
 
-    def _div4d(self, dim, dx, dy, dz, dt, **kwargs):
+    def _div4d(self, *args, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        if dim >= 1:
+        if len(args) >= 1:
+            dx = args[0]
             try:
                 dx *= np.conjugate(kwargs["wx"])
             except KeyError:
@@ -1147,7 +1156,8 @@ class norm_tv(norm):
                                np.expand_dims(-dx[-2, :, :, :, :], axis=0)),
                                axis=0)
 
-        if dim >= 2:
+        if len(args) >= 2:
+            dy = args[1]
             try:
                 dy *= np.conjugate(kwargs["wy"])
             except KeyError:
@@ -1158,7 +1168,8 @@ class norm_tv(norm):
                                    np.expand_dims(-dy[:, -2, :, :, :], axis=1)),
                                    axis=1)
 
-        if dim >= 3:
+        if len(args) >= 3:
+            dz = args[2]
             try:
                 dz *= np.conjugate(kwargs["wz"])
             except KeyError:
@@ -1169,7 +1180,8 @@ class norm_tv(norm):
                                    np.expand_dims(-dz[:, :, -2, :, :], axis=2)),
                                    axis=2)
 
-        if dim >= 4:
+        if len(args) >= 4:
+            dt = args[3]
             try:
                 dt *= np.conjugate(kwargs["wt"])
             except KeyError:
