@@ -942,8 +942,8 @@ class norm_tv(norm):
                     print("Warning, %s is not a valid parameter" % (param))
 
         if len(args) >= 1:
+            dx = args[0]
             try:
-                dx = args[0]
                 dx *= np.conjugate(kwargs["wx"])
             except KeyError:
                 print("No weigths along wx; using default weights")
@@ -954,8 +954,8 @@ class norm_tv(norm):
                                axis=0)
 
         if len(args) >= 2:
+            dy = args[1]        
             try:
-                dy = args[1]
                 dy *= np.conjugate(kwargs["wy"])
             except KeyError:
                 print("No weigths along wy; using default weights")
