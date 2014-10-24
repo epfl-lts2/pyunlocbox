@@ -303,6 +303,11 @@ class FunctionsTestCase(unittest.TestCase):
                                             [[[[24, 24], [0, 0]], [[24, 24], [0, 0]], [[24, 24], [0, 0]]],
                                              [[[24, 24], [0, 0]], [[24, 24], [0, 0]], [[24, 24], [0, 0]]]]]), dt)
 
+        # Divergence tests
+        nptest.assert_array_equal(np.array([[1, 2, 3, 4], [-1, -2, -3, -4]]), f.div1d(np.array([[1, 2, 3, 4], [5, 6, 7, 8]])))
+        nptest.assert_array_equal(np.array([[11, 3, -8], [16, 4, -11], [19, 4, -14], [9, -7, -26]]), f.div(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [7, 8, 9]]), np.array([[10, 11, 12], [13, 14, 15], [16, 17, 18], [16, 17, 18]])))
+        #nptest.assert_array_equal(np.array([[10, 3, 4, -7], [12, -1, -2, -19]]), f.div2d(np.array([[[1, 2], [3, 4], [5, 6]], [[7, 8], [9, 10], [11, 12]]]), np.array([[[13, 14], [15, 16], [17, 18]], [[19, 20], [21, 22], [23, 24]]])))
+
     def test_proj_b2(self):
         """
         Test the projection on the L2-ball.

@@ -900,8 +900,7 @@ class norm_tv(norm):
 
     def _div(self, dim, *args, **kwargs):
         if len(args) == 0:
-            print("Need to input at least one grad")
-            raise
+            raise ValueError("Need to input at least one grad")
         if len(args[0].shape) == 2:
             return self.div1d(*args, **kwargs)
         if len(args[0].shape) == 3:
@@ -987,7 +986,7 @@ class norm_tv(norm):
         -----
         TODO
         """
-        return self._div(*args, **kwargs)
+        return self._div2d(*args, **kwargs)
 
     def _div2d(self, *args, **kwargs):
         if kwargs is not None:
