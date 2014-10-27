@@ -898,7 +898,7 @@ class norm_tv(norm):
         """
         return self._div(*args, **kwargs)
 
-    def _div(self, dim, *args, **kwargs):
+    def _div(self, *args, **kwargs):
         if len(args) == 0:
             raise ValueError("Need to input at least one grad")
         if len(args[0].shape) == 2:
@@ -949,19 +949,19 @@ class norm_tv(norm):
 
             x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
                                 dx[1:-1, :] - dx[:-2, :],
-                                np.expand_dims(-dx[-1, :], axis=0)),
+                                -np.expand_dims(dx[-2, :], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
-            dy = args[1]        
+            dy = args[1]
             try:
                 dy *= np.conjugate(kwargs["wy"])
             except KeyError:
                 print("No weigths along wy; using default weights")
 
-            x = x + np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
-                                    dy[:, 1:-1, :] - dy[:, :-2, :],
-                                    np.expand_dims(-dy[:, -1, :], axis=1)),
+            x = x + np.concatenate((np.expand_dims(dy[:, 0], axis=1),
+                                    dy[:, 1:-1] - dy[:, :-2],
+                                    -np.expand_dims(dy[:, -2], axis=1)),
                                    axis=1)
         return x
 
@@ -1004,7 +1004,7 @@ class norm_tv(norm):
 
             x = np.concatenate((np.expand_dims(dx[0, :, :], axis=0),
                                 dx[1:-1, :, :] - dx[:-2, :, :],
-                                np.expand_dims(-dx[-1, :, :], axis=0)),
+                                np.expand_dims(-dx[-2, :, :], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1016,7 +1016,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
                                     dy[:, 1:-1, :] - dy[:, :-2, :],
-                                    np.expand_dims(-dy[:, -1, :], axis=1)),
+                                    np.expand_dims(-dy[:, -2, :], axis=1)),
                                    axis=1)
 
         if len(args) >= 3:
@@ -1028,7 +1028,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dz[:, :, 0], axis=2)),
                                    dz[:, :, 1:-1] - dz[:, :, :-2],
-                                   np.expand_dims(-dz[:, :, -1], axis=2)),
+                                   np.expand_dims(-dz[:, :, -2], axis=2)),
                                    axis=2)
 
         return x
@@ -1072,7 +1072,7 @@ class norm_tv(norm):
 
             x = np.concatenate(((np.expand_dims(dx[0, :, :, :], axis=0)),
                                 dx[1:-1, :, :, :] - dx[:-2, :, :, :],
-                                np.expand_dims(-dx[-1, :, :, :], axis=0)),
+                                np.expand_dims(-dx[-2, :, :, :], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1084,7 +1084,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :], axis=1)),
                                    dy[:, 1:-1, :, :] - dy[:, :-2, :, :],
-                                   np.expand_dims(-dy[:, -1, :, :], axis=1)),
+                                   np.expand_dims(-dy[:, -2, :, :], axis=1)),
                                    axis=1)
 
         if len(args) >= 3:
@@ -1096,7 +1096,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :], axis=2)),
                                    dz[:, :, 1:-1, :] - dz[:, :, :-2, :],
-                                   np.expand_dims(-dz[:, :, -1, :], axis=2)),
+                                   np.expand_dims(-dz[:, :, -2, :], axis=2)),
                                    axis=2)
 
         if len(args) >= 4:
@@ -1108,7 +1108,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0], axis=3)),
                                    dt[:, :, :, 1:-1] - dt[:, :, :, :-2],
-                                   np.expand_dims(-dt[:, :, :, -1], axis=3)),
+                                   np.expand_dims(-dt[:, :, :, -2], axis=3)),
                                    axis=3)
         return x
 
@@ -1152,7 +1152,7 @@ class norm_tv(norm):
 
             x = np.concatenate(((np.expand_dims(dx[0, :, :, :, :], axis=0)),
                                dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
-                               np.expand_dims(-dx[-1, :, :, :, :], axis=0)),
+                               np.expand_dims(-dx[-2, :, :, :, :], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1164,7 +1164,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :, :], axis=1)),
                                    dy[:, 1:-1, :, :, :] - dy[:, :-2, :, :, :],
-                                   np.expand_dims(-dy[:, -1, :, :, :], axis=1)),
+                                   np.expand_dims(-dy[:, -2, :, :, :], axis=1)),
                                    axis=1)
 
         if len(args) >= 3:
@@ -1176,7 +1176,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :, :], axis=2)),
                                    dz[:, :, 1:-1, :, :] - dz[:, :, :-2, :, :],
-                                   np.expand_dims(-dz[:, :, -1, :, :], axis=2)),
+                                   np.expand_dims(-dz[:, :, -2, :, :], axis=2)),
                                    axis=2)
 
         if len(args) >= 4:
@@ -1188,7 +1188,7 @@ class norm_tv(norm):
 
             x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0, :], axis=3)),
                                    dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
-                                   np.expand_dims(-dt[:, :, :, -1, :], axis=3)),
+                                   np.expand_dims(-dt[:, :, :, -2, :], axis=3)),
                                    axis=3)
         return x
 
