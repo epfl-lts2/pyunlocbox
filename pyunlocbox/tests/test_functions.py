@@ -305,12 +305,34 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Divergence tests
         # test with 2dim matrices
-        nptest.assert_array_equal(np.array([[1, 2, 3, 4], [4, 4, 4, 4], [-5, -6, -7, -8]]), f.div1d(np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])))
-        nptest.assert_array_equal(np.array([[14, 3, 4, -11], [21, 5, 5, -15], [16, -5, -6, -31]]),
-                                  f.div(np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]),
-                                        np.array([[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]])))
+        dx = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+        dy = np.array([[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]])
 
-        # test with 3dim matrices (2x3x2)
+        # test without weight
+        nptest.assert_array_equal(np.array([[1, 2, 3, 4], [4, 4, 4, 4], [-5, -6, -7, -8]]),
+                                  f.div(dx))
+        nptest.assert_array_equal(np.array([[14, 3, 4, -11], [21, 5, 5, -15], [16, -5, -6, -31]]),
+                                  f.div(dx, dy))
+
+        # test with weights
+        nptest.assert_array_equal(np.array([[41, 7, 9, -37], [59, 11, 11, -49], [53, -9, -11, -85]]),
+                                  f.div(dx, dy, wx=2, wy=3))
+
+        # test with 3dim matrices (3x3x3)
+        dx = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[4, 13, 22], [5, 14, 23], [6, 15, 24]], [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
+
+        # test without weights
+        nptest.assert_array_equal(np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[3, 3, 3], [3, 3, 3], [3, 3, 3]], [[-4, -13, -22], [-5, -14, -23], [-6, -15, -24]]]),
+                                  f.div(dx))
+        nptest.assert_array_equal(np.array([[[2, 20, 38], [3, 12, 21], [1, 1, 1]], [[7, 16, 25], [4, 4, 4], [-2, -11, -20]], [[3, 3, 3], [-4, -13, -22], [-14, -32, -50]]]),
+                                  f.div(dx, dx))
+        nptest.assert_array_equal(np.array([[[3, 29, 28], [5, 21, 10], [4, 10, -11]], [[11, 25, 12], [9, 13, -10], [4, -2, -35]], [[10, 12, -13], [4, -4, -39], [-5, -23, -68]]]),
+                                  f.div(dx, dx, dx))
+
+        # test with weights
+        """ nptest.assert_array_equal(np.array([[[9, 86, 55], [15, 61, -1], [12, 27, -66]], [[34, 81, 20], [29, 45, -47], [15, 0, -123]], [[41, 58, -33], [25, 11, -111], [0, -45, -198]]]),
+                                  f.div(dx, dx, dx, wx=2, wy=3, wz=4))
+        """
 
     def test_proj_b2(self):
         """
