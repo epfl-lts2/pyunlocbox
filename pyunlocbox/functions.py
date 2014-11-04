@@ -487,14 +487,98 @@ class norm_tv(norm):
         return self._grad(x, dim, **kwargs)
 
     def _grad(self, x, dim, **kwargs):
-        if len(x.shape) == 2:
-            return self._grad1d(x, dim, **kwargs)
-        elif len(x.shape) == 3:
-            return self._grad2d(x, dim, **kwargs)
-        elif len(x.shape) == 4:
-            return self._grad3d(x, dim, **kwargs)
-        elif len(x.shape) == 5:
-            return self._grad4d(x, dim, **kwargs)
+        # if len(x.shape) == 2:
+        #     return self._grad1d(x, dim, **kwargs)
+        # elif len(x.shape) == 3:
+        #     return self._grad2d(x, dim, **kwargs)
+        # elif len(x.shape) == 4:
+        #     return self._grad3d(x, dim, **kwargs)
+        # elif len(x.shape) == 5:
+        #     return self._grad4d(x, dim, **kwargs)
+        axis = 0
+        while axis < dim:
+            # for shape in x.shape:
+            # to_fill = [0]*shape
+            if axis >= 0:
+                try:
+                    zero_dx = np.expand_dims(zero_dx, axis=axis)
+                    zero_dx = np.concatenate((zero_dx, np.array([[0]*x.shape[axis]])), axis=axis)
+                except NameError:
+                    zero_dx = np.zeros((1, x.shape[1]))
+            if axis >= 1:
+                try:
+                    zero_dy = np.expand_dims(zero_dy, axis=axis)
+                except NameError:
+                    zero_dy = np.zeros((x.shape[0], 1))
+            if axis >= 2:
+                try:
+                    zero_dz = np.expand_dims(zero_dz, axis=axis)
+                except NameError:
+                    zero_dz = np.zeros((x.shape[0], x.shape[1], 1))
+            if axis >= 3:
+                try:
+                    zero_dt = np.expand_dims(zero_dt, axis=axis)
+                except NameError:
+                    zero_dt = np.zeros((x.shape[0], x.shape[1], x.shape[2], 1))
+            axis += 1
+        print(zero_dx)
+
+        if kwargs is not None:
+            list_param = ["wx", "wy", "wz", "wt"]
+            for param in kwargs:
+                if param not in list_param:
+                    print("Warning, %s is not a valid parameter" % (param))
+
+        if dim >= 1:
+            dx = np.concatenate((x[1:, ] - x[:-1, ],
+                                 zero_dx),
+                                axis=0)
+            try:
+                dx *= kwargs["wx"]
+            except KeyError:
+                print("No weigths along wx; using default weights")
+
+        if dim >= 2:
+            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ],
+                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
+                                          np.shape(x)[3], np.shape(x)[4]))),
+                                axis=1)
+            try:
+                dy *= kwargs["wy"]
+            except KeyError:
+                print("No weigths along wy; using default weights")
+
+        if dim >= 3:
+            dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          1, np.shape(x)[3], np.shape(x)[4]))),
+                                axis=2)
+            try:
+                dz *= kwargs["wz"]
+            except KeyError:
+                print("No weigths along wz; using default weights")
+
+        if dim >= 4:
+            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ],
+                                np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                          np.shape(x)[2], 1, np.shape(x)[4]))),
+                                axis=3)
+            try:
+                dt *= kwargs["wt"]
+            except KeyError:
+                print("No weigths along wt; using default weights")
+
+        if dim == 1:
+            return dx
+
+        if dim == 2:
+            return dx, dy
+
+        if dim == 3:
+            return dx, dy, dz
+
+        if dim == 4:
+            return dx, dy, dz, dt
 
     def grad1d(self, x, dim, **kwargs):
         r"""
@@ -532,7 +616,7 @@ class norm_tv(norm):
                     print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
-            dx = np.concatenate((x[1:, :] - x[:-1, :],
+            dx = np.concatenate((x[1:, ] - x[:-1, ],
                                  np.zeros((1, np.shape(x)[1]))), axis=0)
 
             try:
@@ -589,7 +673,7 @@ class norm_tv(norm):
                     print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
-            dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
+            dx = np.concatenate((x[1:, ] - x[:-1, ],
                                  np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
                                 axis=0)
             try:
@@ -598,7 +682,7 @@ class norm_tv(norm):
                 print("No weigths along wx; using default weights")
 
         if dim >= 2:
-            dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
+            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ],
                                  np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
                                 axis=1)
             try:
@@ -659,7 +743,7 @@ class norm_tv(norm):
                     print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
-            dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
+            dx = np.concatenate((x[1:, ] - x[:-1, ],
                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                           np.shape(x)[3]))), axis=0)
             try:
@@ -668,7 +752,7 @@ class norm_tv(norm):
                 print("No weigths along wx; using default weights")
 
         if dim >= 2:
-            dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
+            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ],
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3]))), axis=1)
             try:
@@ -677,7 +761,7 @@ class norm_tv(norm):
                 print("No weigths along wy; using default weights")
 
         if dim >= 3:
-            dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
+            dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3]))), axis=2)
             try:
@@ -742,7 +826,7 @@ class norm_tv(norm):
                     print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
-            dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
+            dx = np.concatenate((x[1:, ] - x[:-1, ],
                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
                                 axis=0)
@@ -752,7 +836,7 @@ class norm_tv(norm):
                 print("No weigths along wx; using default weights")
 
         if dim >= 2:
-            dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
+            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ],
                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
                                           np.shape(x)[3], np.shape(x)[4]))),
                                 axis=1)
@@ -762,7 +846,7 @@ class norm_tv(norm):
                 print("No weigths along wy; using default weights")
 
         if dim >= 3:
-            dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
+            dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           1, np.shape(x)[3], np.shape(x)[4]))),
                                 axis=2)
@@ -772,7 +856,7 @@ class norm_tv(norm):
                 print("No weigths along wz; using default weights")
 
         if dim >= 4:
-            dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
+            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ],
                                 np.zeros((np.shape(x)[0], np.shape(x)[1],
                                           np.shape(x)[2], 1, np.shape(x)[4]))),
                                 axis=3)
@@ -947,9 +1031,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wx; using default weights")
 
-            x = np.concatenate((np.expand_dims(dx[0, :], axis=0),
-                                dx[1:-1, :] - dx[:-2, :],
-                                -np.expand_dims(dx[-2, :], axis=0)),
+            x = np.concatenate((np.expand_dims(dx[0, ], axis=0),
+                                dx[1:-1, ] - dx[:-2, ],
+                                -np.expand_dims(dx[-2, ], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1002,9 +1086,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wx; using default weights")
 
-            x = np.concatenate((np.expand_dims(dx[0, :, :], axis=0),
-                                dx[1:-1, :, :] - dx[:-2, :, :],
-                                -np.expand_dims(dx[-2, :, :], axis=0)),
+            x = np.concatenate((np.expand_dims(dx[0, ], axis=0),
+                                dx[1:-1, ] - dx[:-2, :, :],
+                                -np.expand_dims(dx[-2, ], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1014,9 +1098,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wy; using default weights")
 
-            x = x + np.concatenate((np.expand_dims(dy[:, 0, :], axis=1),
-                                    dy[:, 1:-1, :] - dy[:, :-2, :],
-                                    -np.expand_dims(dy[:, -2, :], axis=1)),
+            x = x + np.concatenate((np.expand_dims(dy[:, 0, ], axis=1),
+                                    dy[:, 1:-1, ] - dy[:, :-2, ],
+                                    -np.expand_dims(dy[:, -2, ], axis=1)),
                                    axis=1)
 
         if len(args) >= 3:
@@ -1070,9 +1154,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wx; using default weights")
 
-            x = np.concatenate(((np.expand_dims(dx[0, :, :, :], axis=0)),
-                                dx[1:-1, :, :, :] - dx[:-2, :, :, :],
-                                np.expand_dims(-dx[-2, :, :, :], axis=0)),
+            x = np.concatenate(((np.expand_dims(dx[0, ], axis=0)),
+                                dx[1:-1, ] - dx[:-2, ],
+                                np.expand_dims(-dx[-2, ], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1082,9 +1166,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wy; using default weights")
 
-            x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :], axis=1)),
-                                   dy[:, 1:-1, :, :] - dy[:, :-2, :, :],
-                                   np.expand_dims(-dy[:, -2, :, :], axis=1)),
+            x = x + np.concatenate(((np.expand_dims(dy[:, 0, ], axis=1)),
+                                   dy[:, 1:-1, ] - dy[:, :-2, ],
+                                   np.expand_dims(-dy[:, -2, ], axis=1)),
                                    axis=1)
 
         if len(args) >= 3:
@@ -1094,9 +1178,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wz; using default weights")
 
-            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :], axis=2)),
-                                   dz[:, :, 1:-1, :] - dz[:, :, :-2, :],
-                                   np.expand_dims(-dz[:, :, -2, :], axis=2)),
+            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, ], axis=2)),
+                                   dz[:, :, 1:-1, ] - dz[:, :, :-2, ],
+                                   np.expand_dims(-dz[:, :, -2, ], axis=2)),
                                    axis=2)
 
         if len(args) >= 4:
@@ -1150,9 +1234,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wx; using default weights")
 
-            x = np.concatenate(((np.expand_dims(dx[0, :, :, :, :], axis=0)),
-                               dx[1:-1, :, :, :, :] - dx[:-2, :, :, :, :],
-                               np.expand_dims(-dx[-2, :, :, :, :], axis=0)),
+            x = np.concatenate(((np.expand_dims(dx[0, ], axis=0)),
+                               dx[1:-1, ] - dx[:-2, ],
+                               np.expand_dims(-dx[-2, ], axis=0)),
                                axis=0)
 
         if len(args) >= 2:
@@ -1162,9 +1246,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wy; using default weights")
 
-            x = x + np.concatenate(((np.expand_dims(dy[:, 0, :, :, :], axis=1)),
-                                   dy[:, 1:-1, :, :, :] - dy[:, :-2, :, :, :],
-                                   np.expand_dims(-dy[:, -2, :, :, :], axis=1)),
+            x = x + np.concatenate(((np.expand_dims(dy[:, 0, ], axis=1)),
+                                   dy[:, 1:-1, ] - dy[:, :-2, ],
+                                   np.expand_dims(-dy[:, -2, ], axis=1)),
                                    axis=1)
 
         if len(args) >= 3:
@@ -1174,9 +1258,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wz; using default weights")
 
-            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, :, :], axis=2)),
-                                   dz[:, :, 1:-1, :, :] - dz[:, :, :-2, :, :],
-                                   np.expand_dims(-dz[:, :, -2, :, :], axis=2)),
+            x = x + np.concatenate(((np.expand_dims(dz[:, :, 0, ], axis=2)),
+                                   dz[:, :, 1:-1, ] - dz[:, :, :-2, ],
+                                   np.expand_dims(-dz[:, :, -2, ], axis=2)),
                                    axis=2)
 
         if len(args) >= 4:
@@ -1186,9 +1270,9 @@ class norm_tv(norm):
             except KeyError:
                 print("No weigths along wt; using default weights")
 
-            x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0, :], axis=3)),
-                                   dt[:, :, :, 1:-1, :] - dt[:, :, :, :-2, :],
-                                   np.expand_dims(-dt[:, :, :, -2, :], axis=3)),
+            x = x + np.concatenate(((np.expand_dims(dt[:, :, :, 0, ], axis=3)),
+                                   dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
+                                   np.expand_dims(-dt[:, :, :, -2, ], axis=3)),
                                    axis=3)
         return x
 
