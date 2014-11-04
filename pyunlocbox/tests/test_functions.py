@@ -305,7 +305,7 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Divergence tests
         print("")
-        print("testing grad")
+        print("testing div")
 
         print("test 1dim")
         # test with 1dim matrices
