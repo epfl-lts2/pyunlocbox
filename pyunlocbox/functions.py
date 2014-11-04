@@ -487,171 +487,30 @@ class norm_tv(norm):
         return self._grad(x, dim, **kwargs)
 
     def _grad(self, x, dim, **kwargs):
-        if len(x.shape) == 2:
-            return self._grad1d(x, dim, **kwargs)
-        elif len(x.shape) == 3:
-            return self._grad2d(x, dim, **kwargs)
-        elif len(x.shape) == 4:
-            return self._grad3d(x, dim, **kwargs)
-        elif len(x.shape) == 5:
-            return self._grad4d(x, dim, **kwargs)
+        axis = 0
+        while axis < len(x.shape):
+            if axis >= 0:
+                try:
+                    zero_dx = np.zeros((np.append(np.shape(zero_dx), np.shape(x)[axis])))
+                except NameError:
+                    zero_dx = np.zeros((1))
+            if axis >= 1:
+                try:
+                    zero_dy = np.zeros((np.append(np.shape(zero_dy), np.shape(x)[axis])))
+                except NameError:
+                    zero_dy = np.zeros((np.shape(x)[0], 1))
+            if axis >= 2:
+                try:
+                    zero_dz = np.zeros((np.append(np.shape(zero_dz), np.shape(x)[axis])))
+                except NameError:
+                    zero_dz = np.zeros((np.shape(x)[0], np.shape(x)[1], 1))
+            if axis >= 3:
+                try:
+                    zero_dt = np.zeros((np.append(np.shape(zero_dt), np.shape(x)[axis])))
+                except NameError:
+                    zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1], np.shape(x)[2], 1))
+            axis += 1
 
-    def grad1d(self, x, dim, **kwargs):
-        r"""
-        Function gradient in 1 dimension.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        dim : int
-            The dimension of the gradient that you want to apply on x. (1 or 2)
-
-        wx, wy : array_like (optional)
-            The weight(s) along the axis
-
-        Returns
-        -------
-        dx : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method should not be use directly.
-        To avoid some bug with dim and problem with shape,
-        please use the method grad(x, dim, weights)!.
-        """
-        return self._grad1d(np.array(x), dim, **kwargs)
-
-    def _grad1d(self, x, dim, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx", "wy"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        if dim >= 1:
-            dx = np.concatenate((x[1:, :] - x[:-1, :],
-                                 np.zeros((1, np.shape(x)[1]))), axis=0)
-
-            try:
-                dx *= kwargs["wx"]
-            except KeyError:
-                print("No weigths along wx; using default weights")
-
-        if dim >= 2:
-            dy = np.concatenate((x[:, 1:] - x[:, :-1],
-                                 np.zeros((np.shape(x)[0], 1))), axis=1)
-            try:
-                dy *= kwargs["wy"]
-            except KeyError:
-                print("No weigths along wy; using default weights")
-
-        if dim == 1:
-            return dx
-
-        if dim == 2:
-            return dx, dy
-
-    def grad2d(self, x, dim, **kwargs):
-        r"""
-        Function gradient in 2 dimensions.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        dim : int
-            The dimension of the gradient that you want to aply on x. (1, 2 or 3)
-
-        wx, wy, wz : array_like (optional)
-            The weight(s) along the axis
-
-        Returns
-        -------
-        dx, dy : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method should not be use directly. To avoid some bug with dim and
-        problem with shape, please use the method grad(x, dim, weights)!.
-        """
-        return self._grad2d(np.array(x), dim, **kwargs)
-
-    def _grad2d(self, x, dim, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx", "wy", "wz"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        if dim >= 1:
-            dx = np.concatenate((x[1:, :, :] - x[:-1, :, :],
-                                 np.zeros((1, np.shape(x)[1], np.shape(x)[2]))),
-                                axis=0)
-            try:
-                dx *= kwargs["wx"]
-            except KeyError:
-                print("No weigths along wx; using default weights")
-
-        if dim >= 2:
-            dy = np.concatenate((x[:, 1:, :] - x[:, :-1, :],
-                                 np.zeros((np.shape(x)[0], 1, np.shape(x)[2]))),
-                                axis=1)
-            try:
-                dy *= kwargs["wy"]
-            except KeyError:
-                print("No weigths along wy; using default weights")
-
-        if dim >= 3:
-            dz = np.concatenate((x[:, :, 1:] - x[:, :, :-1],
-                                 np.zeros((np.shape(x)[0], np.shape(x)[1], 1))),
-                                axis=2)
-            try:
-                dz *= kwargs["wz"]
-            except KeyError:
-                print("No weigths along wz; using default weights")
-
-        if dim == 1:
-            return dx
-
-        if dim == 2:
-            return dx, dy
-
-        if dim == 3:
-            return dx, dy, dz
-
-    def grad3d(self, x, dim, **kwargs):
-        r"""
-        Function gradient in 3 dimensions.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        dim : int
-            The dimension of gradient that you want to apply on x. (1,2,3 or 4)
-
-        wx, wy, wz. wt : array_like (optional)
-            The weight(s) along the axis
-
-        Returns
-        -------
-        dx, dy, dz : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method should not be use directly. To avoid some bug with dim
-        and problem with shape, please use the methode grad(x, dim, weights)!.
-        """
-        return self._grad3d(np.array(x), dim, **kwargs)
-
-    def _grad3d(self, x, dim, **kwargs):
         if kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
             for param in kwargs:
@@ -659,112 +518,21 @@ class norm_tv(norm):
                     print("Warning, %s is not a valid parameter" % (param))
 
         if dim >= 1:
-            dx = np.concatenate((x[1:, :, :, :] - x[:-1, :, :, :],
-                                np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                          np.shape(x)[3]))), axis=0)
+            dx = np.concatenate((x[1:, ] - x[:-1, ], zero_dx), axis=0)
             try:
                 dx *= kwargs["wx"]
             except KeyError:
                 print("No weigths along wx; using default weights")
 
         if dim >= 2:
-            dy = np.concatenate((x[:, 1:, :, :] - x[:, :-1, :, :],
-                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                          np.shape(x)[3]))), axis=1)
+            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ], zero_dy), axis=1)
             try:
                 dy *= kwargs["wy"]
             except KeyError:
                 print("No weigths along wy; using default weights")
 
         if dim >= 3:
-            dz = np.concatenate((x[:, :, 1:, :] - x[:, :, :-1, :],
-                                np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                          1, np.shape(x)[3]))), axis=2)
-            try:
-                dz *= kwargs["wz"]
-            except KeyError:
-                print("No weigths along wz; using default weights")
-
-        if dim >= 4:
-            dt = np.concatenate((x[:, :, :, 1:] - x[:, :, :, :-1],
-                                np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                          np.shape(x)[2], 1))), axis=3)
-            try:
-                dt *= kwargs["wt"]
-            except KeyError:
-                print("No weigths along wt; using default weights")
-
-        if dim == 1:
-            return dx
-
-        if dim == 2:
-            return dx, dy
-
-        if dim == 3:
-            return dx, dy, dz
-
-        if dim == 4:
-            return dx, dy, dz, dt
-
-    def grad4d(self, x, dim, **kwargs):
-        r"""
-        Function gradient in 4 dimensions.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        dim : int
-            The dimension of gradient that you want to apply on x. (1,2,3 or 4)
-
-        wx, wy, wz , wt : array_like  (optional)
-            The weight(s) along the axis
-
-        Returns
-        -------
-        dx, dy, dz, dt : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method should not be used directly. To avoid some bugs
-        with dim and problems with shape, please use the method
-        grad(x, dim, weights)!
-        """
-        return self._grad4d(np.array(x), dim, **kwargs)
-
-    def _grad4d(self, x, dim, **kwargs):
-        if kwargs is not None:
-            list_param = ["wx", "wy", "wz", "wt"]
-            for param in kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
-
-        if dim >= 1:
-            dx = np.concatenate((x[1:, :, :, :, :] - x[:-1, :, :, :, :],
-                                np.zeros((1, np.shape(x)[1], np.shape(x)[2],
-                                          np.shape(x)[3], np.shape(x)[4]))),
-                                axis=0)
-            try:
-                dx *= kwargs["wx"]
-            except KeyError:
-                print("No weigths along wx; using default weights")
-
-        if dim >= 2:
-            dy = np.concatenate((x[:, 1:, :, :, :] - x[:, :-1, :, :, :],
-                                np.zeros((np.shape(x)[0], 1, np.shape(x)[2],
-                                          np.shape(x)[3], np.shape(x)[4]))),
-                                axis=1)
-            try:
-                dy *= kwargs["wy"]
-            except KeyError:
-                print("No weigths along wy; using default weights")
-
-        if dim >= 3:
-            dz = np.concatenate((x[:, :, 1:, :, :] - x[:, :, :-1, :, :],
-                                np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                          1, np.shape(x)[3], np.shape(x)[4]))),
+            dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ], zero_dz),
                                 axis=2)
             try:
                 dz *= kwargs["wz"]
@@ -772,9 +540,7 @@ class norm_tv(norm):
                 print("No weigths along wz; using default weights")
 
         if dim >= 4:
-            dt = np.concatenate((x[:, :, :, 1:, :] - x[:, :, :, :-1, :],
-                                np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                          np.shape(x)[2], 1, np.shape(x)[4]))),
+            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ], zero_dt),
                                 axis=3)
             try:
                 dt *= kwargs["wt"]
@@ -979,6 +745,7 @@ class norm_tv(norm):
                                  dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
                                  -np.expand_dims(dt[:, :, :, -2, ], axis=3)),
                                 axis=3)
+
         return x
 
 

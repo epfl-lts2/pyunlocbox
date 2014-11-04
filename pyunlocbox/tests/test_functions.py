@@ -137,8 +137,18 @@ class FunctionsTestCase(unittest.TestCase):
 
     def test_norm_tv(self):
         f = functions.norm_tv()
-        # test grad
-        print("test grad")
+
+        # testing grad
+        print("testing grad")
+
+        print("test 1dim")
+        # test for a 1dim matrice (testing with a 5)
+        mat1d = np.array([1, 2, 3, 4, 5])
+        # test without weight
+        dx = f.grad(mat1d, 1)
+        nptest.assert_array_equal(np.array([1, 1, 1, 1, 0]), dx)
+
+        print("test 2dim")
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         # test without weight
@@ -152,6 +162,7 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(np.array([[40, -4, 8, 8], [0, 0, 0, 0]]), dx)
         nptest.assert_array_equal(np.array([[0.5, -1.5, 0.5, 0], [-10.5, 1.5, 0.5, 0]]), dy)
 
+        print("test 3dim")
         # test for a 3 dim matrice (testing with a 2x3x2)
         mat3d = np.array([[[1, 7], [2, 8], [3, 9]], [[4, 10], [5, 11], [6, 12]]])
         # test without weight
@@ -179,6 +190,7 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(np.array([[[18, 0], [18, 0], [18, 0]],
                                             [[18, 0], [18, 0], [18, 0]]]), dz)
 
+        print("test 4dim")
         # test for a 4dim matrice (2x3x2x2)
         mat4d = np.array([[[[1, 13], [7, 19]], [[2, 14], [8, 20]], [[3, 15], [9, 21]]],
                           [[[4, 16], [10, 22]], [[5, 17], [11, 23]], [[6, 18], [12, 24]]]])
@@ -218,6 +230,7 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(np.array([[[[24, 0], [24, 0]], [[24, 0], [24, 0]], [[24, 0], [24, 0]]],
                                             [[[24, 0], [24, 0]], [[24, 0], [24, 0]], [[24, 0], [24, 0]]]]), dt)
 
+        print("test 5dim")
         # test for a 5dim matrice (2x2x3x2x2)
         mat5d = np.array([[[[[1, 25], [13, 37]], [[5, 29], [17, 41]], [[9, 33], [21, 45]]],
                            [[[2, 26], [14, 38]], [[6, 30], [18, 42]], [[10, 34], [22, 46]]]],
@@ -291,7 +304,10 @@ class FunctionsTestCase(unittest.TestCase):
                                              [[[24, 24], [0, 0]], [[24, 24], [0, 0]], [[24, 24], [0, 0]]]]]), dt)
 
         # Divergence tests
-        print("test div")
+        print("")
+        print("testing grad")
+
+        print("test 1dim")
         # test with 1dim matrices
         dx = np.array([1, 2, 3, 4, 5])
         # test without weight
@@ -299,6 +315,7 @@ class FunctionsTestCase(unittest.TestCase):
         # test with weights
         nptest.assert_array_equal(np.array([2, 2, 2, 2, -8]), f.div(dx, wx=2))
 
+        print("test 2dim")
         # test with 2dim matrices
         dx = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
         dy = np.array([[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]])
@@ -311,6 +328,7 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(np.array([[41, 7, 9, -37], [59, 11, 11, -49], [53, -9, -11, -85]]),
                                   f.div(dx, dy, wx=2, wy=3))
 
+        print("test 3dim")
         # test with 3dim matrices (3x3x3)
         dx = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[4, 13, 22], [5, 14, 23], [6, 15, 24]], [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
         dy = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[4, 13, 22], [5, 14, 23], [6, 15, 24]], [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
@@ -326,6 +344,7 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(np.array([[[9, 86, 55], [15, 61, -1], [12, 27, -66]], [[34, 81, 20], [29, 45, -47], [15, 0, -123]], [[41, 58, -33], [25, 11, -111], [0, -45, -198]]]),
                                   f.div(dx, dy, dz, wx=2, wy=3, wz=4))
 
+        print("test 4dim")
         # test with 4d matrices (3x3x3x3)
         dx = np.array([[[[1, 28, 55], [10, 37, 64], [19, 46, 73]], [[2, 29, 56], [11, 38, 65], [20, 47, 74]], [[3, 30, 57], [12, 39, 66], [21, 48, 75]]],
                        [[[4, 31, 58], [13, 40, 67], [22, 49, 76]], [[5, 32, 59], [14, 41, 68], [23, 50, 77]], [[6, 33, 60], [15, 42, 69], [24, 51, 78]]],
