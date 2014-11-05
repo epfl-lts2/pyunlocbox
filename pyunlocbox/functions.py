@@ -467,24 +467,29 @@ class norm_tv(norm):
         while axis < len(x.shape):
             if axis >= 0:
                 try:
-                    zero_dx = np.zeros((np.append(np.shape(zero_dx), np.shape(x)[axis])))
+                    zero_dx = np.zeros((np.append(np.shape(zero_dx),
+                                                  np.shape(x)[axis])))
                 except NameError:
                     zero_dx = np.zeros((1))
             if axis >= 1:
                 try:
-                    zero_dy = np.zeros((np.append(np.shape(zero_dy), np.shape(x)[axis])))
+                    zero_dy = np.zeros((np.append(np.shape(zero_dy),
+                                                  np.shape(x)[axis])))
                 except NameError:
                     zero_dy = np.zeros((np.shape(x)[0], 1))
             if axis >= 2:
                 try:
-                    zero_dz = np.zeros((np.append(np.shape(zero_dz), np.shape(x)[axis])))
+                    zero_dz = np.zeros((np.append(np.shape(zero_dz),
+                                                  np.shape(x)[axis])))
                 except NameError:
                     zero_dz = np.zeros((np.shape(x)[0], np.shape(x)[1], 1))
             if axis >= 3:
                 try:
-                    zero_dt = np.zeros((np.append(np.shape(zero_dt), np.shape(x)[axis])))
+                    zero_dt = np.zeros((np.append(np.shape(zero_dt),
+                                                  np.shape(x)[axis])))
                 except NameError:
-                    zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1], np.shape(x)[2], 1))
+                    zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1],
+                                        np.shape(x)[2], 1))
             axis += 1
 
         if self.dim >= 1:
@@ -510,7 +515,8 @@ class norm_tv(norm):
                 print("No weigths along wz; using default weights")
 
         if self.dim >= 4:
-            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ], zero_dt),
+            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ],
+                                 zero_dt),
                                 axis=3)
             try:
                 dt *= self.kwargs["wt"]
