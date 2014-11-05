@@ -129,7 +129,7 @@ class func(object):
     """
 
     def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
-                 maxit=200):
+                 maxit=200, **kwargs):
 
         self.y = np.array(y)
 
@@ -440,53 +440,32 @@ class norm_l2(norm):
 
 class norm_tv(norm):
     r"""
-    TODO implement norm as a class
     AND Doc
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, dim=2,  **kwargs):
         super(norm_tv, self).__init__(**kwargs)
+        self.kwargs = kwargs
+        self.dim = dim
 
-    def _eval(self, x, dim, **kwargs):
+    def _eval(self, x):
         n = norm_tv()
         i = 0
-        grads = ['dx', 'dy', 'dz', 'dt']
-        grads[:dim+1] = n.grad(x, dim, **kwargs)
+        # grads = ['dx', 'dy', 'dz', 'dt']
+        grads = n.grad(x)
+        grads_defined = 0
+        for defined in grads:
+            if defined:
+                grads_defined += 1
         y = 0
         for g in grads:
             y += np.power(abs(g), 2)
             y = np.sqrt(y)
-        while i <= dim:
+        while i <= grads_defined:
             y = np.sum(y, 0)
         return y
 
-    def grad(self, x, dim, **kwargs):
-        r"""
-        Function gradient in all dimensions.
-
-        Parameters
-        ----------
-        x : array_like
-            The evaluation point.
-
-        dim : int
-            The dimension of the gradient that you want to apply on x.
-
-        wx, wy, wz, wt: array_like (optional)
-            The weight(s) along the axis
-
-        Returns
-        -------
-        dx : array of ndarray
-            The objective function gradient evaluated at `x`.
-
-        Notes
-        -----
-        This method is required by some solvers.
-        """
-        return self._grad(x, dim, **kwargs)
-
-    def _grad(self, x, dim, **kwargs):
+    def _grad(self, x):
         axis = 0
         while axis < len(x.shape):
             if axis >= 0:
@@ -511,55 +490,55 @@ class norm_tv(norm):
                     zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1], np.shape(x)[2], 1))
             axis += 1
 
-        if kwargs is not None:
+        if self.kwargs:
             list_param = ["wx", "wy", "wz", "wt"]
-            for param in kwargs:
+            for param in self.kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
-        if dim >= 1:
+        if self.dim >= 1:
             dx = np.concatenate((x[1:, ] - x[:-1, ], zero_dx), axis=0)
             try:
-                dx *= kwargs["wx"]
-            except KeyError:
+                dx *= self.kwargs["wx"]
+            except (KeyError, TypeError):
                 print("No weigths along wx; using default weights")
 
-        if dim >= 2:
+        if self.dim >= 2:
             dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ], zero_dy), axis=1)
             try:
-                dy *= kwargs["wy"]
-            except KeyError:
+                dy *= self.kwargs["wy"]
+            except (KeyError, TypeError):
                 print("No weigths along wy; using default weights")
 
-        if dim >= 3:
+        if self.dim >= 3:
             dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ], zero_dz),
                                 axis=2)
             try:
-                dz *= kwargs["wz"]
-            except KeyError:
+                dz *= self.kwargs["wz"]
+            except (KeyError, TypeError):
                 print("No weigths along wz; using default weights")
 
-        if dim >= 4:
+        if self.dim >= 4:
             dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ], zero_dt),
                                 axis=3)
             try:
-                dt *= kwargs["wt"]
-            except KeyError:
+                dt *= self.kwargs["wt"]
+            except (KeyError, TypeError):
                 print("No weigths along wt; using default weights")
 
-        if dim == 1:
+        if self.dim == 1:
             return dx
 
-        if dim == 2:
+        if self.dim == 2:
             return dx, dy
 
-        if dim == 3:
+        if self.dim == 3:
             return dx, dy, dz
 
-        if dim == 4:
+        if self.dim == 4:
             return dx, dy, dz, dt
 
-    def _prox(self, x, T, dim, **kwargs):
+    def _prox(self, x, T):
         # Time counter
         t_init = time()
 
@@ -571,16 +550,13 @@ class norm_tv(norm):
                     raise ValueError("Warning, ", param, " is not a valid \
                                       parameter")
 
+            tol = self.tol
+            #try:
+            #    verbose = self.verbosity
+            #except KeyError:
+            #    verbose = True
             try:
-                tol = kwargs['tol']
-            except KeyError:
-                tol = 10**-4
-            try:
-                verbose = kwargs['verbose']
-            except KeyError:
-                verbose = True
-            try:
-                maxit = kwargs['maxit']
+                maxit = self.maxit
             except KeyError:
                 maxit = 200
             try:
@@ -659,6 +635,8 @@ class norm_tv(norm):
                       iter = {3}".format(obj, rel_obj, crit, iter))
                 print("exec_time = ", exec_time)
 
+        return sol
+
     def div(self, *args, **kwargs):
         r"""
         Divergence operator in four dimensions.
@@ -688,10 +666,10 @@ class norm_tv(norm):
         """
         return self._div(*args, **kwargs)
 
-    def _div(self, *args, **kwargs):
-        if kwargs is not None:
+    def _div(self, *args):
+        if self.kwargs is not None:
             list_param = ["wx", "wy", "wz", "wt"]
-            for param in kwargs:
+            for param in self.kwargs:
                 if param not in list_param:
                     print("Warning, %s is not a valid parameter" % (param))
 
@@ -701,7 +679,7 @@ class norm_tv(norm):
         if len(args) >= 1:
             dx = args[0]
             try:
-                dx *= np.conjugate(kwargs["wx"])
+                dx *= np.conjugate(self.kwargs["wx"])
             except KeyError:
                 print("No weigths along wx; using default weights")
 
@@ -713,7 +691,7 @@ class norm_tv(norm):
         if len(args) >= 2:
             dy = args[1]
             try:
-                dy *= np.conjugate(kwargs["wy"])
+                dy *= np.conjugate(self.kwargs["wy"])
             except KeyError:
                 print("No weigths along wy; using default weights")
 
@@ -725,7 +703,7 @@ class norm_tv(norm):
         if len(args) >= 3:
             dz = args[2]
             try:
-                dz *= np.conjugate(kwargs["wz"])
+                dz *= np.conjugate(self.kwargs["wz"])
             except KeyError:
                 print("No weigths along wz; using default weights")
 
@@ -737,7 +715,7 @@ class norm_tv(norm):
         if len(args) >= 4:
             dt = args[3]
             try:
-                dt *= np.conjugate(kwargs["wt"])
+                dt *= np.conjugate(self.kwargs["wt"])
             except KeyError:
                 print("No weigths along wt; using default weights")
 
