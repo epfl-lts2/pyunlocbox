@@ -309,6 +309,7 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(np.array([[14, 3, 4, -11], [21, 5, 5, -15], [16, -5, -6, -31]]),
                                   f.div(np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]),
                                         np.array([[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]])))
+        
 
         # test with 3dim matrices (2x3x2)
 
