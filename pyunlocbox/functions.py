@@ -449,20 +449,17 @@ class norm_tv(norm):
         self.dim = dim
 
     def _eval(self, x):
-        n = norm_tv()
         i = 0
-        # grads = ['dx', 'dy', 'dz', 'dt']
-        grads = n.grad(x)
-        grads_defined = 0
-        for defined in grads:
-            if defined:
-                grads_defined += 1
+        grads = ['dx', 'dy', 'dz', 'dt']
+        grads[:self.dim+1] = self.grad(x)
+        grads = self.grad(x)
         y = 0
         for g in grads:
             y += np.power(abs(g), 2)
             y = np.sqrt(y)
-        while i <= grads_defined:
+        while i <= self.dim:
             y = np.sum(y, 0)
+            i += 1
         return y
 
     def _grad(self, x):
@@ -489,12 +486,6 @@ class norm_tv(norm):
                 except NameError:
                     zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1], np.shape(x)[2], 1))
             axis += 1
-
-        if self.kwargs:
-            list_param = ["wx", "wy", "wz", "wt"]
-            for param in self.kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
 
         if self.dim >= 1:
             dx = np.concatenate((x[1:, ] - x[:-1, ], zero_dx), axis=0)
@@ -542,70 +533,48 @@ class norm_tv(norm):
         # Time counter
         t_init = time()
 
-        # Check for additional parameters and default values if not
-        if kwargs is not None:
-            list_param = ['tol', 'verbose', 'maxit', 'weights']
-            for param in kwargs:
-                if param not in list_param:
-                    raise ValueError("Warning, ", param, " is not a valid \
-                                      parameter")
-
-            tol = self.tol
-            #try:
-            #    verbose = self.verbosity
-            #except KeyError:
-            #    verbose = True
-            try:
-                maxit = self.maxit
-            except KeyError:
-                maxit = 200
-            try:
-                weights = kwargs['weights']
-            except KeyError:
-                weights = [1, 1, 1, 1]
+        tol = self.tol
+        maxit = self.maxit
 
         # TODO implement test_gamma
         # Initialization
-        r, s = self.grad(x, dim)
+        r, s = self.grad(x)
         pold, qold = r, s
         told, prev_obj = 1, 0
 
+        # TODO --> back to multiple weights!
         kweights = {}
         w_name = ['wx', 'wy', 'wz', 'wt']
-        inc = 0
-        if weights:
-            for n in w_name:
-                kweights[n] = weights[inc]
-                inc += 1
+        # inc = 0
+        # if self.w:
+        #     for n in w_name:
+        #         kweights[n] = weights[inc]
+        #         inc += 1
+        # else:
+        weights = 1
+        for n in w_name:
+            kweights[n] = 1
+        mt = 1
 
-        else:
-            weights = 1
-            for n in w_name:
-                kweights[n] = 1
-            mt = 1
-
-        if verbose:
-            print("Proximal TV Operator")
+        print("Proximal TV Operator")
 
         iter = 0
         while iter <= maxit:
             # Current Solution
-            sol = x - T * self.div(r, s, **kweights)
+            sol = x - T * self._div(r, s)
 
-            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * self._eval(sol, dim,
-                                                                    **kweights)
-            rel_obj = np.abs(obj - prev_obj.divide(obj))
+            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * self._eval(sol).sum(axis=0)
+            rel_obj = np.abs(obj - prev_obj)/obj
             prev_obj = obj
 
-            if verbose:
-                print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
+            print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
 
             if rel_obj < tol:
                 crit = "TOL_EPS"
                 break
 
             # Vector Update
-            dx, dy = self.grad(x, dim, **kweights)
+            dx, dy = self.grad(x)
 
             r = r - (1/(8*T)/mt**2) * dx
             s = s - (1/(8*T)/mt**2) * dy
@@ -621,6 +590,7 @@ class norm_tv(norm):
             s = q + (told - 1)/t * (q - qold)
             pold, qold = p, q
             told = t
+            iter += 1
 
         try:
             type(crit) == str
@@ -630,48 +600,13 @@ class norm_tv(norm):
         t_end = time()
         exec_time = t_end - t_init
 
-        if verbose:
-                print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
-                      iter = {3}".format(obj, rel_obj, crit, iter))
-                print("exec_time = ", exec_time)
+        print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
+              iter = {3}".format(obj, rel_obj, crit, iter))
+        print("exec_time = ", exec_time)
 
         return sol
 
-    def div(self, *args, **kwargs):
-        r"""
-        Divergence operator in four dimensions.
-
-        Parameters
-        ----------
-        dx, dy, dz, dt : array_like
-            Gradients following their axis.
-
-        wx, wy, wz , wt : array_like
-            The weight(s) along the axis (optional)
-
-        Returns
-        -------
-        x : ndarray
-            Divergence image.
-
-        Notes
-        -----
-        To insert the different gradients, you shall put them in the right order;
-        dx, dy, dz, dt.
-
-
-        The weights shall be insert in that way:
-        wx=...  , wy=... , wz=... , wt=...
-        The order does not matter, but you have to specify which weights you enter.
-        """
-        return self._div(*args, **kwargs)
-
     def _div(self, *args):
-        if self.kwargs is not None:
-            list_param = ["wx", "wy", "wz", "wt"]
-            for param in self.kwargs:
-                if param not in list_param:
-                    print("Warning, %s is not a valid parameter" % (param))
 
         if len(args) == 0:
             raise ValueError("Need to input at least one grad")
