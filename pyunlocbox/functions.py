@@ -582,8 +582,8 @@ class norm_tv(norm):
             # Vector Update
             dx, dy = self.grad(x)
 
-            r = r - (1/(8*T)/mt**2) * dx
-            s = s - (1/(8*T)/mt**2) * dy
+            r -= (1/(8*T)/mt**2) * dx
+            s -= (1/(8*T)/mt**2) * dy
 
             weights = np.amax(np.sqrt(np.abs(r)**2 + np.abs(s)**2))
 
