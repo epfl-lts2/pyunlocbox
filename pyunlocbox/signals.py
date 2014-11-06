@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+r"""
+This module implements signals objects which allow the user to load predefined
+images.
+
+* :class:`signals`: The base class of this module which contains a few methods
+that loads predefined image (the :meth:`lena` method) and some tools methods
+(the :meth:`rgb2gray` method)
+
+"""
+
 import numpy as np
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -8,18 +18,25 @@ import matplotlib.pyplot as plt
 
 class signals(object):
     r"""
-    TODO
+    This class is used to load image through methods.
+
     Parameters
     ----------
-    TODO
+    No parameters
 
     Examples
     --------
-    TODO
+    Load the Lena picture and display it :
+
+    >>> s = signals()
+    >>> pic = s.lena()
+    >>> plt.imshow(pic, cmap=plt.get_cmap('gray'))
+    >>> plt.show()
+
     """
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self):
+        pass
 
     def rgb2gray(self, rgb):
         r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
@@ -31,7 +48,7 @@ class signals(object):
         gray_scale = self.rgb2gray(img)
         return gray_scale
 
-# s = signals("signal_1")
+# s = signals()
 # pic = s.lena()
 # plt.imshow(pic, cmap=plt.get_cmap('gray'))
 # plt.show()
