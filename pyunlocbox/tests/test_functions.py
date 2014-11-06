@@ -146,8 +146,8 @@ class FunctionsTestCase(unittest.TestCase):
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         # test for a 3 dim matrice (testing with a 2x3x2)
-        mat3d = np.array([[[1, 7], [2, 8], [3, 9]],
-                          [[4, 10], [5, 11], [6, 12]]])
+        mat3d = np.array([[[1., 7.], [2., 8.], [3., 9.]],
+                          [[4., 10.], [5., 11.], [6., 12.]]])
         # test for a 4dim matrice (2x3x2x2)
         mat4d = np.array([[[[1, 13], [7, 19]],
                            [[2, 14], [8, 20]],
@@ -163,7 +163,7 @@ class FunctionsTestCase(unittest.TestCase):
 
         print("test 1dim")
         # test without weight
-        f = functions.norm_tv(dim=1, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=1)
         dx = f.grad(mat1d)
         nptest.assert_array_equal(np.array([1, 1, 1, 1, 0]), dx)
 
@@ -172,7 +172,7 @@ class FunctionsTestCase(unittest.TestCase):
         dx = f.grad(mat2d)
         nptest.assert_array_equal(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), dx)
 
-        f = functions.norm_tv(dim=2, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=2)
         dx, dy = f.grad(mat2d)
         nptest.assert_array_equal(np.array([[20, -2, 4, 4], [0, 0, 0, 0]]), dx)
         nptest.assert_array_equal(np.array([[1, -3, 1, 0],
@@ -186,19 +186,19 @@ class FunctionsTestCase(unittest.TestCase):
 
         print("test 3dim")
         # test without weight
-        f = functions.norm_tv(dim=1, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=1)
         dx = f.grad(mat3d)
         nptest.assert_array_equal(np.array([[[3, 3], [3, 3], [3, 3]],
                                             [[0, 0], [0, 0], [0, 0]]]), dx)
 
-        f = functions.norm_tv(dim=2, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=2)
         dx, dy = f.grad(mat3d)
         nptest.assert_array_equal(np.array([[[3, 3], [3, 3], [3, 3]],
                                             [[0, 0], [0, 0], [0, 0]]]), dx)
         nptest.assert_array_equal(np.array([[[1, 1], [1, 1], [0, 0]],
                                             [[1, 1], [1, 1], [0, 0]]]), dy)
 
-        f = functions.norm_tv(dim=3, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=3)
         dx, dy, dz = f.grad(mat3d)
         nptest.assert_array_equal(np.array([[[3, 3], [3, 3], [3, 3]],
                                             [[0, 0], [0, 0], [0, 0]]]), dx)
@@ -220,20 +220,18 @@ class FunctionsTestCase(unittest.TestCase):
 
         print("test 4dim")
         # test without weight
-        f = functions.norm_tv(dim=1, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=1)
         dx = f.grad(mat4d)
         nptest.assert_array_equal(np.array([[[[3, 3], [3, 3]], [[3, 3], [3, 3]], [[3, 3], [3, 3]]],
                                             [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]]), dx)
-
-        f = functions.norm_tv(dim=2, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=2)
         dx, dy = f.grad(mat4d)
         nptest.assert_array_equal(np.array([[[[3, 3], [3, 3]], [[3, 3], [3, 3]], [[3, 3], [3, 3]]],
                                             [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]]), dx)
         nptest.assert_array_equal(np.array([[[[1, 1], [1, 1]], [[1, 1], [1, 1]], [[0, 0], [0, 0]]],
                                             [[[1, 1], [1, 1]], [[1, 1], [1, 1]], [[0, 0], [0, 0]]]]), dy)
 
-
-        f = functions.norm_tv(dim=3, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=3)
         dx, dy, dz = f.grad(mat4d)
         nptest.assert_array_equal(np.array([[[[3, 3], [3, 3]], [[3, 3], [3, 3]], [[3, 3], [3, 3]]],
                                             [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]]), dx)
@@ -241,8 +239,7 @@ class FunctionsTestCase(unittest.TestCase):
                                             [[[1, 1], [1, 1]], [[1, 1], [1, 1]], [[0, 0], [0, 0]]]]), dy)
         nptest.assert_array_equal(np.array([[[[6, 6], [0, 0]], [[6, 6], [0, 0]], [[6, 6], [0, 0]]],
                                             [[[6, 6], [0, 0]], [[6, 6], [0, 0]], [[6, 6], [0, 0]]]]), dz)
-
-        f = functions.norm_tv(dim=4, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=4)
         dx, dy, dz, dt = f.grad(mat4d)
         nptest.assert_array_equal(np.array([[[[3, 3], [3, 3]], [[3, 3], [3, 3]], [[3, 3], [3, 3]]],
                                             [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]]), dx)
@@ -267,14 +264,13 @@ class FunctionsTestCase(unittest.TestCase):
 
         print("test 5dim")
         # test without weight
-        f = functions.norm_tv(dim=1, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=1)
         dx = f.grad(mat5d)
         nptest.assert_array_equal(np.array([[[[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]],
                                              [[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]]],
                                             [[[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]],
                                              [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]]]), dx)
-
-        f = functions.norm_tv(dim=2, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=2)
         dx, dy = f.grad(mat5d)
         nptest.assert_array_equal(np.array([[[[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]],
                                              [[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]]],
@@ -284,8 +280,7 @@ class FunctionsTestCase(unittest.TestCase):
                                              [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]],
                                             [[[[1, 1], [1, 1]], [[1, 1], [1, 1]], [[1, 1], [1, 1]]],
                                              [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]]]), dy)
-
-        f = functions.norm_tv(dim=3, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=3)
         dx, dy, dz = f.grad(mat5d)
         nptest.assert_array_equal(np.array([[[[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]],
                                              [[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]]],
@@ -299,9 +294,7 @@ class FunctionsTestCase(unittest.TestCase):
                                              [[[4, 4], [4, 4]], [[4, 4], [4, 4]], [[0, 0], [0, 0]]]],
                                             [[[[4, 4], [4, 4]], [[4, 4], [4, 4]], [[0, 0], [0, 0]]],
                                              [[[4, 4], [4, 4]], [[4, 4], [4, 4]], [[0, 0], [0, 0]]]]]), dz)
-
-
-        f = functions.norm_tv(dim=4, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=4)
         dx, dy, dz, dt = f.grad(mat5d)
         nptest.assert_array_equal(np.array([[[[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]],
                                              [[[2, 2], [2, 2]], [[2, 2], [2, 2]], [[2, 2], [2, 2]]]],
@@ -348,7 +341,7 @@ class FunctionsTestCase(unittest.TestCase):
         dx = np.array([1, 2, 3, 4, 5])
 
         # test without weights
-        f = functions.norm_tv(dim=1, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=1)
         nptest.assert_array_equal(np.array([1, 1, 1, 1, -4]), f._div(dx))
 
         # test with weights
@@ -361,7 +354,7 @@ class FunctionsTestCase(unittest.TestCase):
         dy = np.array([[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]])
 
         # test without weights
-        f = functions.norm_tv(dim=2, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=2)
         nptest.assert_array_equal(np.array([[1, 2, 3, 4], [4, 4, 4, 4], [-5, -6, -7, -8]]),
                                   f._div(dx))
         nptest.assert_array_equal(np.array([[14, 3, 4, -11], [21, 5, 5, -15], [16, -5, -6, -31]]),
@@ -379,7 +372,7 @@ class FunctionsTestCase(unittest.TestCase):
         dy = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[4, 13, 22], [5, 14, 23], [6, 15, 24]], [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
         dz = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[4, 13, 22], [5, 14, 23], [6, 15, 24]], [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
         # test without weights
-        f = functions.norm_tv(dim=3, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=3)
         nptest.assert_array_equal(np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]], [[3, 3, 3], [3, 3, 3], [3, 3, 3]], [[-4, -13, -22], [-5, -14, -23], [-6, -15, -24]]]),
                                   f._div(dx))
         nptest.assert_array_equal(np.array([[[2, 20, 38], [3, 12, 21], [1, 1, 1]], [[7, 16, 25], [4, 4, 4], [-2, -11, -20]], [[3, 3, 3], [-4, -13, -22], [-14, -32, -50]]]),
@@ -406,7 +399,7 @@ class FunctionsTestCase(unittest.TestCase):
                        [[[4, 31, 58], [13, 40, 67], [22, 49, 76]], [[5, 32, 59], [14, 41, 68], [23, 50, 77]], [[6, 33, 60], [15, 42, 69], [24, 51, 78]]],
                        [[[7, 34, 61], [16, 43, 70], [25, 52, 79]], [[8, 35, 62], [17, 44, 71], [26, 53, 80]], [[9, 36, 63], [18, 45, 72], [27, 54, 81]]]])
         # test without weights
-        f = functions.norm_tv(dim=4, wx=1, wy=1, wz=1, wt=1)
+        f = functions.norm_tv(dim=4)
         nptest.assert_array_equal(np.array([[[[1, 28, 55], [10, 37, 64], [19, 46, 73]], [[2, 29, 56], [11, 38, 65], [20, 47, 74]], [[3, 30, 57], [12, 39, 66], [21, 48, 75]]],
                                             [[[3, 3, 3], [3, 3, 3], [3, 3, 3]], [[3, 3, 3], [3, 3, 3], [3, 3, 3]], [[3, 3, 3], [3, 3, 3], [3, 3, 3]]],
                                             [[[-4, -31, -58], [-13, -40, -67], [-22, -49, -76]], [[-5, -32, -59], [-14, -41, -68], [-23, -50, -77]], [[-6, -33, -60], [-15, -42, -69], [-24, -51, -78]]]]),
@@ -430,11 +423,17 @@ class FunctionsTestCase(unittest.TestCase):
                                             [[[55, 230, 243], [90, 139, 26], [17, -60, -299]], [[41, 133, 63], [45, 11, -185], [-59, -219, -541]], [[18, 27, -126], [-9, -126, -405], [-144, -387, -792]]]]),
                                   f._div(dx, dy, dz, dt))
 
+        print("Test eval")
+        f = functions.norm_tv(dim=2)
+        xeva = np.array([11.324555320336760, 11.324555320336760])
+        nptest.assert_array_equal(xeva, f._eval(mat3d))
+
         # Test for prox with 3d array
         print("Test prox2d")
-        f = functions.norm_tv(tol=1e-4, dim=2, wx=1, wy=1, wz=1, wt=1)
-        gamma = 42
-        sol = np.array([[[5.0056, 5.0047], [5.0004, 4.9996], [4.9953, 4.9944]], [[8.0056, 8.0047], [8.0004, 7.9996], [7.9953, 7.9944]]])
+        f = functions.norm_tv(tol=1e-4, dim=2)
+        gamma = 42.
+        sol = np.array([[[3.500873765476733, 9.500873765476733], [3.499999744135013, 9.499999744135014], [3.499125722793293, 9.499125722793293]],
+                        [[3.500874277206707, 9.500874277206707], [3.500000255864987, 9.500000255864986], [3.499126234523267, 9.499126234523267]]])
         nptest.assert_array_equal(sol, f._prox(mat3d, gamma))
 
     def test_proj_b2(self):
