@@ -450,16 +450,17 @@ class norm_tv(norm):
 
     def _eval(self, x):
         i = 0
-        grads = []
+        grads = ['dx', 'dy', 'dz', 'dt']
+        grads[:self.dim+1] = self.grad(x)
         grads = self.grad(x)
         y = 0
         for g in grads:
             y += np.power(abs(g), 2)
-        y = np.sqrt(y)
-        while i < self.dim:
+            y = np.sqrt(y)
+        while i <= self.dim:
             y = np.sum(y, 0)
             i += 1
-        return np.array(y)
+        return y
 
     def _grad(self, x):
         axis = 0
@@ -496,14 +497,14 @@ class norm_tv(norm):
             try:
                 dx *= self.kwargs["wx"]
             except (KeyError, TypeError):
-                pass
+                print("No weigths along wx; using default weights")
 
         if self.dim >= 2:
             dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ], zero_dy), axis=1)
             try:
                 dy *= self.kwargs["wy"]
             except (KeyError, TypeError):
-                pass
+                print("No weigths along wy; using default weights")
 
         if self.dim >= 3:
             dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ], zero_dz),
@@ -511,7 +512,7 @@ class norm_tv(norm):
             try:
                 dz *= self.kwargs["wz"]
             except (KeyError, TypeError):
-                pass
+                print("No weigths along wz; using default weights")
 
         if self.dim >= 4:
             dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ],
@@ -520,7 +521,7 @@ class norm_tv(norm):
             try:
                 dt *= self.kwargs["wt"]
             except (KeyError, TypeError):
-                pass
+                print("No weigths along wt; using default weights")
 
         if self.dim == 1:
             return dx
@@ -543,11 +544,23 @@ class norm_tv(norm):
 
         # TODO implement test_gamma
         # Initialization
-        sol = x
-        r, s = self.grad(x*0)
+        r, s = self.grad(x)
         pold, qold = r, s
-        told, prev_obj = 1., 0.
-        mt = 1.
+        told, prev_obj = 1, 0
+
+        # TODO --> back to multiple weights!
+        kweights = {}
+        w_name = ['wx', 'wy', 'wz', 'wt']
+        # inc = 0
+        # if self.w:
+        #     for n in w_name:
+        #         kweights[n] = weights[inc]
+        #         inc += 1
+        # else:
+        weights = 1
+        for n in w_name:
+            kweights[n] = 1
+        mt = 1
 
         print("Proximal TV Operator")
 
@@ -556,7 +569,7 @@ class norm_tv(norm):
             # Current Solution
             sol = x - T * self._div(r, s)
 
-            obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + T * np.sum(self._eval(sol), axis=0)
+            obj = .5*np.linalg.norm(x[:] - sol[:]) + T * self._eval(sol).sum(axis=0)
             rel_obj = np.abs(obj - prev_obj)/obj
             prev_obj = obj
 
@@ -567,18 +580,18 @@ class norm_tv(norm):
                 break
 
             # Vector Update
-            dx, dy = self.grad(sol)
+            dx, dy = self.grad(x)
 
-            r -= 1./(8*T)/mt**2 * dx
-            s -= 1./(8*T)/mt**2 * dy
+            r -= (1/(8*T)/mt**2) * dx
+            s -= (1/(8*T)/mt**2) * dy
 
-            weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) + np.power(np.abs(s), 2)))
+            weights = np.amax(np.sqrt(np.abs(r)**2 + np.abs(s)**2))
 
             p = r / weights
             q = s / weights
 
             # FISTA?
-            t = (1 + np.sqrt(4*told**2))/2.
+            t = (1 + np.sqrt(4*told**2))/2
             r = p + (told - 1)/t * (p - pold)
             s = q + (told - 1)/t * (q - qold)
             pold, qold = p, q
@@ -609,7 +622,7 @@ class norm_tv(norm):
             try:
                 dx *= np.conjugate(self.kwargs["wx"])
             except KeyError:
-                pass
+                print("No weigths along wx; using default weights")
 
             x = np.concatenate((np.expand_dims(dx[0, ], axis=0),
                                 dx[1:-1, ] - dx[:-2, ],
@@ -621,7 +634,7 @@ class norm_tv(norm):
             try:
                 dy *= np.conjugate(self.kwargs["wy"])
             except KeyError:
-                pass
+                print("No weigths along wy; using default weights")
 
             x += np.concatenate((np.expand_dims(dy[:, 0, ], axis=1),
                                  dy[:, 1:-1, ] - dy[:, :-2, ],
@@ -633,7 +646,7 @@ class norm_tv(norm):
             try:
                 dz *= np.conjugate(self.kwargs["wz"])
             except KeyError:
-                pass
+                print("No weigths along wz; using default weights")
 
             x += np.concatenate((np.expand_dims(dz[:, :, 0, ], axis=2),
                                  dz[:, :, 1:-1, ] - dz[:, :, :-2, ],
@@ -645,7 +658,7 @@ class norm_tv(norm):
             try:
                 dt *= np.conjugate(self.kwargs["wt"])
             except KeyError:
-                pass
+                print("No weigths along wt; using default weights")
 
             x += np.concatenate((np.expand_dims(dt[:, :, :, 0, ], axis=3),
                                  dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
