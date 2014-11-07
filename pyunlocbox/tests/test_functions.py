@@ -434,15 +434,19 @@ class FunctionsTestCase(unittest.TestCase):
         print("")
         print("Testing eval")
         f = functions.norm_tv(dim=2)
-        xeval = np.array([11.32455532, 11.32455532])
-        # nptest.assert_array_equal(xeval, f.eval(mat3d))
+        xeval = np.array([11.324555320336760, 11.324555320336760])
+        nptest.assert_array_equal(xeval, f.eval(mat3d))
+        print("ok")
 
         # Test for prox with 3d array
+        print("")
         print("Test prox2d")
-        f = functions.norm_tv(tol=1e-4, dim=2)
-        gamma = 42
-        sol = np.array([[[5.0056, 8.0056], [5.0004, 8.0004], [4.9953, 7.9953]], [[5.0047, 8.0047], [4.9996, 7.9996], [4.9944, 7.9944]]])
+        f = functions.norm_tv(tol=10e-4, dim=2)
+        gamma = 42.
+        sol = np.array([[[3.500873765476733, 9.500873765476733], [3.499999744135013, 9.499999744135014], [3.499125722793293, 9.499125722793293]],
+                        [[3.500874277206707, 9.500874277206707], [3.500000255864987, 9.500000255864986], [3.499126234523267, 9.499126234523267]]])
         nptest.assert_array_equal(sol, f._prox(mat3d, gamma))
+        print("ok")
 
     def test_proj_b2(self):
         """
