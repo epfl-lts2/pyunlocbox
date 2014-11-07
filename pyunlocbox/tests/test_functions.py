@@ -146,8 +146,8 @@ class FunctionsTestCase(unittest.TestCase):
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         # test for a 3 dim matrice (testing with a 2x3x2)
-        mat3d = np.array([[[1, 7], [2, 8], [3, 9]],
-                          [[4, 10], [5, 11], [6, 12]]])
+        mat3d = np.array([[[1., 7.], [2., 8.], [3., 9.]],
+                          [[4., 10.], [5., 11.], [6., 12.]]])
         # test for a 4dim matrice (2x3x2x2)
         mat4d = np.array([[[[1, 13], [7, 19]],
                            [[2, 14], [8, 20]],
@@ -428,8 +428,10 @@ class FunctionsTestCase(unittest.TestCase):
                                             [[[42, 277, 350], [107, 216, 163], [64, 47, -132]], [[39, 191, 181], [73, 99, -37], [-1, -101, -363]], [[27, 96, 3], [30, -27, -246], [-75, -258, -603]]],
                                             [[[55, 230, 243], [90, 139, 26], [17, -60, -299]], [[41, 133, 63], [45, 11, -185], [-59, -219, -541]], [[18, 27, -126], [-9, -126, -405], [-144, -387, -792]]]]),
                                   f._div(dx, dy, dz, dt))
+        print("ok")
 
         # Test for eveal with a 3d matrices
+        print("")
         print("Testing eval")
         f = functions.norm_tv(dim=2)
         xeval = np.array([11.32455532, 11.32455532])

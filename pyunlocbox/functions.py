@@ -279,7 +279,7 @@ class func(object):
 
 class dummy(func):
     r"""
-    Dummy function object.
+    Dummy function objectself.
 
     This can be used as a second function object when there is only one
     function to minimize. It always evaluates as 0.
