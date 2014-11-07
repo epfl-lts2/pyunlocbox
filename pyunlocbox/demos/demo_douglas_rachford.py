@@ -31,6 +31,8 @@ f1 = functions.norm_tv(maxit=50)
 solver = solvers.douglas_rachford(lambda_=1, step=1)
 param = {'x0': im_depleted, 'solver': solver, 'atol': 1e-5, 'maxit': 200, 'verbosity': 'LOW'}
 ret = solvers.solve([f1, f2], **param)
+sol = ret['sol']
+print sol
 
 # Show the result
 plt.imshow(im_original, cmap=plt.get_cmap('gray'))
@@ -42,5 +44,5 @@ plt.show()
 plt.imshow(im_depleted, cmap=plt.get_cmap('gray'))
 plt.show()
 
-plt.imshow(ret, cmap=plt.get_cmap('gray'))
+plt.imshow(sol, cmap=plt.get_cmap('gray'))
 plt.show()
