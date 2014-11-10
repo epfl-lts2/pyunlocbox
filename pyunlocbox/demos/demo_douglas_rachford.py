@@ -25,24 +25,23 @@ im_depleted = im_original * A
 # Define the prox of f2 see the function proj_B2 for more help
 operatorA = lambda x: A * x
 f2 = functions.proj_b2(y=im_depleted, A=operatorA, At=operatorA, epsilon=0)
-f1 = functions.norm_tv(maxit=50)
+f1 = functions.norm_tv(maxit=100)
 
 # Solving the problem
-solver = solvers.douglas_rachford(lambda_=1, step=1)
+solver = solvers.douglas_rachford(lambda_=1, step=0.1)
 param = {'x0': im_depleted, 'solver': solver, 'atol': 1e-5, 'maxit': 200, 'verbosity': 'LOW'}
 ret = solvers.solve([f1, f2], **param)
 sol = ret['sol']
-print sol
 
 # Show the result
+fig = plt.figure()
+a = fig.add_subplot(1, 3, 1)
 plt.imshow(im_original, cmap=plt.get_cmap('gray'))
-plt.show()
-
-plt.imshow(A, cmap=plt.get_cmap('gray'))
-plt.show()
-
+a.set_title('Original image')
+a = fig.add_subplot(1, 3, 2)
 plt.imshow(im_depleted, cmap=plt.get_cmap('gray'))
-plt.show()
-
+a.set_title('Depleted image')
+a = fig.add_subplot(1, 3, 3)
 plt.imshow(sol, cmap=plt.get_cmap('gray'))
+a.set_title('Reconstructed image')
 plt.show()

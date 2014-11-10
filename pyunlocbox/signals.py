@@ -11,6 +11,8 @@ that loads predefined image (the :meth:`lena` method) and some tools methods
 
 """
 
+import os
+import os.path
 import numpy as np
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -44,7 +46,8 @@ class signals(object):
         return gray
 
     def lena(self):
-        img = mpimg.imread('/home/nicolas/Documents/dev/lts2/pyunlocbox/pyunlocbox/signals/lena.png')
+        print os.path.dirname(os.path.realpath(__file__))
+        img = mpimg.imread(os.path.dirname(os.path.realpath(__file__)) + '/signals/lena.png')
         gray_scale = self.rgb2gray(img)
         return gray_scale
 
