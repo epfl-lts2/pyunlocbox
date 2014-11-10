@@ -572,7 +572,8 @@ class norm_tv(norm):
         told, prev_obj = 1., 0.
         mt = 1.
 
-        print("Proximal TV Operator")
+        if self.verbosity in ['LOW', 'HIGH', 'ALL']:
+            print("Proximal TV Operator")
 
         iter = 0
         while iter <= maxit:
@@ -587,11 +588,13 @@ class norm_tv(norm):
                 sol = x - T * self._div(r, s, k, u)
 
             #  Objective function value
-            obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + T * np.sum(self._eval(sol), axis=0)
+            obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
+                T * np.sum(self._eval(sol), axis=0)
             rel_obj = np.abs(obj - prev_obj)/obj
             prev_obj = obj
 
-            print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
+            if self.verbosity in ['HIGH', 'ALL']:
+                print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
 
             # Stopping criterion
             if rel_obj < tol:
@@ -608,14 +611,17 @@ class norm_tv(norm):
                 dx, dy = self.grad(sol)
                 r -= 1./(8.*T*mt**2) * dx
                 s -= 1./(8.*T*mt**2) * dy
-                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) + np.power(np.abs(s), 2)))
+                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
+                                                np.power(np.abs(s), 2)))
 
             if self.dim == 3:
                 dx, dy, dz = self.grad(sol)
                 r -= 1./(12.*T*mt**2) * dx
                 s -= 1./(12.*T*mt**2) * dy
                 k -= 1./(12.*T*mt**2) * dz
-                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) + np.power(np.abs(s), 2) + np.power(np.abs(k), 2)))
+                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
+                                                np.power(np.abs(s), 2) +
+                                                np.power(np.abs(k), 2)))
 
             if self.dim == 4:
                 dx, dy, dz, dt = self.grad(sol)
@@ -623,7 +629,10 @@ class norm_tv(norm):
                 s -= 1./(16.*T*mt**2) * dy
                 k -= 1./(16.*T*mt**2) * dz
                 u -= 1./(16.*T*mt**2) * dt
-                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) + np.power(np.abs(s), 2) + np.power(np.abs(k), 2) + np.power(np.abs(u), 2)))
+                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
+                                                np.power(np.abs(s), 2) +
+                                                np.power(np.abs(k), 2) +
+                                                np.power(np.abs(u), 2)))
 
             # FISTA update
             t = (1. + np.sqrt(4.*told**2))/2.
@@ -659,9 +668,10 @@ class norm_tv(norm):
         t_end = time()
         exec_time = t_end - t_init
 
-        print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
-              iter = {3}".format(obj, rel_obj, crit, iter))
-        print("exec_time = ", exec_time)
+        if self.verbosity in ['HIGH', 'ALL']:
+            print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
+                  iter = {3}".format(obj, rel_obj, crit, iter))
+            print("exec_time = ", exec_time)
 
         return sol
 
