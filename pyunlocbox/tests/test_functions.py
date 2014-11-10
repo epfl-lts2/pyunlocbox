@@ -144,17 +144,14 @@ class FunctionsTestCase(unittest.TestCase):
         # test for a 1dim matrice (testing with a 5)
         mat1d = np.array([1, 2, 3, 4, 5])
         # test for a 2dim matrice (testing with a 2x4)
-        mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
+        mat2d = np.array([[2., 3., 0., 1.], [22., 1., 4., 5.]])
         # test for a 3 dim matrice (testing with a 2x3x2)
         mat3d = np.array([[[1., 7.], [2., 8.], [3., 9.]],
                           [[4., 10.], [5., 11.], [6., 12.]]])
         # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.array([[[[1, 13], [7, 19]],
-                           [[2, 14], [8, 20]],
-                           [[3, 15], [9, 21]]],
-                          [[[4, 16], [10, 22]],
-                           [[5, 17], [11, 23]],
-                           [[6, 18], [12, 24]]]])
+        mat4d = np.array([[[[1, 13], [7, 19]], [[2, 14], [8, 20]],
+                          [[3, 15], [9, 21]]], [[[4, 16], [10, 22]],
+                          [[5, 17], [11, 23]], [[6, 18], [12, 24]]]])
         # test for a 5dim matrice (2x2x3x2x2)
         mat5d = np.array([[[[[1, 25], [13, 37]], [[5, 29], [17, 41]], [[9, 33], [21, 45]]],
                            [[[2, 26], [14, 38]], [[6, 30], [18, 42]], [[10, 34], [22, 46]]]],
@@ -430,22 +427,70 @@ class FunctionsTestCase(unittest.TestCase):
                                   f._div(dx, dy, dz, dt))
         print("ok")
 
-        # Test for eveal with a 3d matrices
+        # Test for eveal
         print("")
         print("Testing eval")
+        # test with 2d matrices
+        f = functions.norm_tv(dim=1)
+        nptest.assert_array_equal(np.array([20, 2, 4, 4]), f._eval(mat2d))
         f = functions.norm_tv(dim=2)
-        xeval = np.array([11.324555320336760, 11.324555320336760])
-        nptest.assert_array_equal(xeval, f.eval(mat3d))
+        nptest.assert_array_equal(56.753641295582440, f._eval(mat2d))
+        # test with 3d matrices (2x3x2)
+        f = functions.norm_tv(dim=2)
+        nptest.assert_array_equal(np.array([11.324555320336760, 11.324555320336760]), f._eval(mat3d))
+
+        f = functions.norm_tv(dim=3)
+        xeval = np.array([49.762944279683097])
+        nptest.assert_array_equal(xeval, f._eval(mat3d))
+        # test with 4d matrices (2x2x3x2)
         print("ok")
 
         # Test for prox with 3d array
         print("")
-        print("Test prox2d")
+        print("Testing Prox")
+        print("Test with 2dim matrices")
+        f = functions.norm_tv(tol=10e-4, dim=1)
+        gamma = 30
+        sol = np.array([[12.003459453582762, 1.999654054641723, 2.000691890716554, 3.000691890716554], [11.996540546417238, 2.000345945358277, 1.999308109283446, 2.999308109283446]])
+        nptest.assert_array_equal(np.round(sol, decimals=5), np.around((f._prox(mat2d, gamma)), decimals=5))
+
+        f = functions.norm_tv(tol=10e-4, dim=2)
+        gamma = 30
+        sol = np.array([[4.83374, 4.78352, 4.71408, 4.66606], [4.83463, 4.78465, 4.71555, 4.66776]])
+        nptest.assert_array_equal(np.round(sol, decimals=5), np.around((f._prox(mat2d, gamma)), decimals=5))
+        print("ok")
+
+        print("")
+        print("Test with 3dim matrices")
         f = functions.norm_tv(tol=10e-4, dim=2)
         gamma = 42.
-        sol = np.array([[[3.500873765476733, 9.500873765476733], [3.499999744135013, 9.499999744135014], [3.499125722793293, 9.499125722793293]],
-                        [[3.500874277206707, 9.500874277206707], [3.500000255864987, 9.500000255864986], [3.499126234523267, 9.499126234523267]]])
-        nptest.assert_array_equal(sol, f._prox(mat3d, gamma))
+        sol = np.array([[[3.50087, 9.50087], [3.50000, 9.50000], [3.49913, 9.49913]],
+                        [[3.50087, 9.50087], [3.50000, 9.50000], [3.49913, 9.49913]]])
+        nptest.assert_array_equal(sol, np.round(f._prox(mat3d, gamma), decimals=5))
+
+        f = functions.norm_tv(tol=10e-4, dim=3)
+        gamma = 18.
+        sol = np.array([[[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]],
+                        [[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]]])
+        nptest.assert_array_equal(sol, np.round(f._prox(mat3d, gamma), decimals=1))
+        print("ok")
+
+        print("")
+        print("Test with 4dim matrices")
+        f = functions.norm_tv(tol=10e-4, dim=3)
+        gamma = 15.
+        sol = np.round(np.array([[[[6.4925, 18.4925], [6.4937, 18.4937]], [[6.4927, 18.4927], [6.4939, 18.4939]],
+                                 [[6.4993, 18.4993], [6.5005, 18.5005]]], [[[6.4995, 18.4995], [6.5007, 18.5007]],
+                                 [[6.5061, 18.5061], [6.5073, 18.5073]], [[6.5063, 18.5063], [6.5075, 18.5075]]]]),
+                       decimals=1)
+        nptest.assert_array_equal(sol, np.round(f._prox(mat4d, gamma), decimals=1))
+
+        f = functions.norm_tv(tol=10e-4, dim=4)
+        gamma = 5.
+        sol = np.array([[[[9, 14], [12, 14]], [[10, 14], [12, 14]],
+                        [[10, 14], [12, 14]]], [[[10, 14], [12, 14]],
+                        [[11, 14], [12, 14]], [[11, 14], [13, 14]]]])
+        nptest.assert_array_equal(sol, np.round(f._prox(mat4d, gamma)))
         print("ok")
 
     def test_proj_b2(self):
