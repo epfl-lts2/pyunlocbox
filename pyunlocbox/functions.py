@@ -449,17 +449,23 @@ class norm_tv(norm):
         self.dim = dim
 
     def _eval(self, x):
-        i = 0
-        grads = []
-        grads = self.grad(x)
-        y = 0
-        for g in grads:
-            y += np.power(abs(g), 2)
-        y = np.sqrt(y)
-        while i < self.dim:
-            y = np.sum(y, 0)
-            i += 1
-        return np.array(y)
+        if self.dim >= 2:
+            i = 0
+            y = 0
+            grads = []
+            grads = self.grad(x)
+            for g in grads:
+                y += np.power(abs(g), 2)
+            y = np.sqrt(y)
+            while i < self.dim:
+                y = np.sum(y, axis=0)
+                i += 1
+            return np.array(y)
+
+        if self.dim == 1:
+            dx = self.grad(x)
+            y = np.sum(np.abs(dx), axis=0)
+            return np.array(y)
 
     def _grad(self, x):
         axis = 0
@@ -544,44 +550,113 @@ class norm_tv(norm):
         # TODO implement test_gamma
         # Initialization
         sol = x
-        r, s = self.grad(x*0)
-        pold, qold = r, s
+
+        if self.dim == 1:
+            r = self.grad(x*0)
+        if self.dim == 2:
+            r, s = self.grad(x*0)
+        if self.dim == 3:
+            r, s, k = self.grad(x*0)
+        if self.dim == 4:
+            r, s, k, u = self.grad(x*0)
+
+        if self.dim >= 1:
+            pold = r
+        if self.dim >= 2:
+            qold = s
+        if self.dim >= 3:
+            kold = k
+        if self.dim >= 4:
+            uold = u
+
         told, prev_obj = 1., 0.
         mt = 1.
 
-        print("Proximal TV Operator")
+        if self.verbosity in ['LOW', 'HIGH', 'ALL']:
+            print("Proximal TV Operator")
 
         iter = 0
         while iter <= maxit:
             # Current Solution
-            sol = x - T * self._div(r, s)
+            if self.dim == 1:
+                sol = x - T * self._div(r)
+            if self.dim == 2:
+                sol = x - T * self._div(r, s)
+            if self.dim == 3:
+                sol = x - T * self._div(r, s, k)
+            if self.dim == 4:
+                sol = x - T * self._div(r, s, k, u)
 
-            obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + T * np.sum(self._eval(sol), axis=0)
+            #  Objective function value
+            obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
+                T * np.sum(self._eval(sol), axis=0)
             rel_obj = np.abs(obj - prev_obj)/obj
             prev_obj = obj
 
-            print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
+            if self.verbosity in ['HIGH', 'ALL']:
+                print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
 
+            # Stopping criterion
             if rel_obj < tol:
                 crit = "TOL_EPS"
                 break
 
-            # Vector Update
-            dx, dy = self.grad(sol)
+            #  Udpate divergence vectors and project
+            if self.dim == 1:
+                dx = self.grad(sol)
+                r -= 1./(4.*T*mt**2) * dx
+                weights = np.maximum(1, np.abs(r))
 
-            r -= (1./(8.*T)/mt**2) * dx
-            s -= (1./(8.*T)/mt**2) * dy
+            if self.dim == 2:
+                dx, dy = self.grad(sol)
+                r -= 1./(8.*T*mt**2) * dx
+                s -= 1./(8.*T*mt**2) * dy
+                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
+                                                np.power(np.abs(s), 2)))
 
-            weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) + np.power(np.abs(s), 2)))
+            if self.dim == 3:
+                dx, dy, dz = self.grad(sol)
+                r -= 1./(12.*T*mt**2) * dx
+                s -= 1./(12.*T*mt**2) * dy
+                k -= 1./(12.*T*mt**2) * dz
+                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
+                                                np.power(np.abs(s), 2) +
+                                                np.power(np.abs(k), 2)))
 
-            p = r / weights
-            q = s / weights
+            if self.dim == 4:
+                dx, dy, dz, dt = self.grad(sol)
+                r -= 1./(16.*T*mt**2) * dx
+                s -= 1./(16.*T*mt**2) * dy
+                k -= 1./(16.*T*mt**2) * dz
+                u -= 1./(16.*T*mt**2) * dt
+                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
+                                                np.power(np.abs(s), 2) +
+                                                np.power(np.abs(k), 2) +
+                                                np.power(np.abs(u), 2)))
 
-            # FISTA?
+            # FISTA update
             t = (1. + np.sqrt(4.*told**2))/2.
-            r = p + (told - 1.)/t * (p - pold)
-            s = q + (told - 1.)/t * (q - qold)
-            pold, qold = p, q
+
+            if self.dim >= 1:
+                p = r / weights
+                r = p + (told - 1.)/t * (p - pold)
+                pold = p
+
+            if self.dim >= 2:
+                q = s / weights
+                s = q + (told - 1.)/t * (q - qold)
+                qold = q
+
+            if self.dim >= 3:
+                o = k / weights
+                k = o + (told - 1.)/t * (o - kold)
+                kold = o
+
+            if self.dim >= 4:
+                m = u / weights
+                u = m + (told-1)/t * (m - uold)
+                uold = m
+
             told = t
             iter += 1
 
@@ -593,9 +668,10 @@ class norm_tv(norm):
         t_end = time()
         exec_time = t_end - t_init
 
-        print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
-              iter = {3}".format(obj, rel_obj, crit, iter))
-        print("exec_time = ", exec_time)
+        if self.verbosity in ['HIGH', 'ALL']:
+            print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
+                  iter = {3}".format(obj, rel_obj, crit, iter))
+            print("exec_time = ", exec_time)
 
         return sol
 
