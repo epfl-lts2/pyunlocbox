@@ -25,7 +25,7 @@ im_depleted = im_original * A
 # Define the prox of f2 see the function proj_B2 for more help
 operatorA = lambda x: A * x
 f2 = functions.proj_b2(y=im_depleted, A=operatorA, At=operatorA, epsilon=0)
-f1 = functions.norm_tv(maxit=100)
+f1 = functions.norm_tv(maxit=50)
 
 # Solving the problem
 solver = solvers.douglas_rachford(lambda_=1, step=0.1)
