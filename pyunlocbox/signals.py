@@ -25,7 +25,7 @@ class signals(object):
         pass
 
     def rgb2gray(self, rgb):
-    	r"""
+        r"""
         Python version of the rgb2gray() matlab method. Convert RGB image or
         colormap to grayscale.
 
