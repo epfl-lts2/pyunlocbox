@@ -1,5 +1,6 @@
 # Required for usage.
 numpy
+matplotlib
 
 # Required to build documentation.
 sphinx
