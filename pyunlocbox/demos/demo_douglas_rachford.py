@@ -6,6 +6,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 # TODO fix that!
+print(sys.path.append(os.getcwd()))
 sys.path.append(os.getcwd())
 from pyunlocbox import signals, functions, solvers
 
