@@ -531,13 +531,13 @@ class norm_tv(norm):
         if self.dim == 1:
             return dx
 
-        if self.dim == 2:
+        elif self.dim == 2:
             return dx, dy
 
-        if self.dim == 3:
+        elif self.dim == 3:
             return dx, dy, dz
 
-        if self.dim == 4:
+        elif self.dim == 4:
             return dx, dy, dz, dt
 
     def _prox(self, x, T):
@@ -553,11 +553,11 @@ class norm_tv(norm):
 
         if self.dim == 1:
             r = self.grad(x*0)
-        if self.dim == 2:
+        elif self.dim == 2:
             r, s = self.grad(x*0)
-        if self.dim == 3:
+        elif self.dim == 3:
             r, s, k = self.grad(x*0)
-        if self.dim == 4:
+        elif self.dim == 4:
             r, s, k, u = self.grad(x*0)
 
         if self.dim >= 1:
@@ -570,7 +570,33 @@ class norm_tv(norm):
             uold = u
 
         told, prev_obj = 1., 0.
-        mt = 1.
+
+        # Initialization for weights
+        try:
+            wx = self.kwargs["wx"]
+        except (KeyError, TypeError):
+            wx = 1.
+        try:
+            wy = self.kwargs["wy"]
+        except (KeyError, TypeError):
+            wy = 1.
+        try:
+            wz = self.kwargs["wz"]
+        except (KeyError, TypeError):
+            wz = 1.
+        try:
+            wt = self.kwargs["wt"]
+        except (KeyError, TypeError):
+            wt = 1.
+
+        if self.dim == 1:
+            mt = wx
+        elif self.dim == 2:
+            mt = np.maximum(wx, wy)
+        elif self.dim == 3:
+            mt = np.maximum(wx, np.maximum(wy, wz))
+        elif self.dim == 4:
+            mt = np.maximum(np.maximum(wx, wy), np.maximum(wz, wt))
 
         if self.verbosity in ['LOW', 'HIGH', 'ALL']:
             print("Proximal TV Operator")
@@ -580,11 +606,11 @@ class norm_tv(norm):
             # Current Solution
             if self.dim == 1:
                 sol = x - T * self._div(r)
-            if self.dim == 2:
+            elif self.dim == 2:
                 sol = x - T * self._div(r, s)
-            if self.dim == 3:
+            elif self.dim == 3:
                 sol = x - T * self._div(r, s, k)
-            if self.dim == 4:
+            elif self.dim == 4:
                 sol = x - T * self._div(r, s, k, u)
 
             #  Objective function value
@@ -604,52 +630,52 @@ class norm_tv(norm):
             #  Udpate divergence vectors and project
             if self.dim == 1:
                 dx = self.grad(sol)
-                r -= 1./(4.*T*mt**2) * dx
+                r -= 1./(4*T*mt**2) * dx
                 weights = np.maximum(1, np.abs(r))
 
-            if self.dim == 2:
+            elif self.dim == 2:
                 dx, dy = self.grad(sol)
                 r -= 1./(8.*T*mt**2) * dx
                 s -= 1./(8.*T*mt**2) * dy
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2)))
 
-            if self.dim == 3:
+            elif self.dim == 3:
                 dx, dy, dz = self.grad(sol)
-                r -= 1./(12.*T*mt**2) * dx
-                s -= 1./(12.*T*mt**2) * dy
-                k -= 1./(12.*T*mt**2) * dz
+                r -= 1./(12*T*mt**2) * dx
+                s -= 1./(12*T*mt**2) * dy
+                k -= 1./(12*T*mt**2) * dz
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2) +
                                                 np.power(np.abs(k), 2)))
 
-            if self.dim == 4:
+            elif self.dim == 4:
                 dx, dy, dz, dt = self.grad(sol)
-                r -= 1./(16.*T*mt**2) * dx
-                s -= 1./(16.*T*mt**2) * dy
-                k -= 1./(16.*T*mt**2) * dz
-                u -= 1./(16.*T*mt**2) * dt
+                r -= 1./(16*T*mt**2) * dx
+                s -= 1./(16*T*mt**2) * dy
+                k -= 1./(16*T*mt**2) * dz
+                u -= 1./(16*T*mt**2) * dt
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2) +
                                                 np.power(np.abs(k), 2) +
                                                 np.power(np.abs(u), 2)))
 
             # FISTA update
-            t = (1. + np.sqrt(4.*told**2))/2.
+            t = (1 + np.sqrt(4*told**2))/2.
 
             if self.dim >= 1:
                 p = r / weights
-                r = p + (told - 1.)/t * (p - pold)
+                r = p + (told - 1)/t * (p - pold)
                 pold = p
 
             if self.dim >= 2:
                 q = s / weights
-                s = q + (told - 1.)/t * (q - qold)
+                s = q + (told - 1)/t * (q - qold)
                 qold = q
 
             if self.dim >= 3:
                 o = k / weights
-                k = o + (told - 1.)/t * (o - kold)
+                k = o + (told - 1)/t * (o - kold)
                 kold = o
 
             if self.dim >= 4:

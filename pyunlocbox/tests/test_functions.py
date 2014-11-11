@@ -143,16 +143,16 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Test Matrices initialization
         # test for a 1dim matrice (testing with a 5)
-        mat1d = np.array([1, 2, 3, 4, 5])
+        mat1d = np.array([1., 2., 3., 4., 5.])
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2., 3., 0., 1.], [22., 1., 4., 5.]])
         # test for a 3 dim matrice (testing with a 2x3x2)
         mat3d = np.array([[[1., 7.], [2., 8.], [3., 9.]],
                           [[4., 10.], [5., 11.], [6., 12.]]])
         # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.array([[[[1, 13], [7, 19]], [[2, 14], [8, 20]],
-                          [[3, 15], [9, 21]]], [[[4, 16], [10, 22]],
-                          [[5, 17], [11, 23]], [[6, 18], [12, 24]]]])
+        mat4d = np.array([[[[1., 13.], [7., 19.]], [[2., 14.], [8., 20.]],
+                          [[3., 15.], [9., 21.]]], [[[4., 16.], [10., 22.]],
+                          [[5., 17.], [11., 23.]], [[6., 18.], [12., 24.]]]])
         # test for a 5dim matrice (2x2x3x2x2)
         mat5d = np.array([[[[[1, 25], [13, 37]],
                             [[5, 29], [17, 41]],
@@ -543,7 +543,7 @@ class FunctionsTestCase(unittest.TestCase):
                          2.000691890716554, 3.000691890716554],
                         [11.996540546417238, 2.000345945358277,
                          1.999308109283446, 2.999308109283446]])
-        nptest.assert_array_equal(np.round(sol, decimals=5),
+        nptest.assert_array_equal(np.around(sol, decimals=5),
                                   np.around((f._prox(mat2d, gamma)),
                                             decimals=5))
 
@@ -551,7 +551,7 @@ class FunctionsTestCase(unittest.TestCase):
         gamma = 30
         sol = np.array([[4.83374, 4.78352, 4.71408, 4.66606],
                         [4.83463, 4.78465, 4.71555, 4.66776]])
-        nptest.assert_array_equal(np.round(sol, decimals=5),
+        nptest.assert_array_equal(np.around(sol, decimals=5),
                                   np.around((f._prox(mat2d, gamma)),
                                             decimals=5))
 
@@ -563,34 +563,34 @@ class FunctionsTestCase(unittest.TestCase):
                         [[3.50087, 9.50087],
                          [3.50000, 9.50000],
                          [3.49913, 9.49913]]])
-        nptest.assert_array_equal(sol, np.round(f._prox(mat3d, gamma),
-                                                decimals=5))
+        nptest.assert_array_equal(sol, np.around(f._prox(mat3d, gamma),
+                                                 decimals=5))
 
         f = functions.norm_tv(tol=10e-4, dim=3)
         gamma = 18.
         sol = np.array([[[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]],
                         [[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]]])
-        nptest.assert_array_equal(sol, np.round(f._prox(mat3d, gamma),
-                                                decimals=1))
+        nptest.assert_array_equal(sol, np.around(f._prox(mat3d, gamma),
+                                                 decimals=1))
 
         f = functions.norm_tv(tol=10e-4, dim=3)
         gamma = 15.
-        sol = np.round(np.array([[[[6.4925, 18.4925], [6.4937, 18.4937]],
-                                  [[6.4927, 18.4927], [6.4939, 18.4939]],
-                                 [[6.4993, 18.4993], [6.5005, 18.5005]]],
-                                 [[[6.4995, 18.4995], [6.5007, 18.5007]],
-                                 [[6.5061, 18.5061], [6.5073, 18.5073]],
-                                  [[6.5063, 18.5063], [6.5075, 18.5075]]]]),
-                       decimals=1)
-        nptest.assert_array_equal(sol, np.round(f._prox(mat4d, gamma),
-                                                decimals=1))
+        sol = np.around(np.array([[[[6.4925, 18.4925], [6.4937, 18.4937]],
+                                   [[6.4927, 18.4927], [6.4939, 18.4939]],
+                                  [[6.4993, 18.4993], [6.5005, 18.5005]]],
+                                  [[[6.4995, 18.4995], [6.5007, 18.5007]],
+                                  [[6.5061, 18.5061], [6.5073, 18.5073]],
+                                   [[6.5063, 18.5063], [6.5075, 18.5075]]]]),
+                        decimals=1)
+        nptest.assert_array_equal(sol, np.around(f._prox(mat4d, gamma),
+                                                 decimals=1))
 
         f = functions.norm_tv(tol=10e-4, dim=4)
         gamma = 5.
         sol = np.array([[[[9, 14], [12, 14]], [[10, 14], [12, 14]],
                         [[10, 14], [12, 14]]], [[[10, 14], [12, 14]],
                         [[11, 14], [12, 14]], [[11, 14], [13, 14]]]])
-        nptest.assert_array_equal(sol, np.round(f._prox(mat4d, gamma)))
+        nptest.assert_array_equal(sol, np.around(f._prox(mat4d, gamma)))
 
     def test_proj_b2(self):
         """
