@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
+<<<<<<< HEAD
+# TODO fix that!
+print(sys.path.append(os.getcwd()))
+sys.path.append(os.getcwd())
+=======
+>>>>>>> 338485916945fc6fe409bae9e6a3fcedf68aae03
 from pyunlocbox import signals, functions, solvers
 
 
