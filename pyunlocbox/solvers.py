@@ -14,7 +14,6 @@ it and implement the class methods. The following solvers are included :
 import numpy as np
 import time
 from pyunlocbox.functions import dummy
-#from functions import dummy
 
 
 def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
