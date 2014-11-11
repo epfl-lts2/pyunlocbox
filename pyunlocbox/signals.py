@@ -45,9 +45,6 @@ class signals(object):
         >>> import matplotlib.pyplot as plt
         >>> s = signals.signals()
         >>> pic = s.lena()
-        >>> plt.imshow(pic, cmap=plt.get_cmap('gray')) #doctest: +ELLIPSIS
-        <matplotlib.image.AxesImage object at 0x...>
-        >>> plt.show(block=False)
 
         """
         r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
