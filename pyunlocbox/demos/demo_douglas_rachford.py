@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import numpy as np
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-sys.path.append('..')
-import signals
-import functions
-import solvers
+# TODO fix that!
+sys.path.append(os.getcwd())
+from pyunlocbox import signals, functions, solvers
 
 # Original image
 s = signals.signals()
@@ -29,7 +28,8 @@ f1 = functions.norm_tv(maxit=50)
 
 # Solving the problem
 solver = solvers.douglas_rachford(lambda_=1, step=0.1)
-param = {'x0': im_depleted, 'solver': solver, 'atol': 1e-5, 'maxit': 200, 'verbosity': 'LOW'}
+param = {'x0': im_depleted, 'solver': solver,
+         'atol': 1e-5, 'maxit': 200, 'verbosity': 'LOW'}
 ret = solvers.solve([f1, f2], **param)
 sol = ret['sol']
 
