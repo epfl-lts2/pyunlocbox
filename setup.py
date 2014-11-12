@@ -19,7 +19,7 @@ setup(
     packages = ['pyunlocbox', 'pyunlocbox.tests', 'pyunlocbox.demos'],
     package_data = {'pyunlocbox': ['signals/*']},
     test_suite = 'pyunlocbox.tests.test_all.suite',
-    install_requires = ['numpy'],
+    install_requires = ['numpy', 'matplotlib'],
     requires = ['numpy'],
     license = "BSD",
     keywords = 'convex optimization',
