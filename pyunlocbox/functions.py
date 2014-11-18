@@ -24,6 +24,7 @@ inherit from it implement the methods. These classes include :
 
 from time import time
 import numpy as np
+from copy import deepcopy
 
 
 def _soft_threshold(z, T, handle_complex=True):
@@ -553,12 +554,17 @@ class norm_tv(norm):
 
         if self.dim == 1:
             r = self.grad(x*0)
+            rr = deepcopy(r)
         elif self.dim == 2:
             r, s = self.grad(x*0)
+            rr, ss = deepcopy(r), deepcopy(s)
         elif self.dim == 3:
             r, s, k = self.grad(x*0)
+            rr, ss, kk = deepcopy(r), deepcopy(s), deepcopy(k)
         elif self.dim == 4:
             r, s, k, u = self.grad(x*0)
+            rr, ss, kk, uu = deepcopy(r), deepcopy(s), deepcopy(k), deepcopy(u)
+
 
         if self.dim >= 1:
             pold = r
@@ -572,22 +578,26 @@ class norm_tv(norm):
         told, prev_obj = 1., 0.
 
         # Initialization for weights
-        try:
-            wx = self.kwargs["wx"]
-        except (KeyError, TypeError):
-            wx = 1.
-        try:
-            wy = self.kwargs["wy"]
-        except (KeyError, TypeError):
-            wy = 1.
-        try:
-            wz = self.kwargs["wz"]
-        except (KeyError, TypeError):
-            wz = 1.
-        try:
-            wt = self.kwargs["wt"]
-        except (KeyError, TypeError):
-            wt = 1.
+        if self.dim >= 1:
+            try:
+                wx = self.kwargs["wx"]
+            except (KeyError, TypeError):
+                wx = 1.
+        if self.dim >= 2:
+            try:
+                wy = self.kwargs["wy"]
+            except (KeyError, TypeError):
+                wy = 1.
+        if self.dim >= 3:
+            try:
+                wz = self.kwargs["wz"]
+            except (KeyError, TypeError):
+                wz = 1.
+        if self.dim >= 4:
+            try:
+                wt = self.kwargs["wt"]
+            except (KeyError, TypeError):
+                wt = 1.
 
         if self.dim == 1:
             mt = wx
@@ -605,13 +615,13 @@ class norm_tv(norm):
         while iter <= maxit:
             # Current Solution
             if self.dim == 1:
-                sol = x - T * self._div(r)
+                sol = x - T * self._div(rr)
             elif self.dim == 2:
-                sol = x - T * self._div(r, s)
+                sol = x - T * self._div(rr, ss)
             elif self.dim == 3:
-                sol = x - T * self._div(r, s, k)
+                sol = x - T * self._div(rr, ss, kk)
             elif self.dim == 4:
-                sol = x - T * self._div(r, s, k, u)
+                sol = x - T * self._div(rr, ss, kk, uu)
 
             #  Objective function value
             obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
@@ -635,16 +645,16 @@ class norm_tv(norm):
 
             elif self.dim == 2:
                 dx, dy = self.grad(sol)
-                r -= 1./(8.*T*mt**2) * dx
-                s -= 1./(8.*T*mt**2) * dy
+                r -= (1./(8.*T*mt**2.)) * dx
+                s -= (1./(8.*T*mt**2.)) * dy
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2)))
 
             elif self.dim == 3:
                 dx, dy, dz = self.grad(sol)
-                r -= 1./(12*T*mt**2) * dx
-                s -= 1./(12*T*mt**2) * dy
-                k -= 1./(12*T*mt**2) * dz
+                r -= 1./(12.*T*mt**2) * dx
+                s -= 1./(12.*T*mt**2) * dy
+                k -= 1./(12.*T*mt**2) * dz
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2) +
                                                 np.power(np.abs(k), 2)))
@@ -667,20 +677,24 @@ class norm_tv(norm):
                 p = r / weights
                 r = p + (told - 1)/t * (p - pold)
                 pold = p
+                rr = deepcopy(r)
 
             if self.dim >= 2:
                 q = s / weights
-                s = q + (told - 1)/t * (q - qold)
+                ss = q + (told - 1)/t * (q - qold)
+                ss = deepcopy(s)
                 qold = q
 
             if self.dim >= 3:
                 o = k / weights
                 k = o + (told - 1)/t * (o - kold)
+                kk = deepcopy(k)
                 kold = o
 
             if self.dim >= 4:
                 m = u / weights
                 u = m + (told-1)/t * (m - uold)
+                uu = deepcopy(u)
                 uold = m
 
             told = t
@@ -753,7 +767,6 @@ class norm_tv(norm):
                                  dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
                                  -np.expand_dims(dt[:, :, :, -2, ], axis=3)),
                                 axis=3)
-
         return x
 
 
