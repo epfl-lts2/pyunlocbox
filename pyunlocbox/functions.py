@@ -441,7 +441,23 @@ class norm_l2(norm):
 
 class norm_tv(norm):
     r"""
-    AND Doc
+    TV Norm function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    norm_tv can only evaluate signals in a dimension smaller than 5
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> import numpy as np
+    >>> f = pyunlocbox.functions.norm_tv()
+    >>> x = np.random.rand(4, 4)
+    >>> f.eval(x)
     """
 
     def __init__(self, dim=2,  **kwargs):
