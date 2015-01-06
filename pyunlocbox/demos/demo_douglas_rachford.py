@@ -6,6 +6,14 @@ from pyunlocbox import signals, functions, solvers
 
 
 def douglas_rachford():
+    """
+    Douglas Rachford demonstration
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> pyunlocbox.demos.demo_douglas_rachford.douglas_rachford()
+    """
     # Original image
     s = signals.signals()
     im_original = s.lena()
