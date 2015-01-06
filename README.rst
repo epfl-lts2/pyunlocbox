@@ -80,5 +80,3 @@ Contributors :
 * Alexandre Lafaye from EPFL LTS2 <alexandre.lafaye@epfl.ch>
 * Basile Châtillon from EPFL LTS2 <basile.chatillon@epfl.ch>
 * Nicolas Rod from EPFL LTS2 <nicolas.rod@epfl.ch>
-
-* None yet. Why not be the first ?
