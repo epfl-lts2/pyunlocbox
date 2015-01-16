@@ -3,6 +3,17 @@
 =======
 History
 =======
+0.2.2 (2015-01-16)
+------------------
+
+New feature version. Still experimental.
+
+New Features:
+
+* norm_tv has been added with gradient, div, evaluation and prox.
+* Module signals has been added.
+* A demo for douglas rachford is also now presenta.
+
 
 0.2.1 (2014-08-20)
 ------------------
