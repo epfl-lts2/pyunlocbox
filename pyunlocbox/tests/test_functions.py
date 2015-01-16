@@ -141,31 +141,24 @@ class FunctionsTestCase(unittest.TestCase):
         We test the grad, div, eval and prox.
         """
 
+        def mat3d():
+            ii = range(1, stop=12)
+            array = np.array(0)
+            for i in ii:
+                array 
+
+
         # Test Matrices initialization
         # test for a 1dim matrice (testing with a 5)
-        mat1d = np.array([1., 2., 3., 4., 5.])
+        mat1d = np.arange(5.) + 1
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2., 3., 0., 1.], [22., 1., 4., 5.]])
         # test for a 3 dim matrice (testing with a 2x3x2)
-        mat3d = np.array([[[1., 7.], [2., 8.], [3., 9.]],
-                          [[4., 10.], [5., 11.], [6., 12.]]])
+        mat3d = np.arange(1., stop=13.).reshape(2, 2, 3).transpose((1, 2, 0))
         # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.array([[[[1., 13.], [7., 19.]], [[2., 14.], [8., 20.]],
-                          [[3., 15.], [9., 21.]]], [[[4., 16.], [10., 22.]],
-                          [[5., 17.], [11., 23.]], [[6., 18.], [12., 24.]]]])
+        mat4d = np.arange(1., stop=25.).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
         # test for a 5dim matrice (2x2x3x2x2)
-        mat5d = np.array([[[[[1, 25], [13, 37]],
-                            [[5, 29], [17, 41]],
-                            [[9, 33], [21, 45]]],
-                           [[[2, 26], [14, 38]],
-                            [[6, 30], [18, 42]],
-                            [[10, 34], [22, 46]]]],
-                          [[[[3, 27], [15, 39]],
-                            [[7, 31], [19, 43]],
-                            [[11, 35], [23, 47]]],
-                           [[[4, 28], [16, 40]],
-                            [[8, 32], [20, 44]],
-                            [[12, 36], [24, 48]]]]])
+        mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
 
         # test without weight
         f = functions.norm_tv(dim=1, wx=1, wy=1, wz=1, wt=1)
