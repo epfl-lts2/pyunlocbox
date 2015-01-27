@@ -456,8 +456,11 @@ class norm_tv(norm):
     >>> import pyunlocbox
     >>> import numpy as np
     >>> f = pyunlocbox.functions.norm_tv()
-    >>> x = np.random.rand(4, 4)
+    >>> x = np.arange(0, 16)
+    >>> x = x.reshape(4, 4)
     >>> f.eval(x)
+    array(52.107950630558946)
+
     """
 
     def __init__(self, dim=2,  **kwargs):
