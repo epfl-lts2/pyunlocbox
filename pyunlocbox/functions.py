@@ -879,7 +879,7 @@ class proj_b2(proj):
 
             # Initialization.
             sol = x
-            u = np.zeros(np.size(self.y))
+            u = np.zeros(np.shape(self.y))
             if self.method is 'FISTA':
                 v_last = u
                 t_last = 1.
