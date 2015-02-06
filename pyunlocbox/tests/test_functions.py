@@ -554,7 +554,6 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Test with 2d matrices
         # Test without weights
-        """
         f = functions.norm_tv(tol=10e-4, dim=1)
         gamma = 30
         sol = np.array([[12.003459453582762, 1.999654054641723,
@@ -596,7 +595,6 @@ class FunctionsTestCase(unittest.TestCase):
                         [[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]]])
         nptest.assert_array_equal(sol, np.around(f._prox(mat3d, gamma),
                                                  decimals=1))
-        """
         # Test with weights
         f = functions.norm_tv(tol=10e-4, dim=2, wx=5., wy=10.)
         gamma = 3.

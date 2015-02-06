@@ -463,10 +463,11 @@ class norm_tv(norm):
 
     """
 
-    def __init__(self, dim=2,  **kwargs):
+    def __init__(self, dim=2, verbosity='LOW',  **kwargs):
         super(norm_tv, self).__init__(**kwargs)
         self.kwargs = kwargs
         self.dim = dim
+        self.verbosity = verbosity
 
     def _eval(self, x):
         if self.dim >= 2:
@@ -480,12 +481,12 @@ class norm_tv(norm):
             while i < self.dim:
                 y = np.sum(y, axis=0)
                 i += 1
-            return np.array(y)
+            return np.sum(np.array(y))
 
         if self.dim == 1:
             dx = self.grad(x)
             y = np.sum(np.abs(dx), axis=0)
-            return np.array(y)
+            return np.sum(np.array(y))
 
     def _grad(self, x):
         axis = 0
@@ -656,7 +657,7 @@ class norm_tv(norm):
                 crit = "TOL_EPS"
                 break
 
-            #  Udpate divergence vectors and project
+            #  Update divergence vectors and project
             if self.dim == 1:
                 dx = self.grad(sol)
                 r -= 1./(4*T*mt**2) * dx
@@ -700,7 +701,7 @@ class norm_tv(norm):
 
             if self.dim >= 2:
                 q = s / weights
-                ss = q + (told - 1)/t * (q - qold)
+                s = q + (told - 1)/t * (q - qold)
                 ss = deepcopy(s)
                 qold = q
 
@@ -731,7 +732,6 @@ class norm_tv(norm):
             print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
                   iter = {3}".format(obj, rel_obj, crit, iter))
             print("exec_time = ", exec_time)
-
         return sol
 
     def _div(self, *args):
