@@ -56,3 +56,10 @@ class signals(object):
                            '/signals/lena.png')
         gray_scale = self.rgb2gray(img)
         return gray_scale
+
+    def checkerboard(self):
+        img = mpimg.imread(os.path.dirname(os.path.realpath(__file__)) +
+                           '/signals/checkerboard.png')
+        gray_scale = self.rgb2gray(img)
+        return gray_scale
+
