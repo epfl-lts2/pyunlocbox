@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name = 'pyunlocbox',
-    version = '0.2.1',
+    version = '0.2.2',
     description = 'A convex optimization toolbox using proximal '
                   'splitting methods.',
     long_description = open('README.rst').read(),
