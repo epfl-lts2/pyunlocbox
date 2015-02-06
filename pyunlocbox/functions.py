@@ -26,6 +26,8 @@ from time import time
 import numpy as np
 from copy import deepcopy
 
+from pyunlocbox import operators as op
+
 
 def _soft_threshold(z, T, handle_complex=True):
     r"""
@@ -449,7 +451,6 @@ class norm_tv(norm):
 
     Notes
     -----
-    norm_tv can only evaluate signals in a dimension smaller than 5
 
     Examples
     --------
@@ -463,7 +464,7 @@ class norm_tv(norm):
 
     """
 
-    def __init__(self, dim=2, verbosity='LOW',  **kwargs):
+    def __init__(self, dim=2, verbosity='LOW', **kwargs):
         super(norm_tv, self).__init__(**kwargs)
         self.kwargs = kwargs
         self.dim = dim
@@ -474,7 +475,7 @@ class norm_tv(norm):
             i = 0
             y = 0
             grads = []
-            grads = self.grad(x)
+            grads = op.grad(x, dim=self.dim)
             for g in grads:
                 y += np.power(abs(g), 2)
             y = np.sqrt(y)
@@ -484,83 +485,83 @@ class norm_tv(norm):
             return np.sum(np.array(y))
 
         if self.dim == 1:
-            dx = self.grad(x)
+            dx = op.grad(x, dim=self.dim)
             y = np.sum(np.abs(dx), axis=0)
             return np.sum(np.array(y))
 
-    def _grad(self, x):
-        axis = 0
-        while axis < len(x.shape):
-            if axis >= 0:
-                try:
-                    zero_dx = np.zeros((np.append(np.shape(zero_dx),
-                                                  np.shape(x)[axis])))
-                except NameError:
-                    zero_dx = np.zeros((1))
-            if axis >= 1:
-                try:
-                    zero_dy = np.zeros((np.append(np.shape(zero_dy),
-                                                  np.shape(x)[axis])))
-                except NameError:
-                    zero_dy = np.zeros((np.shape(x)[0], 1))
-            if axis >= 2:
-                try:
-                    zero_dz = np.zeros((np.append(np.shape(zero_dz),
-                                                  np.shape(x)[axis])))
-                except NameError:
-                    zero_dz = np.zeros((np.shape(x)[0], np.shape(x)[1], 1))
-            if axis >= 3:
-                try:
-                    zero_dt = np.zeros((np.append(np.shape(zero_dt),
-                                                  np.shape(x)[axis])))
-                except NameError:
-                    zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1],
-                                        np.shape(x)[2], 1))
-            axis += 1
-
-        if self.dim >= 1:
-            dx = np.concatenate((x[1:, ] - x[:-1, ], zero_dx), axis=0)
-            try:
-                dx *= self.kwargs["wx"]
-            except (KeyError, TypeError):
-                pass
-
-        if self.dim >= 2:
-            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ], zero_dy), axis=1)
-            try:
-                dy *= self.kwargs["wy"]
-            except (KeyError, TypeError):
-                pass
-
-        if self.dim >= 3:
-            dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ], zero_dz),
-                                axis=2)
-            try:
-                dz *= self.kwargs["wz"]
-            except (KeyError, TypeError):
-                pass
-
-        if self.dim >= 4:
-            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ],
-                                 zero_dt),
-                                axis=3)
-            try:
-                dt *= self.kwargs["wt"]
-            except (KeyError, TypeError):
-                pass
-
-        if self.dim == 1:
-            return dx
-
-        elif self.dim == 2:
-            return dx, dy
-
-        elif self.dim == 3:
-            return dx, dy, dz
-
-        elif self.dim == 4:
-            return dx, dy, dz, dt
-
+#    def _grad(self, x):
+#        axis = 0
+#        while axis < len(x.shape):
+#            if axis >= 0:
+#                try:
+#                    zero_dx = np.zeros((np.append(np.shape(zero_dx),
+#                                                  np.shape(x)[axis])))
+#                except NameError:
+#                    zero_dx = np.zeros((1))
+#            if axis >= 1:
+#                try:
+#                    zero_dy = np.zeros((np.append(np.shape(zero_dy),
+#                                                  np.shape(x)[axis])))
+#                except NameError:
+#                    zero_dy = np.zeros((np.shape(x)[0], 1))
+#            if axis >= 2:
+#                try:
+#                    zero_dz = np.zeros((np.append(np.shape(zero_dz),
+#                                                  np.shape(x)[axis])))
+#                except NameError:
+#                    zero_dz = np.zeros((np.shape(x)[0], np.shape(x)[1], 1))
+#            if axis >= 3:
+#                try:
+#                    zero_dt = np.zeros((np.append(np.shape(zero_dt),
+#                                                  np.shape(x)[axis])))
+#                except NameError:
+#                    zero_dt = np.zeros((np.shape(x)[0], np.shape(x)[1],
+#                                        np.shape(x)[2], 1))
+#            axis += 1
+#
+#        if self.dim >= 1:
+#            dx = np.concatenate((x[1:, ] - x[:-1, ], zero_dx), axis=0)
+#            try:
+#                dx *= self.kwargs["wx"]
+#            except (KeyError, TypeError):
+#                pass
+#
+#        if self.dim >= 2:
+#            dy = np.concatenate((x[:, 1:, ] - x[:, :-1, ], zero_dy), axis=1)
+#            try:
+#                dy *= self.kwargs["wy"]
+#            except (KeyError, TypeError):
+#                pass
+#
+#        if self.dim >= 3:
+#            dz = np.concatenate((x[:, :, 1:, ] - x[:, :, :-1, ], zero_dz),
+#                                axis=2)
+#            try:
+#                dz *= self.kwargs["wz"]
+#            except (KeyError, TypeError):
+#                pass
+#
+#        if self.dim >= 4:
+#            dt = np.concatenate((x[:, :, :, 1:, ] - x[:, :, :, :-1, ],
+#                                 zero_dt),
+#                                axis=3)
+#            try:
+#                dt *= self.kwargs["wt"]
+#            except (KeyError, TypeError):
+#                pass
+#
+#        if self.dim == 1:
+#            return dx
+#
+#        elif self.dim == 2:
+#            return dx, dy
+#
+#        elif self.dim == 3:
+#            return dx, dy, dz
+#
+#        elif self.dim == 4:
+#            return dx, dy, dz, dt
+#
     def _prox(self, x, T):
         # Time counter
         t_init = time()
@@ -573,18 +574,17 @@ class norm_tv(norm):
         sol = x
 
         if self.dim == 1:
-            r = self.grad(x*0)
+            r = op.grad(x*0, dim=self.dim)
             rr = deepcopy(r)
         elif self.dim == 2:
-            r, s = self.grad(x*0)
+            r, s = op.grad(x*0, dim=self.dim)
             rr, ss = deepcopy(r), deepcopy(s)
         elif self.dim == 3:
-            r, s, k = self.grad(x*0)
+            r, s, k = op.grad(x*0, dim=self.dim)
             rr, ss, kk = deepcopy(r), deepcopy(s), deepcopy(k)
         elif self.dim == 4:
-            r, s, k, u = self.grad(x*0)
+            r, s, k, u = op.grad(x*0, dim=self.dim)
             rr, ss, kk, uu = deepcopy(r), deepcopy(s), deepcopy(k), deepcopy(u)
-
 
         if self.dim >= 1:
             pold = r
@@ -635,13 +635,13 @@ class norm_tv(norm):
         while iter <= maxit:
             # Current Solution
             if self.dim == 1:
-                sol = x - T * self._div(rr)
+                sol = x - T * op.div(rr)
             elif self.dim == 2:
-                sol = x - T * self._div(rr, ss)
+                sol = x - T * op.div(rr, ss)
             elif self.dim == 3:
-                sol = x - T * self._div(rr, ss, kk)
+                sol = x - T * op.div(rr, ss, kk)
             elif self.dim == 4:
-                sol = x - T * self._div(rr, ss, kk, uu)
+                sol = x - T * self.div(rr, ss, kk, uu)
 
             #  Objective function value
             obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
@@ -659,19 +659,19 @@ class norm_tv(norm):
 
             #  Update divergence vectors and project
             if self.dim == 1:
-                dx = self.grad(sol)
+                dx = op.grad(sol, dim=self.dim)
                 r -= 1./(4*T*mt**2) * dx
                 weights = np.maximum(1, np.abs(r))
 
             elif self.dim == 2:
-                dx, dy = self.grad(sol)
+                dx, dy = op.grad(sol, dim=self.dim)
                 r -= (1./(8.*T*mt**2.)) * dx
                 s -= (1./(8.*T*mt**2.)) * dy
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2)))
 
             elif self.dim == 3:
-                dx, dy, dz = self.grad(sol)
+                dx, dy, dz = op.grad(sol, dim=self.dim)
                 r -= 1./(12.*T*mt**2) * dx
                 s -= 1./(12.*T*mt**2) * dy
                 k -= 1./(12.*T*mt**2) * dz
@@ -680,7 +680,7 @@ class norm_tv(norm):
                                                 np.power(np.abs(k), 2)))
 
             elif self.dim == 4:
-                dx, dy, dz, dt = self.grad(sol)
+                dx, dy, dz, dt = op.grad(sol, dim=self.dim)
                 r -= 1./(16*T*mt**2) * dx
                 s -= 1./(16*T*mt**2) * dy
                 k -= 1./(16*T*mt**2) * dz
@@ -734,59 +734,59 @@ class norm_tv(norm):
             print("exec_time = ", exec_time)
         return sol
 
-    def _div(self, *args):
-
-        if len(args) == 0:
-            raise ValueError("Need to input at least one grad")
-
-        if len(args) >= 1:
-            dx = args[0]
-            try:
-                dx *= np.conjugate(self.kwargs["wx"])
-            except KeyError:
-                pass
-
-            x = np.concatenate((np.expand_dims(dx[0, ], axis=0),
-                                dx[1:-1, ] - dx[:-2, ],
-                                -np.expand_dims(dx[-2, ], axis=0)),
-                               axis=0)
-
-        if len(args) >= 2:
-            dy = args[1]
-            try:
-                dy *= np.conjugate(self.kwargs["wy"])
-            except KeyError:
-                pass
-
-            x += np.concatenate((np.expand_dims(dy[:, 0, ], axis=1),
-                                 dy[:, 1:-1, ] - dy[:, :-2, ],
-                                 -np.expand_dims(dy[:, -2, ], axis=1)),
-                                axis=1)
-
-        if len(args) >= 3:
-            dz = args[2]
-            try:
-                dz *= np.conjugate(self.kwargs["wz"])
-            except KeyError:
-                pass
-
-            x += np.concatenate((np.expand_dims(dz[:, :, 0, ], axis=2),
-                                 dz[:, :, 1:-1, ] - dz[:, :, :-2, ],
-                                 -np.expand_dims(dz[:, :, -2, ], axis=2)),
-                                axis=2)
-
-        if len(args) >= 4:
-            dt = args[3]
-            try:
-                dt *= np.conjugate(self.kwargs["wt"])
-            except KeyError:
-                pass
-
-            x += np.concatenate((np.expand_dims(dt[:, :, :, 0, ], axis=3),
-                                 dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
-                                 -np.expand_dims(dt[:, :, :, -2, ], axis=3)),
-                                axis=3)
-        return x
+#    def _div(self, *args):
+#
+#        if len(args) == 0:
+#            raise ValueError("Need to input at least one grad")
+#
+#        if len(args) >= 1:
+#            dx = args[0]
+#            try:
+#                dx *= np.conjugate(self.kwargs["wx"])
+#            except KeyError:
+#                pass
+#
+#            x = np.concatenate((np.expand_dims(dx[0, ], axis=0),
+#                                dx[1:-1, ] - dx[:-2, ],
+#                                -np.expand_dims(dx[-2, ], axis=0)),
+#                               axis=0)
+#
+#        if len(args) >= 2:
+#            dy = args[1]
+#            try:
+#                dy *= np.conjugate(self.kwargs["wy"])
+#            except KeyError:
+#                pass
+#
+#            x += np.concatenate((np.expand_dims(dy[:, 0, ], axis=1),
+#                                 dy[:, 1:-1, ] - dy[:, :-2, ],
+#                                 -np.expand_dims(dy[:, -2, ], axis=1)),
+#                                axis=1)
+#
+#        if len(args) >= 3:
+#            dz = args[2]
+#            try:
+#                dz *= np.conjugate(self.kwargs["wz"])
+#            except KeyError:
+#                pass
+#
+#            x += np.concatenate((np.expand_dims(dz[:, :, 0, ], axis=2),
+#                                 dz[:, :, 1:-1, ] - dz[:, :, :-2, ],
+#                                 -np.expand_dims(dz[:, :, -2, ], axis=2)),
+#                                axis=2)
+#
+#        if len(args) >= 4:
+#            dt = args[3]
+#            try:
+#                dt *= np.conjugate(self.kwargs["wt"])
+#            except KeyError:
+#                pass
+#
+#            x += np.concatenate((np.expand_dims(dt[:, :, :, 0, ], axis=3),
+#                                 dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
+#                                 -np.expand_dims(dt[:, :, :, -2, ], axis=3)),
+#                                axis=3)
+#        return x
 
 
 class proj(func):
