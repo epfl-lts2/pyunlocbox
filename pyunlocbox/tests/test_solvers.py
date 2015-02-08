@@ -73,8 +73,9 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(ret['solver'], 'forward_backward')
         ret = solvers.solve([f2, f2], **param)
         self.assertEqual(ret['solver'], 'douglas_rachford')
-        self.assertRaises(NotImplementedError, solvers.solve,
-                          [f0, f1, f2], **param)
+        ret = solvers.solve([f1, f2, f0], **param)
+        self.assertEqual(ret['solver'], 'generalized_forward_backward')
+
 
         # Return values.
         f = functions.norm_l2(y=y)
@@ -181,6 +182,28 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(ret['sol'], sol)
         self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 23)
+
+        # L1-norm prox and L2-norm gradient.
+        f1 = functions.norm_l1(y=y, lambda_=1.0)
+        f2 = functions.norm_l2(y=y, lambda_=0.8)
+        sol = [3.99999825, 4.9999979, 5.99999756, 6.99999723]
+        ret = solvers.solve([f1, f2], **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'ATOL')
+        self.assertEqual(ret['niter'], 21)
+
+    def test_generalized_forward_backward(self):
+        """
+        Test generalized forward-backward algorithm with L1-norm, L2-norm, 
+        and dummy functions. Test the effect of step and lambda parameters.
+        """
+        y = [4, 5, 6, 7]
+        x0 = np.zeros(len(y))
+        # Smaller step size and update rate --> slower convergence.
+        solver = solvers.generalized_forward_backward(step=.8, lambda_=.5)
+        param = {'x0': x0, 'solver': solver}
+        param['atol'] = 1e-5
+        param['verbosity'] = 'NONE'
 
         # L1-norm prox and L2-norm gradient.
         f1 = functions.norm_l1(y=y, lambda_=1.0)

@@ -122,10 +122,10 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
 
     # Choose a solver if none provided.
     if not solver:
-        fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
-        fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
-        dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
         if len(functions) == 2:
+            fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+            fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
+            dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
             if fb0 or fb1:
                 solver = forward_backward()  # Need one prox and 1 grad.
             elif dg0:
@@ -133,8 +133,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
             else:
                 raise ValueError('No suitable solver for the given functions.')
         elif len(functions) > 2:
-            raise NotImplementedError('No solver able to minimize more than 2 '
-                                      'functions for now.')
+            solver = generalized_forward_backward()
         if verbosity in ['LOW', 'HIGH', 'ALL']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
@@ -307,6 +306,7 @@ class solver(object):
         pass
 
 
+
 class forward_backward(solver):
     r"""
     Forward-backward proximal splitting algorithm.
@@ -340,14 +340,14 @@ class forward_backward(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, step=1)
+    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 10 iterations :
-        objective function f(sol) = 7.460428e-09
-        last relative objective improvement : 1.624424e+03
+    Solution found after 12 iterations :
+        objective function f(sol) = 4.135992e-06
+        last relative objective improvement : 3.522857e+01
         stopping criterion : ATOL
     >>> ret['sol']
-    array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+    array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
 
     """
 
@@ -401,6 +401,102 @@ class forward_backward(solver):
         self.tn = tn1
         self.sol = xn
 
+
+class generalized_forward_backward(solver):
+    r"""
+    Forward-backward proximal splitting algorithm.
+
+    This algorithm solves convex optimization problems composed of the sum of
+    N objective functions.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.solvers.solver` base class.
+
+    Parameters
+    ----------
+    lambda_ : float, optional
+        The update term weight for ISTA. It should be between 0 and 1. Default
+        is 1.
+
+    Notes
+    -----
+    This algorithm requires one function to implement the
+    :meth:`pyunlocbox.functions.func.prox` method and the other one to
+    implement the :meth:`pyunlocbox.functions.func.grad` method.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers
+    >>> import numpy as np
+    >>> y = [0.01, 0.2, 8, 0.3, 0 , 0.03, 7]
+    >>> x0 = np.zeros(len(y))
+    >>> f1 = functions.norm_l2(y=y)
+    >>> f2 = functions.norm_l1()
+    >>> solver = solvers.generalized_forward_backward(lambda_=1, step=0.5)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
+    Solution found after 2 iterations :
+        objective function f(sol) = 1.463100e+01
+        last relative objective improvement : 0.000000e+00
+        stopping criterion : RTOL
+    >>> ret['sol']
+    array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
+
+    """
+
+    def __init__(self, lambda_=1, weight = [], *args, **kwargs):
+        super(generalized_forward_backward, self).__init__(*args, **kwargs)
+        self.lambda_ = lambda_
+        self.weight = weight
+
+    def _pre(self, functions, x0):
+
+        if self.verbosity is 'HIGH':
+            print('INFO: Generalized forward-backward method minimizing %i functions')
+
+        if self.lambda_ < 0 or self.lambda_ > 1:
+            raise ValueError('Lambda is bounded by 0 and 1.')
+
+        # Initialization.
+        self.sol = np.array(x0)
+
+        self._algo = self._gista
+        self.f1 = []
+        self.f2 = []
+        self.z = []
+        for ii in range(0, len(functions)):
+            if 'GRAD' in functions[ii].cap(x0):
+                self.f2.append(functions[ii])
+            elif 'PROX' in functions[ii].cap(x0):
+                self.f1.append(functions[ii])
+                self.z.append(x0)
+            else:
+                raise ValueError('SOLVER: There is a function without grad and prox')
+        
+        if len(self.weight) == 0:
+            if len(self.f1):
+                self.weight = np.repeat(1/len(self.f1) ,len(self.f1) )       
+        elif len(self.weight) != len(self.f1):
+            raise ValueError('GENERALIZED FORWARD BACKWARD: The number of element in weight is wrong')
+        
+        #if len(self.f2) == 0:
+        #    raise ValueError('GENERALIZED FORWARD BACKWARD: I need at least a function with at gradient!')
+
+    def _gista(self):
+        grad_eval = np.zeros(np.shape(self.sol))
+        for ii in range(0,len(self.f2)):
+            grad_eval = grad_eval + self.f2[ii].grad(self.sol)
+
+        for ii in range(0,len(self.f1)):
+            self.z[ii] += self.lambda_ * ( \
+            self.f1[ii].prox( 2 * self.sol - self.z[ii] - self.step * grad_eval, self.step/self.weight[ii]) \
+            - self.sol)
+
+        if len(self.f1):
+            self.sol = np.zeros(np.shape(self.sol))
+            for ii in range(0,len(self.f1)):
+                self.sol += self.weight[ii] * self.z[ii]
+        else:
+            self.sol -= self.step * grad_eval
 
 class douglas_rachford(solver):
     r"""
