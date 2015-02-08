@@ -324,6 +324,7 @@ class norm_l1(norm):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
+            # Nati: I've checked this code the use of 'y' seems correct
             sol = self.A(x) - self.y
             sol = _soft_threshold(sol, gamma*self.nu*self.w) - sol
             sol = x + self.At(sol) / self.nu
