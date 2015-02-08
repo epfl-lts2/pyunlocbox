@@ -27,11 +27,11 @@ by a call to the solving function.
 >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
 >>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
->>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, absTol=1e-5)
+>>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, atol=1e-5)
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
-    stopping criterion : ABS_TOL
+    stopping criterion : ATOL
 >>> ret['sol']
 array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
@@ -40,10 +40,15 @@ array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 # When importing the toolbox, you surely want these modules.
 from pyunlocbox import functions
 from pyunlocbox import solvers
+from pyunlocbox import signals
+from pyunlocbox import demos
+
 
 # Silence the code checker warning about unused symbols.
 assert functions
 assert solvers
+assert signals
+assert demos
 
-__version__ = '0.1.0'
-__release_date__ = '2014-06-08'
+__version__ = '0.2.1'
+__release_date__ = '2014-08-20'

@@ -47,22 +47,54 @@ We can now instantiate the solver object :
 And finally solve the problem :
 
 >>> x0 = [0, 0, 0, 0]
->>> ret = solvers.solve([f2, f1], x0, solver, absTol=1e-5, verbosity='high')
+>>> ret = solvers.solve([f2, f1], x0, solver, atol=1e-5, verbosity='HIGH')
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 1.260000e+02
 INFO: Forward-backward method : FISTA
-Iteration   1 : objective = 1.40e+01, relative = 8.00e+00
-Iteration   2 : objective = 1.56e+00, relative = 8.00e+00
-Iteration   3 : objective = 3.29e-02, relative = 4.62e+01
-Iteration   4 : objective = 8.78e-03, relative = 2.75e+00
-Iteration   5 : objective = 6.39e-03, relative = 3.74e-01
-Iteration   6 : objective = 5.71e-04, relative = 1.02e+01
-Iteration   7 : objective = 1.73e-05, relative = 3.21e+01
-Iteration   8 : objective = 6.11e-05, relative = 7.17e-01
-Iteration   9 : objective = 1.21e-05, relative = 4.04e+00
-Iteration  10 : objective = 7.46e-09, relative = 1.62e+03
+Iteration 1 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 1.400000e+01
+    objective = 1.40e+01, relative = 8.00e+00
+Iteration 2 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 1.555556e+00
+    objective = 1.56e+00, relative = 8.00e+00
+Iteration 3 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 3.293044e-02
+    objective = 3.29e-02, relative = 4.62e+01
+Iteration 4 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 8.780588e-03
+    objective = 8.78e-03, relative = 2.75e+00
+Iteration 5 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 6.391406e-03
+    objective = 6.39e-03, relative = 3.74e-01
+Iteration 6 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 5.713369e-04
+    objective = 5.71e-04, relative = 1.02e+01
+Iteration 7 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 1.726501e-05
+    objective = 1.73e-05, relative = 3.21e+01
+Iteration 8 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 6.109470e-05
+    objective = 6.11e-05, relative = 7.17e-01
+Iteration 9 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 1.212636e-05
+    objective = 1.21e-05, relative = 4.04e+00
+Iteration 10 of forward_backward :
+    func evaluation : 0.000000e+00
+    norm_l2 evaluation : 7.460428e-09
+    objective = 7.46e-09, relative = 1.62e+03
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     last relative objective improvement : 1.624424e+03
-    stopping criterion : ABS_TOL
+    stopping criterion : ATOL
 
 The solving function returns several values, one is the found solution :
 
@@ -74,23 +106,26 @@ As we passed two function objects (L2-norm and dummy), the `objective` is a 2
 by 11 (10 iterations plus the evaluation at `x0`) ``ndarray``. Lets plot a
 convergence graph out of it :
 
->>> import numpy as np
->>> import matplotlib, sys
->>> cmd_backend = 'matplotlib.use("AGG")'
->>> _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
->>> import matplotlib.pyplot as plt
->>> objective = np.array(ret['objective'])
->>> _ = plt.figure()
->>> _ = plt.semilogy(objective[:, 1], 'x', label='L2-norm')
->>> _ = plt.semilogy(objective[:, 0], label='Dummy')
->>> _ = plt.semilogy(np.sum(objective, axis=1), label='Global objective')
->>> _ = plt.grid(True)
->>> _ = plt.title('Convergence')
->>> _ = plt.legend(numpoints=1)
->>> _ = plt.xlabel('Iteration number')
->>> _ = plt.ylabel('Objective function value')
->>> _ = plt.savefig('doc/tutorials/simple_convergence.pdf')
->>> _ = plt.savefig('doc/tutorials/simple_convergence.png')
+>>> try:
+...     import numpy as np
+...     import matplotlib, sys
+...     cmd_backend = 'matplotlib.use("AGG")'
+...     _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
+...     import matplotlib.pyplot as plt
+...     objective = np.array(ret['objective'])
+...     _ = plt.figure()
+...     _ = plt.semilogy(objective[:, 1], 'x', label='L2-norm')
+...     _ = plt.semilogy(objective[:, 0], label='Dummy')
+...     _ = plt.semilogy(np.sum(objective, axis=1), label='Global objective')
+...     _ = plt.grid(True)
+...     _ = plt.title('Convergence')
+...     _ = plt.legend(numpoints=1)
+...     _ = plt.xlabel('Iteration number')
+...     _ = plt.ylabel('Objective function value')
+...     _ = plt.savefig('doc/tutorials/simple_convergence.pdf')
+...     _ = plt.savefig('doc/tutorials/simple_convergence.png')
+... except:
+...     pass
 
 The below graph shows an exponential convergence of the objective function. The
 global objective is obviously only composed of the L2-norm as the dummy

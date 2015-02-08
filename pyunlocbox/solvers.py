@@ -8,6 +8,7 @@ interface of all solver objects. The specialized solver objects inherit from
 it and implement the class methods. The following solvers are included :
 
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
+* :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
 """
 
 import numpy as np
@@ -15,15 +16,15 @@ import time
 from pyunlocbox.functions import dummy
 
 
-def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
-          convergence_speed=float('-inf'), maxIter=200, verbosity='low'):
+def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
+          convergence_speed=float('-inf'), maxit=200, verbosity='LOW'):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
 
     This function minimizes the objective function :math:`f(x) =
-    \sum\limits_{k=0}^{k=M} f_k(x)`, i.e. solves
-    :math:`\operatorname{arg\,min}\limits_x \sum\limits_{k=0}^{k=M} f_k(x)` for
+    \sum\limits_{m=0}^{m=M} f_m(x)`, i.e. solves
+    :math:`\operatorname{arg\,min}\limits_x f(x)` for
     :math:`x \in \mathbb{R}^N` using whatever algorithm. It returns a
     dictionary with the found solution and some informations about the
     algorithm execution.
@@ -46,151 +47,178 @@ def solve(functions, x0, solver=None, relTol=1e-3, absTol=float('-inf'),
         :meth:`_algo` and :meth:`_post` methods. If no solver object are
         provided, a standard one will be chosen given the number of convex
         function objects and their implemented methods.
-    relTol : float, optional
+    rtol : float, optional
         The convergence (relative tolerance) stopping criterion. The algorithm
-        stops if :math:`\frac{n(k)-n(k-1)}{n(k)}<reltol` where
-        :math:`n(k)=f(x)=f_1(x)+f_2(x)` is the objective function at iteration
-        :math:`k`. Default is :math:`10^{-3}`.
-    absTol : float, optional
+        stops if :math:`\left|\frac{n(k-1)-n(k)}{n(k)}\right|<rtol` where
+        :math:`n(k)=f(x)` is the objective function at iteration :math:`k`.
+        Default is :math:`10^{-3}`.
+    atol : float, optional
         The absolute tolerance stopping criterion. The algorithm stops if
-        :math:`n(k)<abstol`. Default is minus infinity.
+        :math:`n(k)<atol`. Default is minus infinity.
     convergence_speed : float, optional
         The minimum tolerable convergence speed of the objective function. The
         algorithm stops if n(k-1) - n(k) < `convergence_speed`. Default is
         minus infinity (i.e. the objective function may even increase).
-    maxIter : int, optional
+    maxit : int, optional
         The maximum number of iterations. Default is 200.
-    verbosity : {'low', 'high', 'none'}, optional
-        The log level : ``'none'`` for no log, ``'low'`` for resume at
-        convergence, ``'high'`` to for all steps. Default is ``'low'``.
+    verbosity : {'NONE', 'LOW', 'HIGH', 'ALL'}, optional
+        The log level : ``'NONE'`` for no log, ``'LOW'`` for resume at
+        convergence, ``'HIGH'`` for info at all solving steps, ``'ALL'`` for
+        all possible outputs, including at each steps of the proximal operators
+        computation. Default is ``'LOW'``.
 
     Returns
     -------
     sol : ndarray
-        problem solution
+        The problem solution.
     solver : str
-        used solver
+        The used solver.
     niter : int
-        number of iterations
+        The number of iterations.
     time : float
-        execution time in seconds
+        The execution time in seconds.
     eval : float
-        final evaluation of the objective function :math:`f(x)`
-    crit : {'MAX_IT', 'ABS_TOL', 'REL_TOL', 'CONV_SPEED'}
-        Used stopping criterion. 'MAX_IT' if the maximum number of iterations
-        `maxIter` is reached, 'ABS_TOL' if the objective function value is
-        smaller than `absTol`, 'REL_TOL' if the relative objective function
-        improvement was smaller than `relTol` (i.e. the algorithm converged),
-        'CONV_SPEED' if the objective function improvement is smaller than
-        `convergence_speed`.
+        The final evaluation of the objective function :math:`f(x)`.
+    crit : {'MAXIT', 'ATOL', 'RTOL', 'CONVSPEED'}
+        The used stopping criterion. 'MAXIT' if the maximum number of
+        iterations `maxit` is reached, 'ATOL' if the objective function
+        value is smaller than `atol`, 'RTOL' if the relative objective
+        function improvement was smaller than `rtol` (i.e. the algorithm
+        converged), 'CONVSPEED' if the objective function improvement is
+        smaller than `convergence_speed`.
     rel : float
-        relative objective improvement at convergence
+        The relative objective improvement at convergence.
     objective : ndarray
-        successive evaluations of the objective function at each iteration
+        The successive evaluations of the objective function at each iteration.
 
     Examples
     --------
-
-    Simple example showing the automatic selection of a solver (and a second
-    function) :
-
     >>> import pyunlocbox
-    >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
-    >>> ret = pyunlocbox.solvers.solve([f1], [0, 0, 0, 0], absTol=1e-5)
-    INFO: Added dummy objective function.
+    >>> f = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
+    >>> ret = pyunlocbox.solvers.solve([f], [0, 0, 0, 0], atol=1e-5)
+    INFO: Dummy objective function added.
     INFO: Selected solver : forward_backward
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
         last relative objective improvement : 1.624424e+03
-        stopping criterion : ABS_TOL
+        stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
     """
 
-    if relTol < 0 or maxIter < 0:
+    if rtol < 0 or maxit < 0:
         raise ValueError('Parameters should be positive numbers.')
-    if verbosity not in ['none', 'low', 'high']:
-        raise ValueError('Verbosity should be either none, low or high.')
+    if verbosity not in ['NONE', 'LOW', 'HIGH', 'ALL']:
+        raise ValueError('Verbosity should be either NONE, LOW, HIGH or ALL.')
+
+    # Add a second dummy convex function if only one function is provided.
+    if len(functions) < 1:
+        raise ValueError('At least 1 convex function should be provided.')
+    elif len(functions) == 1:
+        functions.append(dummy())
+        if verbosity in ['LOW', 'HIGH', 'ALL']:
+            print('INFO: Dummy objective function added.')
 
     # Choose a solver if none provided.
     if not solver:
-        if len(functions) < 1:
-            raise ValueError('At least 1 convex function should be passed.')
-        elif len(functions) == 1:
-            functions.append(dummy())
-            solver = forward_backward()
-            if verbosity in ['low', 'high']:
-                print('INFO: Added dummy objective function.')
-        elif len(functions) == 2:
-            solver = forward_backward()
-        else:
-            raise NotImplementedError('No solver able to minimize more than 2'
+        fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+        fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
+        dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+        if len(functions) == 2:
+            if fb0 or fb1:
+                solver = forward_backward()  # Need one prox and 1 grad.
+            elif dg0:
+                solver = douglas_rachford()  # Need two prox.
+            else:
+                raise ValueError('No suitable solver for the given functions.')
+        elif len(functions) > 2:
+            raise NotImplementedError('No solver able to minimize more than 2 '
                                       'functions for now.')
-        if verbosity in ['low', 'high']:
+        if verbosity in ['LOW', 'HIGH', 'ALL']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
-    startTime = time.time()
-    stopCrit = None
-    nIter = 0
+    # Set solver and functions verbosity.
+    translation = {'ALL': 'HIGH', 'HIGH': 'HIGH', 'LOW': 'LOW', 'NONE': 'NONE'}
+    solver.verbosity = translation[verbosity]
+    translation = {'ALL': 'HIGH', 'HIGH': 'LOW', 'LOW': 'NONE', 'NONE': 'NONE'}
+    functions_verbosity = []
+    for f in functions:
+        functions_verbosity.append(f.verbosity)
+        f.verbosity = translation[verbosity]
+
+    tstart = time.time()
+    crit = None
+    niter = 0
     objective = [[f.eval(x0) for f in functions]]
+    only_zeros = True
 
     # Solver specific initialization.
-    solver.pre(functions, x0, verbosity)
+    solver.pre(functions, x0)
 
-    while not stopCrit:
+    while not crit:
 
-        nIter += 1
+        niter += 1
+
+        if verbosity in ['HIGH', 'ALL']:
+            print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
 
         # Solver iterative algorithm.
-        solver.algo(objective, nIter)
+        solver.algo(objective, niter)
 
         objective.append([f.eval(solver.sol) for f in functions])
         current = np.sum(objective[-1])
         last = np.sum(objective[-2])
 
         # Prevent division by 0.
-        eps = 0.0
-        if current == 0:
-            if verbosity in ['low', 'high']:
-                print('WARNING: objective function is equal to 0 ! '
-                      'Adding some epsilon to continue.')
-            # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
-            eps = np.spacing(1.0)
+        div = current
+        if div == 0:
+            if verbosity in ['LOW', 'HIGH', 'ALL']:
+                print('WARNING: objective function is equal to 0 !')
+            if last != 0:
+                div = last
+            else:
+                div = 1.0  # Result will be zero anyway.
+        else:
+            only_zeros = False
 
-        relative = np.abs((current - last) / (current + eps))
+        relative = np.abs((last - current) / div)
 
         # Verify stopping criteria.
-        if current < absTol:
-            stopCrit = 'ABS_TOL'
-        elif relative < relTol:
-            stopCrit = 'REL_TOL'
-        elif nIter >= maxIter:
-            stopCrit = 'MAX_IT'
+        if current < atol:
+            crit = 'ATOL'
+        elif relative < rtol and not only_zeros:
+            crit = 'RTOL'
+        elif niter >= maxit:
+            crit = 'MAXIT'
         elif last - current < convergence_speed:
-            stopCrit = 'CONV_SPEED'
+            crit = 'CONVSPEED'
 
-        if verbosity == 'high':
-            print('Iteration %3d : objective = %.2e, relative = %.2e'
-                  % (nIter, current, relative))
+        if verbosity in ['HIGH', 'ALL']:
+            print('    objective = %.2e, relative = %.2e'
+                  % (current, relative))
 
     # Solver specific post-processing.
-    solver.post(verbosity)
+    solver.post()
 
-    if verbosity in ['low', 'high']:
-        print('Solution found after %d iterations :' % (nIter,))
+    # Restore verbosity for functions. In case they are called outside solve().
+    for k, f in enumerate(functions):
+        f.verbosity = functions_verbosity[k]
+
+    if verbosity in ['LOW', 'HIGH', 'ALL']:
+        print('Solution found after %d iterations :' % (niter,))
         print('    objective function f(sol) = %e' % (current,))
         print('    last relative objective improvement : %e' % (relative,))
-        print('    stopping criterion : %s' % (stopCrit,))
+        print('    stopping criterion : %s' % (crit,))
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
-              'solver':    solver.__class__.__name__,
-              'niter':     nIter,
-              'time':      time.time() - startTime,
+              'solver':    solver.__class__.__name__,  # algo for consistency ?
+              'niter':     niter,
+              'time':      time.time() - tstart,
               'eval':      current,
               'objective': objective,
-              'crit':      stopCrit,
+              'crit':      crit,
               'rel':       relative}
 
     return result
@@ -209,72 +237,72 @@ class solver(object):
 
     Parameters
     ----------
-    gamma : float
+    step : float
         The step size. This parameter is upper bounded by
         :math:`\frac{1}{\beta}` where the second convex function (gradient ?)
         is :math:`\beta` Lipschitz continuous. Default is 1.
-    post_gamma : function
+    post_step : function
         User defined function to post-process the step size. This function is
         called every iteration and permits the user to alter the solver
         algorithm. The user may start with a high step size and progressively
         lower it while the algorithm runs to accelerate the convergence. The
-        function parameters are the following : `gamma` (current step size),
+        function parameters are the following : `step` (current step size),
         `sol` (current problem solution), `objective` (list of successive
         evaluations of the objective function), `niter` (current iteration
-        number). The function should return a new value for `gamma`. Default is
+        number). The function should return a new value for `step`. Default is
         to return an unchanged value.
     post_sol : function
         User defined function to post-process the problem solution. This
         function is called every iteration and permits the user to alter the
-        solver algorithm. Same parameter as :func:`post_gamma`. Default is to
+        solver algorithm. Same parameter as :func:`post_step`. Default is to
         return an unchanged value.
     """
 
-    def __init__(self, gamma=1, post_gamma=None, post_sol=None):
-        if gamma < 0:
+    def __init__(self, step=1, post_step=None, post_sol=None):
+        if step < 0:
             raise ValueError('Gamma should be a positive number.')
-        self.gamma = gamma
-        if post_gamma:
-            self.post_gamma = post_gamma
+        self.step = step
+        if post_step:
+            self.post_step = post_step
         else:
-            self.post_gamma = lambda gamma, sol, objective, niter: gamma
+            self.post_step = lambda step, sol, objective, niter: step
         if post_sol:
             self.post_sol = post_sol
         else:
-            self.post_sol = lambda gamma, sol, objective, niter: sol
+            self.post_sol = lambda step, sol, objective, niter: sol
 
-    def pre(self, functions, x0, verbosity):
+    def pre(self, functions, x0):
         """
         Solver specific initialization. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._pre(functions, x0, verbosity)
+        self._pre(functions, x0)
 
-    def _pre(self, x0, verbosity):
+    def _pre(self, x0):
         raise NotImplementedError("Class user should define this method.")
 
     def algo(self, objective, niter):
         """
         Call the solver iterative algorithm while allowing the user to alter
-        it. This makes it possible to dynamically change the `gamma` step size
+        it. This makes it possible to dynamically change the `step` step size
         while the algorithm is running.  See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self._algo()
-        self.gamma = self.post_gamma(self.gamma, self.sol, objective, niter)
-        self.sol = self.post_sol(self.gamma, self.sol, objective, niter)
+        self.step = self.post_step(self.step, self.sol, objective, niter)
+        self.sol = self.post_sol(self.step, self.sol, objective, niter)
 
     def _algo(self):
         raise NotImplementedError("Class user should define this method.")
 
-    def post(self, verbosity):
+    def post(self):
         """
         Solver specific post-processing. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._post(verbosity)
+        self._post()
 
-    def _post(self, verbosity):
+    def _post(self):
         # Do not need to be necessarily implemented by class user.
         pass
 
@@ -282,7 +310,7 @@ class solver(object):
 
 class forward_backward(solver):
     r"""
-    Forward-backward splitting algorithm.
+    Forward-backward proximal splitting algorithm.
 
     This algorithm solves convex optimization problems composed of the sum of
     two objective functions.
@@ -293,10 +321,10 @@ class forward_backward(solver):
     Parameters
     ----------
     method : {'FISTA', 'ISTA'}, optional
-        the method used to solve the problem.  It can be 'FISTA' or 'ISTA'.
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
     lambda_ : float, optional
-        the update term weight for ISTA.  It should be between 0 and 1. Default
+        The update term weight for ISTA. It should be between 0 and 1. Default
         is 1.
 
     Notes
@@ -325,27 +353,24 @@ class forward_backward(solver):
     """
 
     def __init__(self, method='FISTA', lambda_=1, *args, **kwargs):
-
         super(forward_backward, self).__init__(*args, **kwargs)
-
-        if method not in ['FISTA', 'ISTA']:
-            raise ValueError('The method should be FISTA or ISTA.')
         self.method = method
-
-        if lambda_ < 0 or lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
         self.lambda_ = lambda_
 
-    def _pre(self, functions, x0, verbosity):
-        if verbosity == 'high':
+    def _pre(self, functions, x0):
+
+        if self.verbosity is 'HIGH':
             print('INFO: Forward-backward method : %s' % (self.method,))
+
+        if self.lambda_ < 0 or self.lambda_ > 1:
+            raise ValueError('Lambda is bounded by 0 and 1.')
 
         # ISTA and FISTA initialization.
         self.sol = np.array(x0)
 
-        if self.method == 'ISTA':
+        if self.method is 'ISTA':
             self._algo = self._ista
-        elif self.method == 'FISTA':
+        elif self.method is 'FISTA':
             self._algo = self._fista
             self.un = np.array(x0)
             self.tn = 1.
@@ -355,34 +380,28 @@ class forward_backward(solver):
         if len(functions) != 2:
             raise ValueError('Forward-backward requires two convex functions.')
 
-        try:
-            functions[0].prox(self.sol, self.gamma)
-            functions[1].grad(self.sol)
-        except NotImplementedError:
-            try:
-                functions[1].prox(self.sol, self.gamma)
-                functions[0].grad(self.sol)
-            except NotImplementedError:
-                raise ValueError('Forward-backward requires a function to '
-                                 'implement prox() and the other grad().')
-            else:
-                self.f1 = functions[1]
-                self.f2 = functions[0]
-        else:
+        if 'PROX' in functions[0].cap(x0) and 'GRAD' in functions[1].cap(x0):
             self.f1 = functions[0]
             self.f2 = functions[1]
+        elif 'PROX' in functions[1].cap(x0) and 'GRAD' in functions[0].cap(x0):
+            self.f1 = functions[1]
+            self.f2 = functions[0]
+        else:
+            raise ValueError('Forward-backward requires a function to '
+                             'implement prox() and the other grad().')
 
     def _ista(self):
-        yn = self.sol - self.gamma * self.f2.grad(self.sol)
-        self.sol += self.lambda_ * (self.f1.prox(yn, self.gamma) - self.sol)
+        yn = self.sol - self.step * self.f2.grad(self.sol)
+        self.sol += self.lambda_ * (self.f1.prox(yn, self.step) - self.sol)
 
     def _fista(self):
-        xn = self.un - self.gamma * self.f2.grad(self.un)
-        xn = self.f1.prox(xn, self.gamma)
+        xn = self.un - self.step * self.f2.grad(self.un)
+        xn = self.f1.prox(xn, self.step)
         tn1 = (1. + np.sqrt(1.+4.*self.tn**2.)) / 2.
         self.un = xn + (self.tn-1) / tn1 * (xn-self.sol)
         self.tn = tn1
         self.sol = xn
+
 
 class generalized_forward_backward(solver):
     r"""
@@ -425,9 +444,9 @@ class generalized_forward_backward(solver):
         self.lambda_ = lambda_
         self.weight = weight
 
-    def _pre(self, functions, x0, verbosity):
+    def _pre(self, functions, x0):
 
-        if verbosity is 'HIGH':
+        if self.verbosity is 'HIGH':
             print('INFO: Generalized forward-backward method minimizing %i functions')
 
         if self.lambda_ < 0 or self.lambda_ > 1:

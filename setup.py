@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name = 'pyunlocbox',
-    version = '0.1.0',
+    version = '0.2.1',
     description = 'A convex optimization toolbox using proximal '
                   'splitting methods.',
     long_description = open('README.rst').read(),
@@ -16,10 +16,11 @@ setup(
              'Nathanaël Perraudin (EPFL LTS2)',
     author_email = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch',
     url = 'https://github.com/epfl-lts2/pyunlocbox',
-    packages = ['pyunlocbox', 'pyunlocbox.tests'],
+    packages = ['pyunlocbox', 'pyunlocbox.tests', 'pyunlocbox.demos'],
+    package_data = {'pyunlocbox': ['signals/*']},
     test_suite = 'pyunlocbox.tests.test_all.suite',
     install_requires = ['numpy', 'matplotlib'],
-    requires = ['numpy', 'matplotlib'],
+    requires = ['numpy'],
     license = "BSD",
     keywords = 'convex optimization',
     platforms = 'any',
@@ -38,6 +39,8 @@ setup(
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
     ],
 )

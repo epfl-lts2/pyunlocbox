@@ -17,3 +17,11 @@ Forward-backward proximal splitting algorithm
     :members:
     :undoc-members:
     :show-inheritance:
+
+Douglas-Rachford proximal splitting algorithm
+---------------------------------------------
+
+.. autoclass:: pyunlocbox.solvers.douglas_rachford
+    :members:
+    :undoc-members:
+    :show-inheritance:

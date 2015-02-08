@@ -27,18 +27,23 @@ Features
 * Solvers
 
   * Forward-backward splitting algorithm
+  * Douglas-Rachford splitting algorithm
 
 * Proximal operators
 
   * L1-norm
   * L2-norm
+  * TV-norm
+  * Projection on the L2-ball
 
 Installation
 ------------
 
+PyUnLocBox is continuously tested with Python 2.6, 2.7, 3.2, 3.3 and 3.4.
+
 System-wide installation::
 
-    # pip install pyunlocbox
+    $ pip install pyunlocbox
 
 Installation in an isolated virtual environment::
 
@@ -47,11 +52,11 @@ Installation in an isolated virtual environment::
 
 You need virtualenvwrapper to run this command. The ``--system-site-packages``
 option could be useful if you want to use a shared system installation of numpy
-and matplotlib. Their building and installation requires quite some
+and matplotlib. Their building and installation require quite some
 dependencies.
 
-Another way is to manually download from PyPI and unpack the package then
-install with::
+Another way is to manually download from PyPI, unpack the package and install
+with::
 
     $ python setup.py install
 
@@ -62,7 +67,7 @@ Execute the project test suite once to make sure you have a working install::
 Authors
 -------
 
-PyUNLocBoX was started in 2014 as an academic project for research purpose of
+PyUNLocBoX was started in 2014 as an academic project for research purpose at
 the LTS2 laboratory from EPFL. See our website at http://lts2www.epfl.ch.
 
 Development lead :
@@ -72,4 +77,6 @@ Development lead :
 
 Contributors :
 
-* None yet. Why not be the first ?
+* Alexandre Lafaye from EPFL LTS2 <alexandre.lafaye@epfl.ch>
+* Basile Châtillon from EPFL LTS2 <basile.chatillon@epfl.ch>
+* Nicolas Rod from EPFL LTS2 <nicolas.rod@epfl.ch>
