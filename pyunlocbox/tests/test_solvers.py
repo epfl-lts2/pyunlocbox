@@ -73,8 +73,9 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(ret['solver'], 'forward_backward')
         ret = solvers.solve([f2, f2], **param)
         self.assertEqual(ret['solver'], 'douglas_rachford')
-        self.assertRaises(NotImplementedError, solvers.solve,
-                          [f0, f1, f2], **param)
+        ret = solvers.solve([f1, f2, f0], **param)
+        self.assertEqual(ret['solver'], 'generalized_forward_backward')
+
 
         # Return values.
         f = functions.norm_l2(y=y)

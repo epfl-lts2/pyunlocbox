@@ -122,10 +122,10 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
 
     # Choose a solver if none provided.
     if not solver:
-        fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
-        fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
-        dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
         if len(functions) == 2:
+            fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+            fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
+            dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
             if fb0 or fb1:
                 solver = forward_backward()  # Need one prox and 1 grad.
             elif dg0:
@@ -133,8 +133,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
             else:
                 raise ValueError('No suitable solver for the given functions.')
         elif len(functions) > 2:
-            raise NotImplementedError('No solver able to minimize more than 2 '
-                                      'functions for now.')
+            solver = generalized_forward_backward()
         if verbosity in ['LOW', 'HIGH', 'ALL']:
             print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
 
@@ -441,6 +440,7 @@ class generalized_forward_backward(solver):
         stopping criterion : RTOL
     >>> ret['sol']
     array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
+
     """
 
     def __init__(self, lambda_=1, weight = [], *args, **kwargs):
@@ -473,16 +473,17 @@ class generalized_forward_backward(solver):
                 raise ValueError('SOLVER: There is a function without grad and prox')
         
         if len(self.weight) == 0:
-            self.weight = np.repeat(1/len(self.f1) ,len(self.f1) )       
+            if len(self.f1):
+                self.weight = np.repeat(1/len(self.f1) ,len(self.f1) )       
         elif len(self.weight) != len(self.f1):
             raise ValueError('GENERALIZED FORWARD BACKWARD: The number of element in weight is wrong')
         
-        if len(self.f2) == 0:
-            raise ValueError('GENERALIZED FORWARD BACKWARD: I need at least a function with at gradient!')
+        #if len(self.f2) == 0:
+        #    raise ValueError('GENERALIZED FORWARD BACKWARD: I need at least a function with at gradient!')
 
     def _gista(self):
-        grad_eval = self.f2[0].grad(self.sol)
-        for ii in range(1,len(self.f2)):
+        grad_eval = np.zeros(np.shape(self.sol))
+        for ii in range(0,len(self.f2)):
             grad_eval = grad_eval + self.f2[ii].grad(self.sol)
 
         for ii in range(0,len(self.f1)):
@@ -490,9 +491,12 @@ class generalized_forward_backward(solver):
             self.f1[ii].prox( 2 * self.sol - self.z[ii] - self.step * grad_eval, self.step/self.weight[ii]) \
             - self.sol)
 
-        self.sol = self.weight[0] * self.z[0]
-        for ii in range(1,len(self.f1)):
-            self.sol += self.weight[ii] * self.z[ii]
+        if len(self.f1):
+            self.sol = np.zeros(np.shape(self.sol))
+            for ii in range(0,len(self.f1)):
+                self.sol += self.weight[ii] * self.z[ii]
+        else:
+            self.sol -= self.step * grad_eval
 
 class douglas_rachford(solver):
     r"""
