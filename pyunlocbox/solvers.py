@@ -341,12 +341,12 @@ class forward_backward(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, gamma=0.5)
-    >>> ret = solvers.solve([f1, f2], x0, solver, absTol=1e-5)
+    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, step=0.5)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 12 iterations :
         objective function f(sol) = 4.135992e-06
         last relative objective improvement : 3.522857e+01
-        stopping criterion : ABS_TOL
+        stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
 
@@ -433,10 +433,14 @@ class generalized_forward_backward(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.norm_l1()
-    >>> solver = solvers.generalized_forward_backward(lambda_=1, gamma=0.5)
-    >>> ret = solvers.solve([f1, f2], x0, solver, absTol=1e-5)
-
+    >>> solver = solvers.generalized_forward_backward(lambda_=1, step=0.5)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
+    Solution found after 2 iterations :
+        objective function f(sol) = 1.463100e+01
+        last relative objective improvement : 0.000000e+00
+        stopping criterion : RTOL
     >>> ret['sol']
+    array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
     """
 
     def __init__(self, lambda_=1, weight = [], *args, **kwargs):
