@@ -1,2 +1,0 @@
-from pyunlocbox.demos import demo_douglas_rachford
-assert demo_douglas_rachford

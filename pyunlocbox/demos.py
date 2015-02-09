@@ -12,7 +12,7 @@ def douglas_rachford():
     Examples
     --------
     >>> import pyunlocbox
-    >>> pyunlocbox.demos.demo_douglas_rachford.douglas_rachford()
+    >>> pyunlocbox.demos.douglas_rachford()
     """
     # Original image
     s = signals.signals()
