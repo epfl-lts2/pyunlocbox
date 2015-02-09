@@ -2,6 +2,33 @@ import numpy as np
 
 
 def grad(x, dim=2, **kwargs):
+    r"""
+    Returns the gradient of the array
+
+    Parameters
+    ----------
+    dim : int
+        Dimension of the grad
+    wx :  int
+    wy :  int
+    wz :  int
+    wt :  int
+        Weights to apply on each axis
+
+    Returns
+    -------
+    dx, dy, dz, dt : ndarrays
+        Gradients following each axes,
+        only the necessary ones are returned
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> import numpy as np
+    >>> x = np.arange(16).reshape(4, 4)
+    >>> dx, dy = pyunlocbox.operators.grad(x)
+    """
+
     axis = 0
     while axis < len(x.shape):
         if axis >= 0:
@@ -92,6 +119,31 @@ def grad4d(x, **kwargs):
 
 
 def div(*args, **kwargs):
+    r"""
+    Returns the divergence of the array
+
+    Parameters
+    ----------
+    dx :  array_like
+    dy :  array_like
+    dz :  array_like
+    dt :  array_like
+        Arrays to operate on
+
+    Returns
+    -------
+    x : array_like
+        Divergence vector
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> import numpy as np
+    >>> x = np.arange(16).reshape(4, 4)
+    >>> dx, dy = pyunlocbox.operators.grad(x)
+    >>> divx = pyunlocbox.operators.div(dx, dy)
+    """
+
 
     if len(args) == 0:
         raise ValueError("Need to input at least one value")
