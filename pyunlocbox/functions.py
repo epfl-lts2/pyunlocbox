@@ -475,7 +475,7 @@ class norm_tv(norm):
             i = 0
             y = 0
             grads = []
-            grads = op.grad(x, dim=self.dim)
+            grads = op.grad(x, dim=self.dim, **self.kwargs)
             for g in grads:
                 y += np.power(abs(g), 2)
             y = np.sqrt(y)
@@ -485,7 +485,7 @@ class norm_tv(norm):
             return np.sum(np.array(y))
 
         if self.dim == 1:
-            dx = op.grad(x, dim=self.dim)
+            dx = op.grad(x, dim=self.dim, **self.kwargs)
             y = np.sum(np.abs(dx), axis=0)
             return np.sum(np.array(y))
 
@@ -574,16 +574,16 @@ class norm_tv(norm):
         sol = x
 
         if self.dim == 1:
-            r = op.grad(x*0, dim=self.dim)
+            r = op.grad(x*0, dim=self.dim, **self.kwargs)
             rr = deepcopy(r)
         elif self.dim == 2:
-            r, s = op.grad(x*0, dim=self.dim)
+            r, s = op.grad(x*0, dim=self.dim, **self.kwargs)
             rr, ss = deepcopy(r), deepcopy(s)
         elif self.dim == 3:
-            r, s, k = op.grad(x*0, dim=self.dim)
+            r, s, k = op.grad(x*0, dim=self.dim, **self.kwargs)
             rr, ss, kk = deepcopy(r), deepcopy(s), deepcopy(k)
         elif self.dim == 4:
-            r, s, k, u = op.grad(x*0, dim=self.dim)
+            r, s, k, u = op.grad(x*0, dim=self.dim, **self.kwargs)
             rr, ss, kk, uu = deepcopy(r), deepcopy(s), deepcopy(k), deepcopy(u)
 
         if self.dim >= 1:
@@ -635,13 +635,13 @@ class norm_tv(norm):
         while iter <= maxit:
             # Current Solution
             if self.dim == 1:
-                sol = x - T * op.div(rr)
+                sol = x - T * op.div(rr, **self.kwargs)
             elif self.dim == 2:
-                sol = x - T * op.div(rr, ss)
+                sol = x - T * op.div(rr, ss, **self.kwargs)
             elif self.dim == 3:
-                sol = x - T * op.div(rr, ss, kk)
+                sol = x - T * op.div(rr, ss, kk, **self.kwargs)
             elif self.dim == 4:
-                sol = x - T * self.div(rr, ss, kk, uu)
+                sol = x - T * op.div(rr, ss, kk, uu, **self.kwargs)
 
             #  Objective function value
             obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
@@ -659,19 +659,19 @@ class norm_tv(norm):
 
             #  Update divergence vectors and project
             if self.dim == 1:
-                dx = op.grad(sol, dim=self.dim)
+                dx = op.grad(sol, dim=self.dim, **self.kwargs)
                 r -= 1./(4*T*mt**2) * dx
                 weights = np.maximum(1, np.abs(r))
 
             elif self.dim == 2:
-                dx, dy = op.grad(sol, dim=self.dim)
+                dx, dy = op.grad(sol, dim=self.dim, **self.kwargs)
                 r -= (1./(8.*T*mt**2.)) * dx
                 s -= (1./(8.*T*mt**2.)) * dy
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2)))
 
             elif self.dim == 3:
-                dx, dy, dz = op.grad(sol, dim=self.dim)
+                dx, dy, dz = op.grad(sol, dim=self.dim, **self.kwargs)
                 r -= 1./(12.*T*mt**2) * dx
                 s -= 1./(12.*T*mt**2) * dy
                 k -= 1./(12.*T*mt**2) * dz
@@ -680,7 +680,7 @@ class norm_tv(norm):
                                                 np.power(np.abs(k), 2)))
 
             elif self.dim == 4:
-                dx, dy, dz, dt = op.grad(sol, dim=self.dim)
+                dx, dy, dz, dt = op.grad(sol, dim=self.dim, **self.kwargs)
                 r -= 1./(16*T*mt**2) * dx
                 s -= 1./(16*T*mt**2) * dy
                 k -= 1./(16*T*mt**2) * dz

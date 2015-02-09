@@ -91,10 +91,10 @@ def grad4d(x, **kwargs):
     return grad(x, dim=4)
 
 
-def div(dim=2, *args, **kwargs):
+def div(*args, **kwargs):
 
     if len(args) == 0:
-        raise ValueError("Need to input at least one grad")
+        raise ValueError("Need to input at least one value")
 
     if len(args) >= 1:
         dx = args[0]
@@ -147,16 +147,16 @@ def div(dim=2, *args, **kwargs):
 
 
 def div1d(*args, **kwargs):
-    return div(dim=1, *args, **kwargs)
+    return div(*args, **kwargs)
 
 
 def div2d(*args, **kwargs):
-    return div(dim=2, *args, **kwargs)
+    return div(*args, **kwargs)
 
 
 def div3d(*args, **kwargs):
-    return div(dim=3, *args, **kwargs)
+    return div(*args, **kwargs)
 
 
 def div4d(*args, **kwargs):
-    return div(dim=4, *args, **kwargs)
+    return div(*args, **kwargs)
