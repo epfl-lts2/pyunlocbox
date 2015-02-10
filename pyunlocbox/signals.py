@@ -24,6 +24,13 @@ class signals(object):
     def __init__(self):
         pass
 
+    def load_gray_img(self, pic):
+        r"""
+        """
+        img = mpimg.imread(pic)
+        gray_scale = self.rgb2gray(img)
+        return gray_scale
+
     def rgb2gray(self, rgb):
         r"""
         Python version of the rgb2gray() matlab method. Convert RGB image or
@@ -63,3 +70,8 @@ class signals(object):
         gray_scale = self.rgb2gray(img)
         return gray_scale
 
+    def whitecircle(self):
+        img = mpimg.imread(os.path.dirname(os.path.realpath(__file__)) +
+                           '/signals/whitecircle.jpg')
+        gray_scale = self.rgb2gray(img)
+        return gray_scale
