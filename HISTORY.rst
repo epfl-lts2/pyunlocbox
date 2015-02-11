@@ -3,6 +3,14 @@
 =======
 History
 =======
+0.2.3 (2015-02-06)
+------------------
+
+Bug fix version. Still experimental.
+
+Bug fixes :
+
+* prox tv 2d has been fixed
 0.2.2 (2015-01-16)
 ------------------
 
