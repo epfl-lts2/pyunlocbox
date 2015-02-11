@@ -16,7 +16,7 @@ setup(
              'Nathanaël Perraudin (EPFL LTS2)',
     author_email = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch',
     url = 'https://github.com/epfl-lts2/pyunlocbox',
-    packages = ['pyunlocbox', 'pyunlocbox.tests', 'pyunlocbox.demos'],
+    packages = ['pyunlocbox', 'pyunlocbox.tests'],
     package_data = {'pyunlocbox': ['signals/*']},
     test_suite = 'pyunlocbox.tests.test_all.suite',
     install_requires = ['numpy', 'matplotlib'],
