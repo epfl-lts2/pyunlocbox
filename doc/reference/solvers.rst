@@ -25,3 +25,11 @@ Douglas-Rachford proximal splitting algorithm
     :members:
     :undoc-members:
     :show-inheritance:
+
+Generalized-Forward-backward proximal splitting algorithm
+---------------------------------------------------------
+
+.. autoclass:: pyunlocbox.solvers.generalized_forward_backward
+    :members:
+    :undoc-members:
+    :show-inheritance:

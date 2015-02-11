@@ -17,3 +17,6 @@ L2-ball
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. bibliography:: project.bib
+    :cited:

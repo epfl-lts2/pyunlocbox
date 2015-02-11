@@ -454,6 +454,11 @@ class norm_tv(norm):
 
     Notes
     -----
+    TODO
+
+    References
+    ----------
+    :cite:`beck2009fastTV`
 
     Examples
     --------
