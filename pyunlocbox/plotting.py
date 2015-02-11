@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 
 
 def plot_img(img):
-    plt.ion()
+    r"""
+
+    """
     fig = plt.figure()
     plt.imshow(img, cmap=plt.get_cmap('gray'))
     plt.show()

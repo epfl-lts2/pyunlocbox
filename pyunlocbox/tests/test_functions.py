@@ -237,7 +237,7 @@ class FunctionsTestCase(unittest.TestCase):
             nptest.assert_array_equal(sol, np.around(f._prox(mat3d, gamma),
                                                      decimals=1))
             # Test with weights
-            f = functions.norm_tv(tol=10e-4, dim=2, wx=5., wy=10.)
+            f = functions.norm_tv(tol=10e-10, dim=2, wx=5., wy=10., maxit=10)
             gamma = 3.
             x3d = np.array([[[1., 10., 19.], [2., 11., 20.], [3., 12., 21.]],
                           [[4., 13., 22.], [5., 14., 23.], [6., 15., 24.]],
