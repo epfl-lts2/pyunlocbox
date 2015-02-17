@@ -37,3 +37,25 @@ Solvers module
 
 .. inheritance-diagram:: pyunlocbox.solvers
     :parts: 2
+
+Operators module
+----------------
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+
+    operators
+
+.. automodule:: pyunlocbox.operators
+
+Plotting module
+---------------
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+
+    plotting
+
+.. automodule:: pyunlocbox.plotting
