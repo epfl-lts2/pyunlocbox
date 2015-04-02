@@ -14,6 +14,8 @@ inherit from it implement the methods. These classes include :
     :meth:`_prox` methods.
   * :class:`norm_l2`: L2-norm who implements the :meth:`_eval`, :meth:`_prox`
     and :meth:`_grad` methods.
+  * :class:`norm_nuclear`: nuclear-norm who implements the :meth:`_eval` and
+    :meth:`_prox` methods.
   * :class:`norm_tv`: TV-norm who implements the :meth:`_eval` and
     :meth:`_prox` methods.
 
@@ -444,6 +446,57 @@ class norm_l2(norm):
         return 2 * self.lambda_ * self.w * self.At(sol)
 
 
+class norm_nuclear(norm):
+    r"""
+    Nuclear-norm function object.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.norm` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    * The nuclear-norm of the matrix `x` is given by
+      :math:`\lambda \| x \|_* = \lambda \operatorname{trace} (\sqrt{x^* x}) =
+      \lambda \sum_{i=1}^N |e_i|` where `e_i` are the eigenvalues of `x`.
+    * The nuclear-norm proximal operator evaluated at `x` is given by
+      :math:`\operatorname{arg\,min}\limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma
+      \| x \|_*` where :math:`\gamma = \lambda \cdot T`, which is a
+      soft-thresholding of the eigenvalues.
+
+    Examples
+    --------
+    >>> import pyunlocbox
+    >>> f = pyunlocbox.functions.norm_nuclear()
+    >>> f.eval([[1, 2],[2, 3]])
+    4.4721359549995787
+    >>> f.prox([[1, 2],[2, 3]], 1)
+    array([[ 0.89442719,  1.4472136 ],
+       [ 1.4472136 ,  2.34164079]])
+
+    """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(norm_nuclear, self).__init__(**kwargs)
+
+    def _eval(self, x):
+        # TODO: take care of sparse matrices.
+        _, s, _ = np.linalg.svd(x)
+        sol = self.lambda_ * np.sum(np.abs(s))
+        return sol
+
+    def _prox(self, x, T):
+        # Gamma is T in the matlab UNLocBox implementation.
+        gamma = self.lambda_ * T
+        # TODO: take care of sparse matrices.
+        U, s, V = np.linalg.svd(x)
+        s = _soft_threshold(s, gamma)
+        S = np.diag(s)
+        sol = np.dot(U, np.dot(S, V))
+        return sol
+
+
 class norm_tv(norm):
     r"""
     TV Norm function object.
@@ -454,6 +507,11 @@ class norm_tv(norm):
 
     Notes
     -----
+    TODO
+
+    References
+    ----------
+    :cite:`beck2009fastTV`
 
     Examples
     --------

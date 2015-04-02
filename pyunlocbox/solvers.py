@@ -9,6 +9,8 @@ it and implement the class methods. The following solvers are included :
 
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 * :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
+* :class:`generalized_forward_backward`:
+  Generalized-Douglas-Rachford proximal splitting algorithm.
 """
 
 import numpy as np
@@ -306,7 +308,6 @@ class solver(object):
         pass
 
 
-
 class forward_backward(solver):
     r"""
     Forward-backward proximal splitting algorithm.
@@ -316,6 +317,8 @@ class forward_backward(solver):
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
+
+    :cite:`beck2009fast`
 
     Parameters
     ----------
@@ -348,6 +351,10 @@ class forward_backward(solver):
         stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
+
+    References
+    ----------
+    :cite:`combettes2007douglas`
 
     """
 
@@ -424,6 +431,11 @@ class generalized_forward_backward(solver):
     :meth:`pyunlocbox.functions.func.prox` method and the other one to
     implement the :meth:`pyunlocbox.functions.func.grad` method.
 
+    References
+    ----------
+    :cite:`raguet2011generalized`
+.. bibliography:: project.bib
+
     Examples
     --------
     >>> from pyunlocbox import functions, solvers
@@ -443,7 +455,7 @@ class generalized_forward_backward(solver):
 
     """
 
-    def __init__(self, lambda_=1, weight = [], *args, **kwargs):
+    def __init__(self, lambda_=1, weight=[], *args, **kwargs):
         super(generalized_forward_backward, self).__init__(*args, **kwargs)
         self.lambda_ = lambda_
         self.weight = weight
@@ -451,7 +463,8 @@ class generalized_forward_backward(solver):
     def _pre(self, functions, x0):
 
         if self.verbosity is 'HIGH':
-            print('INFO: Generalized forward-backward method minimizing %i functions')
+            print('INFO: Generalized forward-backward\
+                  method minimizing %i functions')
 
         if self.lambda_ < 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
@@ -470,33 +483,37 @@ class generalized_forward_backward(solver):
                 self.f1.append(functions[ii])
                 self.z.append(x0)
             else:
-                raise ValueError('SOLVER: There is a function without grad and prox')
-        
+                raise ValueError('SOLVER: There is a function without grad\
+                                 and prox')
+
         if len(self.weight) == 0:
             if len(self.f1):
-                self.weight = np.repeat(1/len(self.f1) ,len(self.f1) )       
+                self.weight = np.repeat(1/len(self.f1), len(self.f1))
         elif len(self.weight) != len(self.f1):
-            raise ValueError('GENERALIZED FORWARD BACKWARD: The number of element in weight is wrong')
-        
+            raise ValueError('GENERALIZED FORWARD BACKWARD: The number of\
+                             element in weight is wrong')
+
         #if len(self.f2) == 0:
         #    raise ValueError('GENERALIZED FORWARD BACKWARD: I need at least a function with at gradient!')
 
     def _gista(self):
         grad_eval = np.zeros(np.shape(self.sol))
-        for ii in range(0,len(self.f2)):
+        for ii in range(0, len(self.f2)):
             grad_eval = grad_eval + self.f2[ii].grad(self.sol)
 
-        for ii in range(0,len(self.f1)):
-            self.z[ii] += self.lambda_ * ( \
-            self.f1[ii].prox( 2 * self.sol - self.z[ii] - self.step * grad_eval, self.step/self.weight[ii]) \
-            - self.sol)
+        for ii in range(0, len(self.f1)):
+            self.z[ii] += self.lambda_ *\
+                (self.f1[ii].prox(2 * self.sol - self.z[ii] - self.step *
+                                  grad_eval,
+                                  self.step/self.weight[ii]) - self.sol)
 
         if len(self.f1):
             self.sol = np.zeros(np.shape(self.sol))
-            for ii in range(0,len(self.f1)):
+            for ii in range(0, len(self.f1)):
                 self.sol += self.weight[ii] * self.z[ii]
         else:
             self.sol -= self.step * grad_eval
+
 
 class douglas_rachford(solver):
     r"""
@@ -517,6 +534,10 @@ class douglas_rachford(solver):
     -----
     This algorithm requires the two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method.
+
+    References
+    ----------
+    :cite:`combettes2007douglas`
 
     Examples
     --------

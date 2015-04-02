@@ -13,6 +13,10 @@ def douglas_rachford():
     --------
     >>> import pyunlocbox
     >>> pyunlocbox.demos.douglas_rachford()
+    Solution found after 65 iterations :
+        objective function f(sol) = 4.921792e+03
+        last relative objective improvement : 2.590578e-04
+        stopping criterion : RTOL
 
     """
 
@@ -55,12 +59,16 @@ def douglas_rachford():
 
 def denoising():
     """
-    Douglas Rachford demonstration
+    Denoising demonstration
 
     Examples
     --------
     >>> import pyunlocbox
     >>> pyunlocbox.demos.denoising()
+    Solution found after 135 iterations :
+        objective function f(sol) = 3.960269e+05
+        last relative objective improvement : 9.870335e-04
+        stopping criterion : RTOL
 
     """
 
@@ -83,7 +91,7 @@ def denoising():
     # Solving the problem
     solver = solvers.douglas_rachford(lambda_=1, step=0.1)
     param = {'x0': im_depleted, 'solver': solver,
-             'atol': 1e-5, 'maxit': 200, 'verbosity': 'HIGH'}
+             'atol': 1e-5, 'maxit': 200, 'verbosity': 'LOW'}
     ret = solvers.solve([f1, f2], **param)
     sol = ret['sol']
 
@@ -109,6 +117,7 @@ def test_prox():
     --------
     >>> import pyunlocbox
     >>> pyunlocbox.demos.test_prox()
+    Proximal TV Operator
 
     """
 
@@ -116,7 +125,7 @@ def test_prox():
     s = signals.whitecircle()
     im_original = s.gray_scale
 
-    f1 = functions.norm_tv(maxit=200, dim=2, verbosity='HIGH')
+    f1 = functions.norm_tv(maxit=200, dim=2, verbosity='LOW')
 
     im_depleted = f1.prox(im_original, 2000)
     # Show the result

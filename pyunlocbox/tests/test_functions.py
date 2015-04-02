@@ -132,8 +132,20 @@ class FunctionsTestCase(unittest.TestCase):
         f = functions.norm_l1(lambda_=3)
         self.assertEqual(f.eval([10, 0]), 30)
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
-        self.assertEqual(f.eval([3, 4]), 21)
-        self.assertEqual(f.eval(np.array([-3, 4])), 21)
+        self.assertEqual(f.eval([-3, 4]), 21)
+        nptest.assert_array_equal(f.prox(np.array([[1, -4],[5,-2]]),1), [[0, -1],[2,0]])
+
+    def test_norm_nuclear(self):
+        """
+        Test the norm_nuclear derived class.
+        We test the two methods : eval and prox.
+        First with default class properties, then custom ones.
+        """
+        f = functions.norm_nuclear(lambda_=3)
+        self.assertEqual(f.eval(np.diag([10, 0])), 30)
+        self.assertEqual(f.eval(np.diag(np.array([-10, 0]))), 30)
+        self.assertEqual(f.eval([[-3]]), 9)
+        nptest.assert_allclose(f.prox(np.array([[1, 1],[1, 1]]),1./3), [[0.5, 0.5],[0.5,0.5]])
 
     def test_norm_tv(self):
         """

@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+r"""
+This module implements operators functions :
+
+* :meth:`grad` Gradient function for up to 4 dimensions
+
+* :meth:`div` Divergence function for up to 4 dimensions
+
+"""
+
 import numpy as np
 
 
@@ -146,7 +158,6 @@ def div(*args, **kwargs):
 
     """
 
-
     if len(args) == 0:
         raise ValueError("Need to input at least one value")
 
@@ -198,19 +209,3 @@ def div(*args, **kwargs):
                              -np.expand_dims(dt[:, :, :, -2, ], axis=3)),
                             axis=3)
     return x
-
-
-def div1d(*args, **kwargs):
-    return div(*args, **kwargs)
-
-
-def div2d(*args, **kwargs):
-    return div(*args, **kwargs)
-
-
-def div3d(*args, **kwargs):
-    return div(*args, **kwargs)
-
-
-def div4d(*args, **kwargs):
-    return div(*args, **kwargs)
