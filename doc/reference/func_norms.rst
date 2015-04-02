@@ -26,6 +26,14 @@ L2-norm
     :undoc-members:
     :show-inheritance:
 
+Nuclear-norm
+------------
+
+.. autoclass:: pyunlocbox.functions.norm_nuclear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 TV-norm
 -------
 
