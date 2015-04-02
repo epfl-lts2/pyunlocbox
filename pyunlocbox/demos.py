@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import numpy as np
-import matplotlib.pyplot as plt
 from pyunlocbox import signals, functions, solvers
 
 
@@ -45,18 +44,21 @@ def douglas_rachford():
     sol = ret['sol']
 
     # Show the result
-    fig = plt.figure()
-    a = fig.add_subplot(1, 3, 1)
-    plt.imshow(im_original, cmap='gray')
-    a.set_title('Original image')
-    a = fig.add_subplot(1, 3, 2)
-    plt.imshow(im_depleted, cmap='gray')
-    a.set_title('Depleted image')
-    a = fig.add_subplot(1, 3, 3)
-    plt.imshow(sol, cmap='gray')
-    a.set_title('Reconstructed image')
-    plt.show()
-
+    try:
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        a = fig.add_subplot(1, 3, 1)
+        plt.imshow(im_original, cmap='gray')
+        a.set_title('Original image')
+        a = fig.add_subplot(1, 3, 2)
+        plt.imshow(im_depleted, cmap='gray')
+        a.set_title('Depleted image')
+        a = fig.add_subplot(1, 3, 3)
+        plt.imshow(sol, cmap='gray')
+        a.set_title('Reconstructed image')
+        plt.show()
+    except:
+        pass
 
 def denoising():
     """
@@ -98,18 +100,21 @@ def denoising():
     sol = ret['sol']
 
     # Show the result
-    fig = plt.figure()
-    a = fig.add_subplot(1, 3, 1)
-    plt.imshow(im_original, cmap='gray')
-    a.set_title('Original image')
-    a = fig.add_subplot(1, 3, 2)
-    plt.imshow(im_depleted, cmap='gray')
-    a.set_title('Depleted image')
-    a = fig.add_subplot(1, 3, 3)
-    plt.imshow(sol, cmap='gray')
-    a.set_title('Reconstructed image')
-    plt.show()
-
+    try:
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        a = fig.add_subplot(1, 3, 1)
+        plt.imshow(im_original, cmap='gray')
+        a.set_title('Original image')
+        a = fig.add_subplot(1, 3, 2)
+        plt.imshow(im_depleted, cmap='gray')
+        a.set_title('Depleted image')
+        a = fig.add_subplot(1, 3, 3)
+        plt.imshow(sol, cmap='gray')
+        a.set_title('Reconstructed image')
+        plt.show()
+    except:
+        pass
 
 def test_prox():
     """
@@ -130,12 +135,17 @@ def test_prox():
     f1 = functions.norm_tv(maxit=200, dim=2, verbosity='LOW')
 
     im_depleted = f1.prox(im_original, 2000)
+
     # Show the result
-    fig = plt.figure()
-    a = fig.add_subplot(1, 3, 1)
-    plt.imshow(im_original, cmap='gray')
-    a.set_title('Original image')
-    a = fig.add_subplot(1, 3, 2)
-    plt.imshow(im_depleted, cmap='gray')
-    a.set_title('Depleted image')
-    plt.show()
+    try:
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        a = fig.add_subplot(1, 3, 1)
+        plt.imshow(im_original, cmap='gray')
+        a.set_title('Original image')
+        a = fig.add_subplot(1, 3, 2)
+        plt.imshow(im_depleted, cmap='gray')
+        a.set_title('Depleted image')
+        plt.show()
+    except:
+        pass

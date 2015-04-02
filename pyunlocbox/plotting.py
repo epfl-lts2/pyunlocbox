@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 r"""
@@ -7,8 +6,6 @@ This module implements plotting functions :
 * :meth:`plot_img` Plotting function to show images in grayscale
 
 """
-
-import matplotlib.pyplot as plt
 
 
 def plot_img(img):
@@ -28,6 +25,10 @@ def plot_img(img):
 
     """
 
-    fig = plt.figure()
-    plt.imshow(img, cmap=plt.get_cmap('gray'))
-    plt.show()
+    try:
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        plt.imshow(img, cmap='gray')
+        plt.show()
+    except:
+        pass
