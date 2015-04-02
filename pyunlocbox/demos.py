@@ -13,9 +13,9 @@ def douglas_rachford():
     --------
     >>> import pyunlocbox
     >>> pyunlocbox.demos.douglas_rachford()
-    Solution found after 65 iterations :
-        objective function f(sol) = 4.921792e+03
-        last relative objective improvement : 2.590578e-04
+    Solution found after 54 iterations :
+        objective function f(sol) = 4.791124e+03
+        last relative objective improvement : 5.675881e-04
         stopping criterion : RTOL
 
     """
@@ -24,6 +24,7 @@ def douglas_rachford():
     s = signals.lena()
     im_original = s.gray_scale
     # Creating the problem
+    np.random.seed(14)  # Reproducible results.
     A = np.random.rand(im_original.shape[0], im_original.shape[1])
     A = A > 0.85
 
@@ -46,13 +47,13 @@ def douglas_rachford():
     # Show the result
     fig = plt.figure()
     a = fig.add_subplot(1, 3, 1)
-    plt.imshow(im_original, cmap=plt.get_cmap('gray'))
+    plt.imshow(im_original, cmap='gray')
     a.set_title('Original image')
     a = fig.add_subplot(1, 3, 2)
-    plt.imshow(im_depleted, cmap=plt.get_cmap('gray'))
+    plt.imshow(im_depleted, cmap='gray')
     a.set_title('Depleted image')
     a = fig.add_subplot(1, 3, 3)
-    plt.imshow(sol, cmap=plt.get_cmap('gray'))
+    plt.imshow(sol, cmap='gray')
     a.set_title('Reconstructed image')
     plt.show()
 
@@ -65,9 +66,9 @@ def denoising():
     --------
     >>> import pyunlocbox
     >>> pyunlocbox.demos.denoising()
-    Solution found after 135 iterations :
-        objective function f(sol) = 3.960269e+05
-        last relative objective improvement : 9.870335e-04
+    Solution found after 137 iterations :
+        objective function f(sol) = 3.959749e+05
+        last relative objective improvement : 9.802712e-04
         stopping criterion : RTOL
 
     """
@@ -80,6 +81,7 @@ def denoising():
     sigma = 10
 
     # Depleted image
+    np.random.seed(7)  # Reproducible results.
     im_depleted = im_original + sigma * np.random.randn(*im_original.shape)
 
     # Defining proximal operators
@@ -98,13 +100,13 @@ def denoising():
     # Show the result
     fig = plt.figure()
     a = fig.add_subplot(1, 3, 1)
-    plt.imshow(im_original, cmap=plt.get_cmap('gray'))
+    plt.imshow(im_original, cmap='gray')
     a.set_title('Original image')
     a = fig.add_subplot(1, 3, 2)
-    plt.imshow(im_depleted, cmap=plt.get_cmap('gray'))
+    plt.imshow(im_depleted, cmap='gray')
     a.set_title('Depleted image')
     a = fig.add_subplot(1, 3, 3)
-    plt.imshow(sol, cmap=plt.get_cmap('gray'))
+    plt.imshow(sol, cmap='gray')
     a.set_title('Reconstructed image')
     plt.show()
 
@@ -131,9 +133,9 @@ def test_prox():
     # Show the result
     fig = plt.figure()
     a = fig.add_subplot(1, 3, 1)
-    plt.imshow(im_original, cmap=plt.get_cmap('gray'))
+    plt.imshow(im_original, cmap='gray')
     a.set_title('Original image')
     a = fig.add_subplot(1, 3, 2)
-    plt.imshow(im_depleted, cmap=plt.get_cmap('gray'))
+    plt.imshow(im_depleted, cmap='gray')
     a.set_title('Depleted image')
     plt.show()
