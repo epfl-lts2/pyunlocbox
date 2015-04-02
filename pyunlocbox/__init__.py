@@ -42,6 +42,8 @@ from pyunlocbox import functions
 from pyunlocbox import solvers
 from pyunlocbox import signals
 from pyunlocbox import demos
+from pyunlocbox import operators
+from pyunlocbox import plotting
 
 
 # Silence the code checker warning about unused symbols.
@@ -49,6 +51,8 @@ assert functions
 assert solvers
 assert signals
 assert demos
+assert operators
+assert plotting
 
 __version__ = '0.2.1'
 __release_date__ = '2014-08-20'
