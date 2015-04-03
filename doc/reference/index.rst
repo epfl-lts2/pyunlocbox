@@ -48,14 +48,3 @@ Operators module
     operators
 
 .. automodule:: pyunlocbox.operators
-
-Plotting module
----------------
-
-.. toctree::
-    :maxdepth: 2
-    :hidden:
-
-    plotting
-
-.. automodule:: pyunlocbox.plotting
