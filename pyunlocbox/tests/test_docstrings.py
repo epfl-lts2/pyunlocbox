@@ -11,12 +11,10 @@ import os
 import unittest
 
 
-files = []
-
 # Test examples in docstrings.
-base = os.path.join(os.path.dirname(__file__), os.path.pardir)
-base = os.path.abspath(base)
-files.extend(glob.glob(os.path.join(base, '*.py')))
+path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+path = os.path.abspath(path)
+files = glob.glob(os.path.join(path, '*.py'))
 
 assert files
 

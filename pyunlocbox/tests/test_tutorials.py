@@ -11,13 +11,11 @@ import os
 import unittest
 
 
-files = []
-
 # Test examples in documentation.
-base = os.path.join(os.path.dirname(__file__), os.path.pardir)
-base = os.path.join(base, os.path.pardir, 'doc', 'tutorials')
-base = os.path.abspath(base)
-files.extend(glob.glob(os.path.join(base, '*.rst')))
+path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+path = os.path.join(path, os.path.pardir, 'doc', 'tutorials')
+path = os.path.abspath(path)
+files = glob.glob(os.path.join(path, '*.rst'))
 
 assert files
 
