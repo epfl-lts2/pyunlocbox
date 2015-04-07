@@ -23,7 +23,6 @@ inherit from it implement the methods. These classes include :
 
   * :class:`proj_b2`: Projection on the L2-ball who implements the
     :meth:`_eval` and :meth:`_prox` methods.
-
 """
 
 from time import time
@@ -509,9 +508,7 @@ class norm_tv(norm):
     -----
     TODO
 
-    References
-    ----------
-    :cite:`beck2009fastTV`
+    See :cite:`beck2009fastTV` for details about the algorithm.
 
     Examples
     --------

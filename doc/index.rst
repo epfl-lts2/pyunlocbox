@@ -14,6 +14,7 @@ PyUNLocBoX documentation
    reference/index
    contributing
    history
+   references
 
 Indices and tables
 ==================

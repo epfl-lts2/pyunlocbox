@@ -6,6 +6,7 @@ matplotlib
 sphinx
 numpydoc
 matplotlib
+sphinxcontrib-bibtex
 
 # Required for packaging.
 wheel

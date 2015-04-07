@@ -318,8 +318,6 @@ class forward_backward(solver):
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
 
-    :cite:`beck2009fast`
-
     Parameters
     ----------
     method : {'FISTA', 'ISTA'}, optional
@@ -334,6 +332,8 @@ class forward_backward(solver):
     This algorithm requires one function to implement the
     :meth:`pyunlocbox.functions.func.prox` method and the other one to
     implement the :meth:`pyunlocbox.functions.func.grad` method.
+
+    See :cite:`beck2009FISTA` for details about the algorithm.
 
     Examples
     --------
@@ -351,10 +351,6 @@ class forward_backward(solver):
         stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
-
-    References
-    ----------
-    :cite:`combettes2007douglas`
 
     """
 
@@ -431,10 +427,7 @@ class generalized_forward_backward(solver):
     :meth:`pyunlocbox.functions.func.prox` method and the other one to
     implement the :meth:`pyunlocbox.functions.func.grad` method.
 
-    References
-    ----------
-    :cite:`raguet2011generalized`
-.. bibliography:: project.bib
+    See :cite:`raguet2013generalizedFB` for details about the algorithm.
 
     Examples
     --------
@@ -535,9 +528,7 @@ class douglas_rachford(solver):
     This algorithm requires the two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method.
 
-    References
-    ----------
-    :cite:`combettes2007douglas`
+    See :cite:`combettes2007DR` for details about the algorithm.
 
     Examples
     --------
