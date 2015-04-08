@@ -13,3 +13,5 @@ order as they build one upon the other.
     simple
     compressed_sensing_forward_backward
     compressed_sensing_douglas_rachford
+    reconstruction
+    denoising
