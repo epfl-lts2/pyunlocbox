@@ -154,7 +154,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         # Test Matrices initialization
         # test for a 1dim matrice (testing with a 5)
-        mat1d = np.arange(5.) + 1
+        mat1d = np.arange(5) + 1
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         # test for a 3 dim matrice (testing with a 2x3x2)
@@ -170,7 +170,7 @@ class FunctionsTestCase(unittest.TestCase):
             # test with 2d matrices
             # test without weight
             f = functions.norm_tv(dim=1)
-            xeval = 30.0
+            xeval = 30
             nptest.assert_array_equal(xeval, f.eval(mat2d))
             f = functions.norm_tv(dim=2)
             xeval = np.array([56.753641295582440])
@@ -190,7 +190,7 @@ class FunctionsTestCase(unittest.TestCase):
             sol = np.sum(np.array([11.324555320336760, 11.324555320336760]))
             nptest.assert_array_equal(sol, f.eval(mat3d))
             f = functions.norm_tv(dim=3)
-            xeval = np.array([49.762944279683097])
+            xeval = np.array(49.762944279683104)
             nptest.assert_array_equal(xeval, f.eval(mat3d))
 
             # test with weights
@@ -220,9 +220,9 @@ class FunctionsTestCase(unittest.TestCase):
             f = functions.norm_tv(tol=10e-4, dim=2)
             gamma = 1.5
             x2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5], [2, 10, 7, 8]])
-            sol = np.array([[3.4404377, 2.870521, 2.585018, 2.498822],
-                            [16.3833455, 3.036425, 3.969195, 4.631411],
-                            [4.4973535, 6.417581, 6.383949, 6.285937]])
+            sol = np.array([[ 3.44427, 2.87332, 2.51662, 2.45336],
+                            [18.38207, 3.10251, 4.0028 , 4.64074],
+                            [ 4.50809, 6.44118, 6.38421, 6.25082]])
             nptest.assert_array_equal(np.around(sol, decimals=5),
                                       np.around((f.prox(x2d, gamma)),
                                                 decimals=5))
@@ -232,7 +232,7 @@ class FunctionsTestCase(unittest.TestCase):
             # Test with 3d matrices
             # Test without weights
             f = functions.norm_tv(tol=10e-4, dim=2)
-            gamma = 42.
+            gamma = 42
             sol = np.array([[[3.50087, 9.50087],
                              [3.50000, 9.50000],
                              [3.49913, 9.49913]],
@@ -243,14 +243,14 @@ class FunctionsTestCase(unittest.TestCase):
                                                      decimals=5))
 
             f = functions.norm_tv(tol=10e-4, dim=3)
-            gamma = 18.
+            gamma = 18
             sol = np.array([[[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]],
                             [[6.5, 6.5], [6.5, 6.5], [6.5, 6.5]]])
             nptest.assert_array_equal(sol, np.around(f.prox(mat3d, gamma),
                                                      decimals=1))
             # Test with weights
-            f = functions.norm_tv(tol=10e-10, dim=2, wx=5, wy=10, maxit=10)
-            gamma = 3.
+            f = functions.norm_tv(tol=10e-10, dim=2, wx=5, wy=10)
+            gamma = 3
             x3d = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]],
                           [[4, 13, 22], [5, 14, 23], [6, 15, 24]],
                           [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
@@ -292,16 +292,16 @@ class FunctionsTestCase(unittest.TestCase):
             nptest.assert_array_equal(sol, np.around(f.prox(x4d, gamma)))
 
             f = functions.norm_tv(tol=10e-4, dim=4)
-            gamma = 15.
-            sol = np.around(np.array([[[[22, 34, 54], [26, 40, 53], [31, 44, 53]],
+            gamma = 15
+            sol = np.around(np.array([[[[22, 34, 54], [26, 40, 54], [31, 44, 53]],
                                        [[23, 35, 54], [27, 40, 54], [32, 44, 53]],
-                                       [[23, 35, 55], [27, 41, 54], [32, 45, 53]]],
-                                      [[[24, 36, 54], [28, 41, 53], [33, 45, 53]],
+                                       [[23, 35, 54], [27, 41, 54], [32, 45, 53]]],
+                                      [[[24, 36, 54], [28, 41, 54], [32, 45, 53]],
                                        [[24, 36, 54], [28, 42, 53], [33, 45, 53]],
-                                       [[24, 37, 54], [29, 42, 54], [33, 46, 53]]],
-                                      [[[25, 38, 54], [29, 43, 53], [34, 46, 52]],
+                                       [[24, 37, 54], [29, 42, 53], [33, 46, 53]]],
+                                      [[[25, 38, 54], [29, 43, 53], [34, 46, 53]],
                                        [[25, 38, 54], [30, 43, 53], [34, 46, 53]],
-                                       [[26, 38, 54], [30, 43, 54], [35, 47, 53]]]]))
+                                       [[26, 39, 54], [30, 43, 53], [35, 47, 53]]]]))
             nptest.assert_array_equal(sol, np.around(f.prox(x4d, gamma)))
 
         # Test with weights
