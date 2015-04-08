@@ -145,7 +145,7 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval(np.diag([10, 0])), 30)
         self.assertEqual(f.eval(np.diag(np.array([-10, 0]))), 30)
         self.assertEqual(f.eval([[-3]]), 9)
-        nptest.assert_allclose(f.prox(np.array([[1, 1],[1, 1]]),1./3), [[0.5, 0.5],[0.5,0.5]])
+        nptest.assert_allclose(f.prox(np.array([[1, 1],[1, 1]]),1./3), [[.5, .5],[.5,.5]])
 
     def test_norm_tv(self):
         """
@@ -156,11 +156,11 @@ class FunctionsTestCase(unittest.TestCase):
         # test for a 1dim matrice (testing with a 5)
         mat1d = np.arange(5.) + 1
         # test for a 2dim matrice (testing with a 2x4)
-        mat2d = np.array([[2., 3., 0., 1.], [22., 1., 4., 5.]])
+        mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         # test for a 3 dim matrice (testing with a 2x3x2)
-        mat3d = np.arange(1., stop=13.).reshape(2, 2, 3).transpose((1, 2, 0))
+        mat3d = np.arange(1, stop=13).reshape(2, 2, 3).transpose((1, 2, 0))
         # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.arange(1., stop=25.).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
+        mat4d = np.arange(1, stop=25).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
         # test for a 5dim matrice (2x2x3x2x2)
         mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
 
@@ -198,7 +198,7 @@ class FunctionsTestCase(unittest.TestCase):
             sol = np.sum(np.array([25.4164, 25.4164]))
             nptest.assert_array_equal(sol, np.around(f.eval(mat3d), decimals=4))
 
-            f = functions.norm_tv(dim=3, wx=2, wy=3, wz=0.5)
+            f = functions.norm_tv(dim=3, wx=2, wy=3, wz=.5)
             xeval = np.array([58.3068])
             nptest.assert_array_equal(xeval, np.around(f.eval(mat3d), decimals=4))
 
@@ -219,7 +219,7 @@ class FunctionsTestCase(unittest.TestCase):
 
             f = functions.norm_tv(tol=10e-4, dim=2)
             gamma = 1.5
-            x2d = np.array([[2., 3., 0., 1.], [22., 1., 4., 5.], [2., 10., 7., 8.]])
+            x2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5], [2, 10, 7, 8]])
             sol = np.array([[3.4404377, 2.870521, 2.585018, 2.498822],
                             [16.3833455, 3.036425, 3.969195, 4.631411],
                             [4.4973535, 6.417581, 6.383949, 6.285937]])
@@ -249,14 +249,14 @@ class FunctionsTestCase(unittest.TestCase):
             nptest.assert_array_equal(sol, np.around(f.prox(mat3d, gamma),
                                                      decimals=1))
             # Test with weights
-            f = functions.norm_tv(tol=10e-10, dim=2, wx=5., wy=10., maxit=10)
+            f = functions.norm_tv(tol=10e-10, dim=2, wx=5, wy=10, maxit=10)
             gamma = 3.
-            x3d = np.array([[[1., 10., 19.], [2., 11., 20.], [3., 12., 21.]],
-                          [[4., 13., 22.], [5., 14., 23.], [6., 15., 24.]],
-                          [[7., 16., 25.], [8., 17., 26.], [9., 18., 27.]]])
+            x3d = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]],
+                          [[4, 13, 22], [5, 14, 23], [6, 15, 24]],
+                          [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
             sol = np.array([[[5, 14, 23],
-                             [5, 14, 23.],
-                             [5, 14., 23.]],
+                             [5, 14, 23],
+                             [5, 14, 23]],
                             [[5, 14, 23],
                              [5, 14, 23],
                              [5, 14, 23]],
@@ -333,7 +333,7 @@ class FunctionsTestCase(unittest.TestCase):
         A = np.random.standard_normal((ny, nx))
         nu = np.linalg.norm(A, ord=2)**2
         f = functions.proj_b2(y=y, A=A, nu=nu, tight=False, method='FISTA',
-                              epsilon=5, tol=tol/10.)
+                              epsilon=5, tol=tol/10)
         sol_fista = f.prox(x, 0)
         f.method = 'ISTA'
         sol_ista = f.prox(x, 0)
