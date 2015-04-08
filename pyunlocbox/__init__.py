@@ -40,13 +40,11 @@ array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 # When importing the toolbox, you surely want these modules.
 from pyunlocbox import functions
 from pyunlocbox import solvers
-from pyunlocbox import signals
 from pyunlocbox import operators
 
 # Silence the code checker warning about unused symbols.
 assert functions
 assert solvers
-assert signals
 assert operators
 
 __version__ = '0.2.1'

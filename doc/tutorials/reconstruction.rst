@@ -13,14 +13,15 @@ where :math:`\|\cdot\|_\text{TV}` denotes the total variation, `y` are the
 measurements, `g` is a masking operator and :math:`\tau` expresses the
 trade-off between the two terms.
 
-We load an example image
+Load an image and convert it to grayscale
 
->>> from pyunlocbox import signals
->>> im_original = signals.lena().gray_scale
+>>> import matplotlib.image as mpimg
+>>> import numpy as np
+>>> im_original = mpimg.imread('doc/tutorials/img/lena.png')
+>>> im_original = np.dot(im_original[..., :3], [0.299, 0.587, 0.144])
 
 and generate a random masking matrix
 
->>> import numpy as np
 >>> np.random.seed(14)  # Reproducible results.
 >>> mask = np.random.uniform(size=im_original.shape)
 >>> mask = mask > 0.85
@@ -65,9 +66,9 @@ with
 and the problem solved with
 
 >>> ret = solvers.solve([f1, f2], im_masked, solver, maxit=100)
-Solution found after 93 iterations :
-    objective function f(sol) = 4.163503e+03
-    last relative objective improvement : 8.291663e-04
+Solution found after 94 iterations :
+    objective function f(sol) = 4.268147e+03
+    last relative objective improvement : 9.064925e-04
     stopping criterion : RTOL
 
 Let's display the results:

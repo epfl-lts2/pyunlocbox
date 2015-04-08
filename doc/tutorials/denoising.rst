@@ -12,15 +12,17 @@ data fidelity, is given by
 where :math:`\|\cdot\|_\text{TV}` denotes the total variation, `y` are the
 measurements and :math:`\epsilon` expresses the noise level.
 
-We load an example image
+Create a white circle on a black background
 
->>> from pyunlocbox import signals
->>> im_original = signals.whitecircle().gray_scale
+>>> import numpy as np
+>>> N = 650
+>>> im_original = np.resize(np.linspace(-1, 1, N), (N,N))
+>>> im_original = np.sqrt(im_original**2 + im_original.T**2)
+>>> im_original = im_original < 0.7
 
 and add some random Gaussian noise
 
->>> sigma = 100
->>> import numpy as np
+>>> sigma = 0.5
 >>> np.random.seed(7)  # Reproducible results.
 >>> im_noisy = im_original + sigma * np.random.normal(size=im_original.shape)
 
@@ -50,14 +52,14 @@ expressed by the toolbox L2-ball function, instantiated with
 The Douglas-Rachford splitting algorithm is instantiated with
 
 >>> from pyunlocbox import solvers
->>> solver = solvers.douglas_rachford(step=10)
+>>> solver = solvers.douglas_rachford(step=0.1)
 
 and the problem solved with
 
 >>> ret = solvers.solve([f1, f2], im_noisy, solver, maxit=200)
-Solution found after 20 iterations :
-    objective function f(sol) = 3.972049e+05
-    last relative objective improvement : 3.633195e-04
+Solution found after 25 iterations :
+    objective function f(sol) = 2.080376e+03
+    last relative objective improvement : 6.717268e-04
     stopping criterion : RTOL
 
 Let's display the results:
