@@ -738,13 +738,13 @@ class proj(func):
     Parameters
     ----------
     epsilon : float, optional
-        The radius of the ball. Default is 1e-3.
+        The radius of the ball. Default is 1.
     method : {'FISTA', 'ISTA'}, optional
         The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
     """
 
-    def __init__(self, epsilon=1e-3, method='FISTA', **kwargs):
+    def __init__(self, epsilon=1, method='FISTA', **kwargs):
         super(proj, self).__init__(**kwargs)
         self.epsilon = epsilon
         self.method = method
