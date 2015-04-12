@@ -316,11 +316,16 @@ class FunctionsTestCase(unittest.TestCase):
         """
         tol = 1e-7
 
-        # Tight frame.
-        y = [0, 2]
-        x = [5, 4]
+        # Tight frame, radius 0 --> x == y.
+        x = 10 * np.random.uniform(size=7)
+        y = 10 * np.random.uniform(size=7)
         f = functions.proj_b2(y=y, epsilon=tol)
         nptest.assert_allclose(f.prox(x, 0), y, atol=tol)
+
+        # Tight frame, random radius --> ||x-y||_2 = radius.
+        radius = 10 * np.random.uniform()
+        f = functions.proj_b2(y=y, epsilon=radius)
+        nptest.assert_almost_equal(np.linalg.norm(f.prox(x, 0) - y), radius)
 
         # Always evaluate to zero.
         self.assertEqual(f.eval(x), 0)

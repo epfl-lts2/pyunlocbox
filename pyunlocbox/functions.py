@@ -779,12 +779,12 @@ class proj_b2(proj):
     Examples
     --------
     >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.proj_b2(y=[1, 2])
+    >>> f = pyunlocbox.functions.proj_b2(y=[1, 1])
     >>> x = [3, 3]
     >>> f.eval(x)
     0
-    >>> f.prox(x, 1)
-    array([ 1.00089443,  2.00044721])
+    >>> f.prox(x, 0)
+    array([ 1.70710678,  1.70710678])
 
     """
 
@@ -808,7 +808,7 @@ class proj_b2(proj):
         # Tight frame.
         if self.tight:
             tmp1 = self.A(x) - self.y
-            scale = self.epsilon / np.sqrt(np.sum(x*x, axis=0))
+            scale = self.epsilon / np.sqrt(np.sum(tmp1*tmp1, axis=0))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'
