@@ -175,17 +175,22 @@ class func(object):
         Parameters
         ----------
         x : array_like
-            The evaluation point.
+            The evaluation point. If `x` is a matrix, the function gets
+            evaluated for each column, as if it was a set of independent
+            problems. Some functions, like the nuclear norm, are only defined
+            on matrices.
 
         Returns
         -------
         z : float
-            The objective function evaluated at `x`.
+            The objective function evaluated at `x`. If `x` is a matrix, the
+            sum of the objectives is returned.
 
         Notes
         -----
         This method is required by the :func:`pyunlocbox.solvers.solve` solving
-        function to evaluate the objective function.
+        function to evaluate the objective function. Each function class
+        should therefore define it.
         """
         sol = self._eval(np.array(x))
         if self.verbosity in ['LOW', 'HIGH']:
@@ -202,21 +207,24 @@ class func(object):
         Parameters
         ----------
         x : array_like
-            The evaluation point.
+            The evaluation point. If `x` is a matrix, the function gets
+            evaluated for each column, as if it was a set of independent
+            problems. Some functions, like the nuclear norm, are only defined
+            on matrices.
         T : float
             The regularization parameter.
 
         Returns
         -------
         z : ndarray
-            The proximal operator evaluated at `x`.
+            The proximal operator evaluated for each column of `x`.
 
         Notes
         -----
         This method is required by some solvers.
 
         The proximal operator is defined by
-        :math:`\operatorname{prox}_{f,\gamma}(x) = \operatorname{arg\,min}
+        :math:`\operatorname{prox}_{\gamma f}(x) = \operatorname{arg\,min}
         \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
         """
         return self._prox(np.array(x), T)
@@ -231,12 +239,15 @@ class func(object):
         Parameters
         ----------
         x : array_like
-            The evaluation point.
+            The evaluation point. If `x` is a matrix, the function gets
+            evaluated for each column, as if it was a set of independent
+            problems. Some functions, like the nuclear norm, are only defined
+            on matrices.
 
         Returns
         -------
         z : ndarray
-            The objective function gradient evaluated at `x`.
+            The objective function gradient evaluated for each column of `x`.
 
         Notes
         -----
@@ -797,7 +808,8 @@ class proj_b2(proj):
         # Tight frame.
         if self.tight:
             tmp1 = self.A(x) - self.y
-            tmp2 = tmp1 * min(1, self.epsilon/np.linalg.norm(tmp1))  # Scaling.
+            scale = self.epsilon / np.sqrt(np.sum(x*x, axis=0))
+            tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'
             u = np.nan

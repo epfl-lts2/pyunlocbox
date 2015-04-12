@@ -8,6 +8,7 @@ Test suite for the functions module of the pyunlocbox package.
 import sys
 import numpy as np
 import numpy.testing as nptest
+import inspect
 from pyunlocbox import functions
 
 # Use the unittest2 backport on Python 2.6 to profit from the new features.
@@ -339,6 +340,51 @@ class FunctionsTestCase(unittest.TestCase):
         sol_ista = f.prox(x, 0)
         err = np.linalg.norm(sol_fista - sol_ista) / np.linalg.norm(sol_fista)
         self.assertLess(err, tol)
+
+    def test_independent_problems(self):
+
+        # Parameters.
+        N = 3   # independent problems.
+        n = 25  # dimensions.
+
+        # Generate some data.
+        X = 7 - 10 * np.random.uniform(size=(n, N))
+        step = 10 * np.random.uniform()
+
+        # Test all available functions.
+        funcs = inspect.getmembers(functions, inspect.isclass)
+        for func in funcs:
+
+            # Instanciate the class.
+            if func[0] in ['norm_tv']:
+                f = func[1](dim=1)  # Each column is one-dimensional.
+            else:
+                f = func[1]()
+
+            # The combined objective function of the N problems is the sum of
+            # each objective.
+            if func[0] not in ['func', 'norm', 'norm_nuclear', 'proj']:
+                res = 0
+                for iN in range(N):
+                    res += f.eval(X[:,iN])
+                nptest.assert_array_almost_equal(res, f.eval(X))
+
+            # Each column is the prox of one of the N problems.
+            # TODO: norm_tv shoud pass this test. Why is there a difference ?
+            if func[0] not in ['func', 'norm', 'norm_nuclear', 'norm_tv',
+                               'proj']:
+                res = np.zeros((n, N))
+                for iN in range(N):
+                    res[:,iN] = f.prox(X[:,iN], step)
+                nptest.assert_array_almost_equal(res, f.prox(X, step))
+
+            # Each column is the gradient of one of the N problems.
+            if func[0] not in ['func', 'norm', 'norm_l1', 'norm_nuclear',
+                               'norm_tv', 'proj', 'proj_b2']:
+                res = np.zeros((n, N))
+                for iN in range(N):
+                    res[:,iN] = f.grad(X[:,iN])
+                nptest.assert_array_almost_equal(res, f.grad(X))
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)

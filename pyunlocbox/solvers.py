@@ -9,8 +9,7 @@ it and implement the class methods. The following solvers are included :
 
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 * :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
-* :class:`generalized_forward_backward`:
-  Generalized-Douglas-Rachford proximal splitting algorithm.
+* :class:`generalized_forward_backward`: Generalized Forward-Backward.
 """
 
 import numpy as np
@@ -25,11 +24,12 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     convex functions.
 
     This function minimizes the objective function :math:`f(x) =
-    \sum\limits_{m=0}^{m=M} f_m(x)`, i.e. solves
-    :math:`\operatorname{arg\,min}\limits_x f(x)` for
-    :math:`x \in \mathbb{R}^N` using whatever algorithm. It returns a
-    dictionary with the found solution and some informations about the
-    algorithm execution.
+    \sum\limits_{k=0}^{k=K} f_k(x)`, i.e. solves
+    :math:`\operatorname{arg\,min}\limits_x f(x)` for :math:`x \in
+    \mathbb{R}^{n \times N}` where :math:`n` is the dimensionality of the data
+    and :math:`N` the number of independent problems. It returns a dictionary
+    with the found solution and some informations about the algorithm
+    execution.
 
     Parameters
     ----------
@@ -42,7 +42,8 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         functions while others may handle more. Please refer to the
         documentation of the considered solver.
     x0 : array_like
-        Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^N`.
+        Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^{n \times
+        N}`.
     solver : solver class instance, optional
         The solver algorithm. It is an object who must inherit from
         :class:`pyunlocbox.solvers.solver` and implement the :meth:`_pre`,
