@@ -22,7 +22,7 @@ Create a white circle on a black background
 
 and add some random Gaussian noise
 
->>> sigma = 0.5
+>>> sigma = 0.5  # Variance of 0.25.
 >>> np.random.seed(7)  # Reproducible results.
 >>> im_noisy = im_original + sigma * np.random.normal(size=im_original.shape)
 
@@ -46,8 +46,19 @@ where :math:`\iota_S()` is the indicator function of the set :math:`S =
 if :math:`z` is in the set and infinite otherwise. This function can be
 expressed by the toolbox L2-ball function, instantiated with
 
->>> epsilon = sigma * np.sqrt(im_original.size)
->>> f2 = functions.proj_b2(y=im_noisy, epsilon=epsilon)
+>>> y = np.reshape(im_noisy, -1)  # Reshape the 2D image as a 1D vector.
+>>> epsilon = N * sigma           # Variance multiplied by N^2.
+>>> f = functions.proj_b2(y=y, epsilon=epsilon)
+>>> f2 = functions.func()
+>>> f2._eval = lambda x: 0        # Indicator functions evaluate to zero.
+>>> def prox(x, step):
+...     return np.reshape(f.prox(np.reshape(x, -1), 0), im_noisy.shape)
+>>> f2._prox = prox
+
+.. note:: We defined a custom proximal operator which transforms the 2D image
+   as a 1D vector because :class:`pyunlocbox.functions.proj_b2` operates
+   on the columns of `x` while :class:`pyunlocbox.functions.norm_tv`
+   needs a two-dimensional array to compute the 2D TV norm.
 
 The Douglas-Rachford splitting algorithm is instantiated with
 
@@ -56,7 +67,7 @@ The Douglas-Rachford splitting algorithm is instantiated with
 
 and the problem solved with
 
->>> ret = solvers.solve([f1, f2], im_noisy, solver, maxit=200)
+>>> ret = solvers.solve([f1, f2], im_noisy, solver)
 Solution found after 25 iterations :
     objective function f(sol) = 2.080376e+03
     last relative objective improvement : 6.717268e-04
