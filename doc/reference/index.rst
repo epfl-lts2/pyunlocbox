@@ -11,7 +11,6 @@ Functions module
 ----------------
 
 .. toctree::
-    :maxdepth: 2
     :hidden:
 
     func
@@ -27,7 +26,6 @@ Solvers module
 --------------
 
 .. toctree::
-    :maxdepth: 2
     :hidden:
 
     solve
@@ -42,7 +40,6 @@ Operators module
 ----------------
 
 .. toctree::
-    :maxdepth: 2
     :hidden:
 
     operators
