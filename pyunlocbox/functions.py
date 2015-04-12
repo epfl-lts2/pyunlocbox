@@ -742,12 +742,24 @@ class proj(func):
     method : {'FISTA', 'ISTA'}, optional
         The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
+
+    Notes
+    -----
+    * All indicator functions (projections) evaluate to zero by definition.
     """
 
     def __init__(self, epsilon=1, method='FISTA', **kwargs):
         super(proj, self).__init__(**kwargs)
         self.epsilon = epsilon
         self.method = method
+
+    def _eval(self, x):
+        # Matlab version returns a small delta to avoid division by 0 when
+        # evaluating relative tolerance. Here the delta is added in the solve
+        # function if the sum of the objective functions is zero.
+        # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
+        # return np.spacing(1.0)
+        return 0
 
 
 class proj_b2(proj):
@@ -791,14 +803,6 @@ class proj_b2(proj):
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
         super(proj_b2, self).__init__(**kwargs)
-
-    def _eval(self, x):
-        # Matlab version returns a small delta to avoid division by 0 when
-        # evaluating relative tolerance. Here the delta is added in the solve
-        # function if the sum of the objective functions is zero.
-        # np.spacing(1.0) is equivalent to matlab eps = eps(1.0)
-        # return np.spacing(1.0)
-        return 0
 
     def _prox(self, x, T):
 
