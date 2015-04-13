@@ -29,8 +29,8 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test some features of the solving function.
         """
-        y = [4, 5, 6, 7]
-        x0 = np.zeros(len(y))
+        y = 5 - 10 * np.random.uniform(size=(15, 4))
+        x0 = np.zeros(y.shape)
         param = {'x0': x0, 'verbosity': 'NONE'}
 
         # Function verbosity.
@@ -76,21 +76,31 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Stopping criteria.
         f = functions.norm_l2(y=y)
-        r = solvers.solve([f], x0, None, 1e-6, None, None, None, None, 'NONE')
+        atol = 1e-6
+        r = solvers.solve([f], x0, None, atol, None, None, None, None, 'NONE')
         self.assertEqual(r['crit'], 'ATOL')
-        self.assertEqual(r['niter'], 10)
-        r = solvers.solve([f], x0, None, None, 1e-8, None, None, None, 'NONE')
+        self.assertLess(np.sum(r['objective'][-1]), atol)
+        dtol = 1e-8
+        r = solvers.solve([f], x0, None, None, dtol, None, None, None, 'NONE')
         self.assertEqual(r['crit'], 'DTOL')
-        self.assertEqual(r['niter'], 14)
-        r = solvers.solve([f], x0, None, None, None, .1, None, None, 'NONE')
+        err = np.abs(np.sum(r['objective'][-1]) - np.sum(r['objective'][-2]))
+        self.assertLess(err, dtol)
+        rtol = .1
+        r = solvers.solve([f], x0, None, None, None, rtol, None, None, 'NONE')
         self.assertEqual(r['crit'], 'RTOL')
-        self.assertEqual(r['niter'], 14)
-        r = solvers.solve([f], x0, None, None, None, None, 1e-4, None, 'NONE')
+        err = np.abs(np.sum(r['objective'][-1]) - np.sum(r['objective'][-2]))
+        err /= np.sum(r['objective'][-1])
+        self.assertLess(err, rtol)
+        xtol = 1e-4
+        r = solvers.solve([f], x0, None, None, None, None, xtol, None, 'NONE')
         self.assertEqual(r['crit'], 'XTOL')
-        self.assertEqual(r['niter'], 12)
-        r = solvers.solve([f], x0, None, None, None, None, None, 15, 'NONE')
+        r2 = solvers.solve([f], x0, maxit=r['niter']-1, verbosity='NONE')
+        err = np.linalg.norm(r['sol'] - r2['sol']) / x0.size
+        self.assertLess(err, xtol)
+        maxit = 15
+        r = solvers.solve([f], x0, None, None, None, None, None, maxit, 'NONE')
         self.assertEqual(r['crit'], 'MAXIT')
-        self.assertEqual(r['niter'], 15)
+        self.assertEqual(r['niter'], maxit)
 
         # Return values.
         f = functions.norm_l2(y=y)
