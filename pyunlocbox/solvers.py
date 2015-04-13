@@ -90,15 +90,68 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     Examples
     --------
     >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
-    >>> ret = pyunlocbox.solvers.solve([f], [0, 0, 0, 0], atol=1e-5)
+    >>> import numpy as np
+
+    Define a problem:
+
+    >>> y = [4, 5, 6, 7]
+    >>> f = pyunlocbox.functions.norm_l2(y=y)
+
+    Solve it:
+
+    >>> x0 = np.zeros(len(y))
+    >>> ret = pyunlocbox.solvers.solve([f], x0, atol=1e-2, verbosity='ALL')
     INFO: Dummy objective function added.
     INFO: Selected solver : forward_backward
-    Solution found after 10 iterations :
-        objective function f(sol) = 7.460428e-09
+        norm_l2 evaluation : 1.260000e+02
+        dummy evaluation : 0.000000e+00
+    INFO: Forward-backward method : FISTA
+    Iteration 1 of forward_backward :
+        norm_l2 evaluation : 1.400000e+01
+        dummy evaluation : 0.000000e+00
+        objective = 1.40e+01
+    Iteration 2 of forward_backward :
+        norm_l2 evaluation : 1.555556e+00
+        dummy evaluation : 0.000000e+00
+        objective = 1.56e+00
+    Iteration 3 of forward_backward :
+        norm_l2 evaluation : 3.293044e-02
+        dummy evaluation : 0.000000e+00
+        objective = 3.29e-02
+    Iteration 4 of forward_backward :
+        norm_l2 evaluation : 8.780588e-03
+        dummy evaluation : 0.000000e+00
+        objective = 8.78e-03
+    Solution found after 4 iterations :
+        objective function f(sol) = 8.780588e-03
         stopping criterion : ATOL
+
+    Verify the stopping criterion (should be smaller than atol=1e-2):
+
+    >>> np.linalg.norm(ret['sol'] - y)**2
+    0.008780587752251795
+
+    Show the solution (should be close to y w.r.t. the L2-norm measure):
+
     >>> ret['sol']
-    array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+    array([ 4.03339154,  5.04173943,  6.05008732,  7.0584352 ])
+
+    Show the used solver:
+
+    >>> ret['solver']
+    'forward_backward'
+
+    Show some information about the convergence:
+
+    >>> ret['crit']
+    'ATOL'
+    >>> ret['niter']
+    4
+    >>> ret['time']  # doctest:+SKIP
+    0.0012578964233398438
+    >>> ret['objective']  # doctest:+NORMALIZE_WHITESPACE
+    [[126.0, 0], [13.999999999999998, 0], [1.5555555555555558, 0],
+    [0.032930436204105726, 0], [0.0087805877522517933, 0]]
 
     """
 
