@@ -106,7 +106,6 @@ follow :
 >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
 Solution found after 176 iterations :
     objective function f(sol) = 8.221302e+00
-    last relative objective improvement : 8.363264e-05
     stopping criterion : RTOL
 
 .. note:: A complete description of the parameters, their default values and

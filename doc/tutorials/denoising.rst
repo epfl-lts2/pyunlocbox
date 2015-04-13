@@ -70,7 +70,6 @@ and the problem solved with
 >>> ret = solvers.solve([f1, f2], im_noisy, solver)
 Solution found after 25 iterations :
     objective function f(sol) = 2.080376e+03
-    last relative objective improvement : 6.717268e-04
     stopping criterion : RTOL
 
 Let's display the results:

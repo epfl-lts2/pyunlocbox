@@ -30,7 +30,6 @@ by a call to the solving function.
 >>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, atol=1e-5)
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
-    last relative objective improvement : 1.624424e+03
     stopping criterion : ATOL
 >>> ret['sol']
 array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])

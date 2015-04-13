@@ -17,8 +17,8 @@ import time
 from pyunlocbox.functions import dummy
 
 
-def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
-          convergence_speed=float('-inf'), maxit=200, verbosity='LOW'):
+def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
+          xtol=None, maxit=200, verbosity='LOW'):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
@@ -50,18 +50,20 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         :meth:`_algo` and :meth:`_post` methods. If no solver object are
         provided, a standard one will be chosen given the number of convex
         function objects and their implemented methods.
-    rtol : float, optional
-        The convergence (relative tolerance) stopping criterion. The algorithm
-        stops if :math:`\left|\frac{n(k-1)-n(k)}{n(k)}\right|<rtol` where
-        :math:`n(k)=f(x)` is the objective function at iteration :math:`k`.
-        Default is :math:`10^{-3}`.
     atol : float, optional
-        The absolute tolerance stopping criterion. The algorithm stops if
-        :math:`n(k)<atol`. Default is minus infinity.
-    convergence_speed : float, optional
-        The minimum tolerable convergence speed of the objective function. The
-        algorithm stops if n(k-1) - n(k) < `convergence_speed`. Default is
-        minus infinity (i.e. the objective function may even increase).
+        The absolute tolerance stopping criterion. The algorithm stops when
+        :math:`f(x^t) < atol` where :math:`f(x^t)` is the objective function at
+        iteration :math:`t`. Default is None.
+    dtol : float, optional
+        Stop when the objective function is stable enough, i.e. when
+        :math:`\left|f(x^t) - f(x^{t-1})\right| < dtol`. Default is None.
+    rtol : float, optional
+        The relative tolerance stopping criterion. The algorithm stops when
+        :math:`\left|\frac{ f(x^t) - f(x^{t-1}) }{ f(x^t) }\right| < rtol`.
+        Default is :math:`10^{-3}`.
+    xtol : float, optional
+        Stop when the variable is stable enough, i.e. when :math:`\frac{\|x^t -
+        x^{t-1}\|_2}{n N} < xtol`. Default is None.
     maxit : int, optional
         The maximum number of iterations. Default is 200.
     verbosity : {'NONE', 'LOW', 'HIGH', 'ALL'}, optional
@@ -76,21 +78,14 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         The problem solution.
     solver : str
         The used solver.
+    crit : {'ATOL', 'DTOL', 'RTOL', 'XTOL', 'MAXIT'}
+        The used stopping criterion. See above for definitions.
     niter : int
         The number of iterations.
     time : float
         The execution time in seconds.
     eval : float
         The final evaluation of the objective function :math:`f(x)`.
-    crit : {'MAXIT', 'ATOL', 'RTOL', 'CONVSPEED'}
-        The used stopping criterion. 'MAXIT' if the maximum number of
-        iterations `maxit` is reached, 'ATOL' if the objective function
-        value is smaller than `atol`, 'RTOL' if the relative objective
-        function improvement was smaller than `rtol` (i.e. the algorithm
-        converged), 'CONVSPEED' if the objective function improvement is
-        smaller than `convergence_speed`.
-    rel : float
-        The relative objective improvement at convergence.
     objective : ndarray
         The successive evaluations of the objective function at each iteration.
 
@@ -103,15 +98,12 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     INFO: Selected solver : forward_backward
     Solution found after 10 iterations :
         objective function f(sol) = 7.460428e-09
-        last relative objective improvement : 1.624424e+03
         stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
 
     """
 
-    if rtol < 0 or maxit < 0:
-        raise ValueError('Parameters should be positive numbers.')
     if verbosity not in ['NONE', 'LOW', 'HIGH', 'ALL']:
         raise ValueError('Verbosity should be either NONE, LOW, HIGH or ALL.')
 
@@ -153,7 +145,7 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     crit = None
     niter = 0
     objective = [[f.eval(x0) for f in functions]]
-    only_zeros = True
+    rtol_only_zeros = True
 
     # Solver specific initialization.
     solver.pre(functions, x0)
@@ -161,6 +153,9 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
     while not crit:
 
         niter += 1
+
+        if xtol != None:
+            last_sol = solver.sol
 
         if verbosity in ['HIGH', 'ALL']:
             print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
@@ -172,33 +167,34 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         current = np.sum(objective[-1])
         last = np.sum(objective[-2])
 
-        # Prevent division by 0.
-        div = current
-        if div == 0:
-            if verbosity in ['LOW', 'HIGH', 'ALL']:
-                print('WARNING: objective function is equal to 0 !')
-            if last != 0:
-                div = last
-            else:
-                div = 1.0  # Result will be zero anyway.
-        else:
-            only_zeros = False
-
-        relative = np.abs((last - current) / div)
-
         # Verify stopping criteria.
-        if current < atol:
+        if atol != None and current < atol:
             crit = 'ATOL'
-        elif relative < rtol and not only_zeros:
-            crit = 'RTOL'
-        elif niter >= maxit:
+        if dtol != None and np.abs(current - last) < dtol:
+            crit = 'DTOL'
+        if rtol != None:
+            div = current  # Prevent division by 0.
+            if div == 0:
+                if verbosity in ['LOW', 'HIGH', 'ALL']:
+                    print('WARNING: objective function is equal to 0 !')
+                if last != 0:
+                    div = last
+                else:
+                    div = 1.0  # Result will be zero anyway.
+            else:
+                rtol_only_zeros = False
+            relative = np.abs((current - last) / div)
+            if relative < rtol and not rtol_only_zeros:
+                crit = 'RTOL'
+        if xtol != None:
+            err = np.linalg.norm(solver.sol - last_sol) / last_sol.size
+            if err < xtol:
+                crit = 'XTOL'
+        if maxit != None and niter >= maxit:
             crit = 'MAXIT'
-        elif last - current < convergence_speed:
-            crit = 'CONVSPEED'
 
         if verbosity in ['HIGH', 'ALL']:
-            print('    objective = %.2e, relative = %.2e'
-                  % (current, relative))
+            print('    objective = %.2e' % current)
 
     # Solver specific post-processing.
     solver.post()
@@ -208,20 +204,19 @@ def solve(functions, x0, solver=None, rtol=1e-3, atol=float('-inf'),
         f.verbosity = functions_verbosity[k]
 
     if verbosity in ['LOW', 'HIGH', 'ALL']:
-        print('Solution found after %d iterations :' % (niter,))
-        print('    objective function f(sol) = %e' % (current,))
-        print('    last relative objective improvement : %e' % (relative,))
-        print('    stopping criterion : %s' % (crit,))
+        print('Solution found after %d iterations :' % niter)
+        print('    objective function f(sol) = %e' % current)
+        print('    stopping criterion : %s' % crit)
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
               'solver':    solver.__class__.__name__,  # algo for consistency ?
+              'crit':      crit,
               'niter':     niter,
               'time':      time.time() - tstart,
               'eval':      current,
-              'objective': objective,
-              'crit':      crit,
-              'rel':       relative}
+              'objective': objective}
+
 
     return result
 
@@ -348,7 +343,6 @@ class forward_backward(solver):
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 12 iterations :
         objective function f(sol) = 4.135992e-06
-        last relative objective improvement : 3.522857e+01
         stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
@@ -442,7 +436,6 @@ class generalized_forward_backward(solver):
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 2 iterations :
         objective function f(sol) = 1.463100e+01
-        last relative objective improvement : 0.000000e+00
         stopping criterion : RTOL
     >>> ret['sol']
     array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
@@ -543,7 +536,6 @@ class douglas_rachford(solver):
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 8 iterations :
         objective function f(sol) = 2.927052e-06
-        last relative objective improvement : 8.000000e+00
         stopping criterion : ATOL
     >>> ret['sol']
     array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])

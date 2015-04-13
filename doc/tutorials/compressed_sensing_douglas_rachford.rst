@@ -80,7 +80,6 @@ follow :
 >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
 Solution found after 35 iterations :
     objective function f(sol) = 8.508725e+00
-    last relative objective improvement : 6.016694e-05
     stopping criterion : RTOL
 
 Let's display the results :

@@ -41,8 +41,6 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.verbosity, 'LOW')
 
         # Input parameters.
-        self.assertRaises(ValueError, solvers.solve, [f], rtol=-1, **param)
-        self.assertRaises(ValueError, solvers.solve, [f], maxit=-1, **param)
         self.assertRaises(ValueError, solvers.solve, [f], x0, verbosity='??')
 
         # Addition of dummy function.
@@ -76,19 +74,35 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2, f0], **param)
         self.assertEqual(ret['solver'], 'generalized_forward_backward')
 
+        # Stopping criteria.
+        f = functions.norm_l2(y=y)
+        r = solvers.solve([f], x0, None, 1e-6, None, None, None, None, 'NONE')
+        self.assertEqual(r['crit'], 'ATOL')
+        self.assertEqual(r['niter'], 10)
+        r = solvers.solve([f], x0, None, None, 1e-8, None, None, None, 'NONE')
+        self.assertEqual(r['crit'], 'DTOL')
+        self.assertEqual(r['niter'], 14)
+        r = solvers.solve([f], x0, None, None, None, .1, None, None, 'NONE')
+        self.assertEqual(r['crit'], 'RTOL')
+        self.assertEqual(r['niter'], 14)
+        r = solvers.solve([f], x0, None, None, None, None, 1e-4, None, 'NONE')
+        self.assertEqual(r['crit'], 'XTOL')
+        self.assertEqual(r['niter'], 12)
+        r = solvers.solve([f], x0, None, None, None, None, None, 15, 'NONE')
+        self.assertEqual(r['crit'], 'MAXIT')
+        self.assertEqual(r['niter'], 15)
 
         # Return values.
         f = functions.norm_l2(y=y)
         ret = solvers.solve([f], **param)
-        self.assertEqual(len(ret), 8)
+        self.assertEqual(len(ret), 7)
         self.assertIsInstance(ret['sol'], np.ndarray)
         self.assertIsInstance(ret['solver'], str)
+        self.assertIsInstance(ret['crit'], str)
         self.assertIsInstance(ret['niter'], int)
         self.assertIsInstance(ret['time'], float)
         self.assertIsInstance(ret['eval'], float)
         self.assertIsInstance(ret['objective'], list)
-        self.assertIsInstance(ret['crit'], str)
-        self.assertIsInstance(ret['rel'], float)
 
     def test_forward_backward_fista(self):
         """
