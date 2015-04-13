@@ -84,8 +84,6 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         The number of iterations.
     time : float
         The execution time in seconds.
-    eval : float
-        The final evaluation of the objective function :math:`f(x)`.
     objective : ndarray
         The successive evaluations of the objective function at each iteration.
 
@@ -214,7 +212,6 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
               'crit':      crit,
               'niter':     niter,
               'time':      time.time() - tstart,
-              'eval':      current,
               'objective': objective}
 
 

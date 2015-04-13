@@ -95,13 +95,12 @@ class FunctionsTestCase(unittest.TestCase):
         # Return values.
         f = functions.norm_l2(y=y)
         ret = solvers.solve([f], **param)
-        self.assertEqual(len(ret), 7)
+        self.assertEqual(len(ret), 6)
         self.assertIsInstance(ret['sol'], np.ndarray)
         self.assertIsInstance(ret['solver'], str)
         self.assertIsInstance(ret['crit'], str)
         self.assertIsInstance(ret['niter'], int)
         self.assertIsInstance(ret['time'], float)
-        self.assertIsInstance(ret['eval'], float)
         self.assertIsInstance(ret['objective'], list)
 
     def test_forward_backward_fista(self):
