@@ -452,10 +452,10 @@ class forward_backward(solver):
 
 class generalized_forward_backward(solver):
     r"""
-    Forward-backward proximal splitting algorithm.
+    Generalized forward-backward proximal splitting algorithm.
 
     This algorithm solves convex optimization problems composed of the sum of
-    N objective functions.
+    any number of non-smooth (or smooth) functions.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
@@ -463,14 +463,13 @@ class generalized_forward_backward(solver):
     Parameters
     ----------
     lambda_ : float, optional
-        The update term weight for ISTA. It should be between 0 and 1. Default
-        is 1.
+        A relaxation parameter bounded by 0 and 1. Default is 1.
 
     Notes
     -----
-    This algorithm requires one function to implement the
-    :meth:`pyunlocbox.functions.func.prox` method and the other one to
-    implement the :meth:`pyunlocbox.functions.func.grad` method.
+    This algorithm requires each function to either implement the
+    :meth:`pyunlocbox.functions.func.prox` method or the
+    :meth:`pyunlocbox.functions.func.grad` method.
 
     See :cite:`raguet2013generalizedFB` for details about the algorithm.
 
@@ -483,7 +482,7 @@ class generalized_forward_backward(solver):
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.norm_l1()
     >>> solver = solvers.generalized_forward_backward(lambda_=1, step=0.5)
-    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
+    >>> ret = solvers.solve([f1, f2], x0, solver)
     Solution found after 2 iterations :
         objective function f(sol) = 1.463100e+01
         stopping criterion : RTOL
@@ -492,64 +491,53 @@ class generalized_forward_backward(solver):
 
     """
 
-    def __init__(self, lambda_=1, weight=[], *args, **kwargs):
+    def __init__(self, lambda_=1, *args, **kwargs):
         super(generalized_forward_backward, self).__init__(*args, **kwargs)
         self.lambda_ = lambda_
-        self.weight = weight
 
     def _pre(self, functions, x0):
 
-        if self.verbosity is 'HIGH':
-            print('INFO: Generalized forward-backward\
-                  method minimizing %i functions')
-
-        if self.lambda_ < 0 or self.lambda_ > 1:
+        if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
 
-        # Initialization.
         self.sol = np.array(x0)
 
-        self._algo = self._gista
-        self.f1 = []
-        self.f2 = []
+        self.f = []  # Smooth functions.
+        self.g = []  # Non-smooth functions.
         self.z = []
-        for ii in range(0, len(functions)):
-            if 'GRAD' in functions[ii].cap(x0):
-                self.f2.append(functions[ii])
-            elif 'PROX' in functions[ii].cap(x0):
-                self.f1.append(functions[ii])
+        for f in functions:
+            if 'GRAD' in f.cap(x0):
+                self.f.append(f)
+            elif 'PROX' in f.cap(x0):
+                self.g.append(f)
                 self.z.append(np.array(x0))
             else:
-                raise ValueError('SOLVER: There is a function without grad\
-                                 and prox')
+                raise ValueError('Generalized forward-backward requires each '
+                                 'function to implement prox() or grad().')
 
-        if len(self.weight) == 0:
-            if len(self.f1):
-                self.weight = np.repeat(1./len(self.f1), len(self.f1))
-        elif len(self.weight) != len(self.f1):
-            raise ValueError('GENERALIZED FORWARD BACKWARD: The number of\
-                             element in weight is wrong')
+        if self.verbosity is 'HIGH':
+            print('INFO: Generalized forward-backward minimizing %i smooth '
+                  'functions and %i non-smooth functions.'
+                  % (len(self.f), len(self.g)))
 
-        #if len(self.f2) == 0:
-        #    raise ValueError('GENERALIZED FORWARD BACKWARD: I need at least a function with at gradient!')
+    def _algo(self):
 
-    def _gista(self):
-        grad_eval = np.zeros(np.shape(self.sol))
-        for ii in range(0, len(self.f2)):
-            grad_eval = grad_eval + self.f2[ii].grad(self.sol)
+        # Smooth functions.
+        grad = np.zeros(self.sol.shape)
+        for f in self.f:
+            grad += f.grad(self.sol)
 
-        for ii in range(0, len(self.f1)):
-            self.z[ii] += self.lambda_ *\
-                (self.f1[ii].prox(2 * self.sol - self.z[ii] - self.step *
-                                  grad_eval,
-                                  self.step/self.weight[ii]) - self.sol)
-
-        if len(self.f1):
-            self.sol = np.zeros(np.shape(self.sol))
-            for ii in range(0, len(self.f1)):
-                self.sol += self.weight[ii] * self.z[ii]
+        # Non-smooth functions.
+        if not self.g:
+            self.sol -= self.step * grad  # Reduces to gradient descent.
         else:
-            self.sol -= self.step * grad_eval
+            sol = np.zeros(self.sol.shape)
+            for i, g in enumerate(self.g):
+                tmp = 2 * self.sol - self.z[i] - self.step * grad
+                tmp = g.prox(tmp, self.step * len(self.g))
+                self.z[i] += self.lambda_ * (tmp - self.sol)
+                sol += self.z[i] / float(len(self.g))
+            self.sol = sol
 
 
 class douglas_rachford(solver):
