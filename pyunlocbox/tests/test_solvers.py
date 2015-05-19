@@ -274,6 +274,36 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f2, f1, f2, f1], **params)
         nptest.assert_allclose(ret['sol'], y)
 
+    def test_solver_comparison(self):
+        """
+        Test that all solvers return the same and correct solution.
+        """
+
+        # Convex functions.
+        y = [1, 0, 0.1, 8, -6.5, 0.2, 0.004, 0.01]
+        sol = [0.75, 0, 0, 7.75, -6.25, 0, 0, 0]
+        w1 = .8; w2 = .4
+        f1 = functions.norm_l2(y=y, lambda_=w1/2.)  # Smooth.
+        f2 = functions.norm_l1(lambda_=w2/2.)       # Non-smooth.
+        #f3 = functions.proj_b2(epsilon=0.6)         # Non-smooth.
+
+        # Solvers.
+        x0 = np.zeros(len(y))
+        L = w1  # Lipschitz continuous gradient.
+        params = {'step': 1./L, 'lambda_': 0.5}
+        solver1 = solvers.forward_backward(method='ISTA', **params)
+        solver2 = solvers.forward_backward(method='FISTA', **params)
+        solver3 = solvers.douglas_rachford(**params)
+        solver4 = solvers.generalized_forward_backward(**params)
+
+        # Compare solutions.
+        params = {'rtol': 1e-14, 'verbosity': 'NONE'}
+        niters = [26, 2, 61, 26]
+        for i, solver in enumerate([solver1, solver2, solver3, solver4]):
+            ret = solvers.solve([f1, f2], x0, solver, **params)
+            nptest.assert_allclose(ret['sol'], sol)
+            self.assertEqual(ret['niter'], niters[i])
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
 
