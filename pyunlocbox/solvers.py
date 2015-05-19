@@ -518,7 +518,7 @@ class generalized_forward_backward(solver):
                 self.f2.append(functions[ii])
             elif 'PROX' in functions[ii].cap(x0):
                 self.f1.append(functions[ii])
-                self.z.append(x0)
+                self.z.append(np.array(x0))
             else:
                 raise ValueError('SOLVER: There is a function without grad\
                                  and prox')
