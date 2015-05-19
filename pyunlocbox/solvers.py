@@ -525,7 +525,7 @@ class generalized_forward_backward(solver):
 
         if len(self.weight) == 0:
             if len(self.f1):
-                self.weight = np.repeat(1/len(self.f1), len(self.f1))
+                self.weight = np.repeat(1./len(self.f1), len(self.f1))
         elif len(self.weight) != len(self.f1):
             raise ValueError('GENERALIZED FORWARD BACKWARD: The number of\
                              element in weight is wrong')
