@@ -267,7 +267,6 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
               'time':      time.time() - tstart,
               'objective': objective}
 
-
     return result
 
 
@@ -285,9 +284,10 @@ class solver(object):
     Parameters
     ----------
     step : float
-        The step size. This parameter is upper bounded by
-        :math:`\frac{1}{\beta}` where the second convex function (gradient ?)
-        is :math:`\beta` Lipschitz continuous. Default is 1.
+        The gradient-descent step-size. This parameter is bounded by 0 and
+        :math:`\frac{2}{\beta}` where :math:`\beta` is the Lipschitz constant
+        of the gradient of the smooth function (or a sum of smooth functions).
+        Default is 1.
     post_step : function
         User defined function to post-process the step size. This function is
         called every iteration and permits the user to alter the solver
@@ -359,7 +359,7 @@ class forward_backward(solver):
     Forward-backward proximal splitting algorithm.
 
     This algorithm solves convex optimization problems composed of the sum of
-    two objective functions.
+    a smooth and a non-smooth function.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
@@ -409,7 +409,7 @@ class forward_backward(solver):
         if self.verbosity is 'HIGH':
             print('INFO: Forward-backward method : %s' % (self.method,))
 
-        if self.lambda_ < 0 or self.lambda_ > 1:
+        if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
 
         # ISTA and FISTA initialization.
@@ -545,7 +545,7 @@ class douglas_rachford(solver):
     Douglas-Rachford proximal splitting algorithm.
 
     This algorithm solves convex optimization problems composed of the sum of
-    two objective functions.
+    two non-smooth (or smooth) functions.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
@@ -586,7 +586,7 @@ class douglas_rachford(solver):
 
     def _pre(self, functions, x0):
 
-        if self.lambda_ < 0 or self.lambda_ > 1:
+        if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
 
         if len(functions) != 2:
