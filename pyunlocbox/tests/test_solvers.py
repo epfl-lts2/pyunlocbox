@@ -246,33 +246,38 @@ class FunctionsTestCase(unittest.TestCase):
         """
         y = [4, 5, 6, 7]
         x0 = np.zeros(len(y))
-        L = 4
+        L = 4  # Gradient of the smooth function is Lipschitz continuous.
         solver = solvers.generalized_forward_backward(step=.9/L, lambda_=.8)
-        params = {'x0': x0, 'solver':solver, 'verbosity': 'NONE'}
+        params = {'x0': x0, 'solver': solver, 'verbosity': 'NONE'}
 
-        # Functions .
-        f1 = functions.norm_l1(y=y, lambda_=.7)  # Smooth.
-        f2 = functions.norm_l2(y=y, lambda_=L/2.)  # Non-smooth.
+        # Functions.
+        f1 = functions.norm_l1(y=y, lambda_=.7)    # Non-smooth.
+        f2 = functions.norm_l2(y=y, lambda_=L/2.)  # Smooth.
 
         # Solve with 1 smooth and 1 non-smooth.
         ret = solvers.solve([f1, f2], **params)
         nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['niter'], 25)
 
         # Solve with 1 smooth.
         ret = solvers.solve([f1], **params)
         nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['niter'], 77)
 
         # Solve with 1 non-smooth.
         ret = solvers.solve([f2], **params)
         nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['niter'], 18)
 
         # Solve with 1 smooth and 2 non-smooth.
         ret = solvers.solve([f1, f2, f2], **params)
         nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['niter'], 26)
 
         # Solve with 2 smooth and 2 non-smooth.
         ret = solvers.solve([f2, f1, f2, f1], **params)
         nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['niter'], 25)
 
     def test_solver_comparison(self):
         """
@@ -282,7 +287,7 @@ class FunctionsTestCase(unittest.TestCase):
         # Convex functions.
         y = [1, 0, 0.1, 8, -6.5, 0.2, 0.004, 0.01]
         sol = [0.75, 0, 0, 7.75, -6.25, 0, 0, 0]
-        w1 = .8; w2 = .4
+        w1, w2 = .8, .4
         f1 = functions.norm_l2(y=y, lambda_=w1/2.)  # Smooth.
         f2 = functions.norm_l1(lambda_=w2/2.)       # Non-smooth.
         #f3 = functions.proj_b2(epsilon=0.6)         # Non-smooth.
