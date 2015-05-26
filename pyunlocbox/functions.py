@@ -142,23 +142,24 @@ class func(object):
         if A is None:
             self.A = lambda x: x
         else:
-            if type(A) is np.ndarray:
+            if callable(A):
+                self.A = A
+            else:
                 # Transform matrix form to operator form.
                 self.A = lambda x: np.dot(A, x)
-            else:
-                self.A = A
 
         if At is None:
-            if type(A) is np.ndarray:
+            if A is None:
+                self.At = lambda x: x
+            elif callable(A):
+                self.At = A
+            else:
                 self.At = lambda x: np.dot(np.transpose(A), x)
-            else:
-                self.At = self.A
         else:
-            if type(At) is np.ndarray:
-                # Transform matrix form to operator form.
-                self.At = lambda x: np.dot(At, x)
-            else:
+            if callable(At):
                 self.At = At
+            else:
+                self.At = lambda x: np.dot(At, x)
 
         self.tight = tight
         self.nu = nu
