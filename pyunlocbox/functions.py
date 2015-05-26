@@ -60,7 +60,6 @@ def _soft_threshold(z, T, handle_complex=True):
     array([-1., -0.,  0.,  0.,  1.])
 
     """
-
     sz = np.maximum(np.abs(z)-T, 0)
 
     if not handle_complex:
@@ -73,7 +72,7 @@ def _soft_threshold(z, T, handle_complex=True):
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
         old_err_state = np.seterr(invalid='ignore')
-        sz = np.nan_to_num(np.float64(sz) / (sz+T) * z)
+        sz = np.nan_to_num(1. * sz / (sz+T) * z)
         np.seterr(**old_err_state)
 
     return sz
