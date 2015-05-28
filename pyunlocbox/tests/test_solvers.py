@@ -30,24 +30,23 @@ class FunctionsTestCase(unittest.TestCase):
         Test some features of the solving function.
         """
         y = 5 - 10 * np.random.uniform(size=(15, 4))
-        x0 = np.zeros(y.shape)
-        param = {'x0': x0, 'verbosity': 'NONE'}
+        x0 = lambda: np.zeros(y.shape)
+        nverb = {'verbosity': 'NONE'}
 
         # Function verbosity.
         f = functions.dummy()
         self.assertEqual(f.verbosity, 'NONE')
         f.verbosity = 'LOW'
-        solvers.solve([f], **param)
+        solvers.solve([f], x0(), **nverb)
         self.assertEqual(f.verbosity, 'LOW')
 
         # Input parameters.
-        self.assertRaises(ValueError, solvers.solve, [f], x0, verbosity='??')
+        self.assertRaises(ValueError, solvers.solve, [f], x0(), verbosity='??')
 
         # Addition of dummy function.
-        param['maxit'] = 1
-        self.assertRaises(ValueError, solvers.solve, [], **param)
+        self.assertRaises(ValueError, solvers.solve, [], x0(), **nverb)
         solver = solvers.forward_backward()
-        solvers.solve([f], solver=solver, **param)
+        solvers.solve([f], x0(), solver, **nverb)
         #self.assertIsInstance(solver.f1, functions.dummy)
         #self.assertIsInstance(solver.f2, functions.dummy)
 
@@ -62,49 +61,53 @@ class FunctionsTestCase(unittest.TestCase):
         f2 = functions.func()
         f2._eval = lambda x: 0
         f2._prox = lambda x, T: x
-        self.assertRaises(ValueError, solvers.solve, [f0, f0], **param)
-        ret = solvers.solve([f0, f1], **param)
+        self.assertRaises(ValueError, solvers.solve, [f0, f0], x0(), **nverb)
+        ret = solvers.solve([f0, f1], x0(), **nverb)
         self.assertEqual(ret['solver'], 'forward_backward')
-        ret = solvers.solve([f1, f0], **param)
+        ret = solvers.solve([f1, f0], x0(), **nverb)
         self.assertEqual(ret['solver'], 'forward_backward')
-        ret = solvers.solve([f1, f2], **param)
+        ret = solvers.solve([f1, f2], x0(), **nverb)
         self.assertEqual(ret['solver'], 'forward_backward')
-        ret = solvers.solve([f2, f2], **param)
+        ret = solvers.solve([f2, f2], x0(), **nverb)
         self.assertEqual(ret['solver'], 'douglas_rachford')
-        ret = solvers.solve([f1, f2, f0], **param)
+        ret = solvers.solve([f1, f2, f0], x0(), **nverb)
         self.assertEqual(ret['solver'], 'generalized_forward_backward')
 
         # Stopping criteria.
         f = functions.norm_l2(y=y)
-        atol = 1e-6
-        r = solvers.solve([f], x0, None, atol, None, None, None, None, 'NONE')
+        tol = 1e-6
+        r = solvers.solve([f], x0(), None, tol, None, None, None, None, 'NONE')
         self.assertEqual(r['crit'], 'ATOL')
-        self.assertLess(np.sum(r['objective'][-1]), atol)
-        dtol = 1e-8
-        r = solvers.solve([f], x0, None, None, dtol, None, None, None, 'NONE')
+        self.assertLess(np.sum(r['objective'][-1]), tol)
+        self.assertEqual(r['niter'], 10)
+        tol = 1e-8
+        r = solvers.solve([f], x0(), None, None, tol, None, None, None, 'NONE')
         self.assertEqual(r['crit'], 'DTOL')
         err = np.abs(np.sum(r['objective'][-1]) - np.sum(r['objective'][-2]))
-        self.assertLess(err, dtol)
-        rtol = .1
-        r = solvers.solve([f], x0, None, None, None, rtol, None, None, 'NONE')
+        self.assertLess(err, tol)
+        self.assertEqual(r['niter'], 14)
+        tol = .1
+        r = solvers.solve([f], x0(), None, None, None, tol, None, None, 'NONE')
         self.assertEqual(r['crit'], 'RTOL')
         err = np.abs(np.sum(r['objective'][-1]) - np.sum(r['objective'][-2]))
         err /= np.sum(r['objective'][-1])
-        self.assertLess(err, rtol)
-        xtol = 1e-4
-        r = solvers.solve([f], x0, None, None, None, None, xtol, None, 'NONE')
+        self.assertLess(err, tol)
+        self.assertEqual(r['niter'], 14)
+        tol = 1e-4
+        r = solvers.solve([f], x0(), None, None, None, None, tol, None, 'NONE')
         self.assertEqual(r['crit'], 'XTOL')
-        r2 = solvers.solve([f], x0, maxit=r['niter']-1, verbosity='NONE')
-        err = np.linalg.norm(r['sol'] - r2['sol']) / x0.size
-        self.assertLess(err, xtol)
-        maxit = 15
-        r = solvers.solve([f], x0, None, None, None, None, None, maxit, 'NONE')
+        r2 = solvers.solve([f], x0(), maxit=r['niter']-1, **nverb)
+        err = np.linalg.norm(r['sol'] - r2['sol']) / np.sqrt(x0().size)
+        self.assertLess(err, tol)
+        self.assertEqual(r['niter'], 12)
+        nit = 15
+        r = solvers.solve([f], x0(), None, None, None, None, None, nit, 'NONE')
         self.assertEqual(r['crit'], 'MAXIT')
-        self.assertEqual(r['niter'], maxit)
+        self.assertEqual(r['niter'], nit)
 
         # Return values.
         f = functions.norm_l2(y=y)
-        ret = solvers.solve([f], **param)
+        ret = solvers.solve([f], x0(), **nverb)
         self.assertEqual(len(ret), 6)
         self.assertIsInstance(ret['sol'], np.ndarray)
         self.assertIsInstance(ret['solver'], str)
