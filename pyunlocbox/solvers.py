@@ -66,7 +66,8 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         Default is :math:`10^{-3}`.
     xtol : float, optional
         Stop when the variable is stable enough, i.e. when :math:`\frac{\|x^t -
-        x^{t-1}\|_2}{n N} < xtol`. Default is None.
+        x^{t-1}\|_2}{\sqrt{n N}} < xtol`. Note that additional memory will be
+        used to store :math:`x^{t-1}`. Default is None.
     maxit : int, optional
         The maximum number of iterations. Default is 200.
     verbosity : {'NONE', 'LOW', 'HIGH', 'ALL'}, optional
@@ -209,7 +210,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         niter += 1
 
         if xtol != None:
-            last_sol = solver.sol
+            last_sol = np.array(solver.sol, copy=True)
 
         if verbosity in ['HIGH', 'ALL']:
             print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
@@ -241,7 +242,8 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
             if relative < rtol and not rtol_only_zeros:
                 crit = 'RTOL'
         if xtol != None:
-            err = np.linalg.norm(solver.sol - last_sol) / last_sol.size
+            err = np.linalg.norm(solver.sol - last_sol)
+            err /= np.sqrt(last_sol.size)
             if err < xtol:
                 crit = 'XTOL'
         if maxit != None and niter >= maxit:
