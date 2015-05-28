@@ -65,7 +65,8 @@ with
 
 and the problem solved with
 
->>> ret = solvers.solve([f1, f2], im_masked, solver, maxit=100)
+>>> x0 = np.array(im_masked)  # Make a copy to preserve im_masked.
+>>> ret = solvers.solve([f1, f2], x0, solver, maxit=100)
 Solution found after 94 iterations :
     objective function f(sol) = 4.268147e+03
     stopping criterion : RTOL

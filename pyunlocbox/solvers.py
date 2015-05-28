@@ -43,7 +43,10 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         documentation of the considered solver.
     x0 : array_like
         Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^{n \times
-        N}`.
+        N}`. Note that if you pass a numpy array it will be modified in place
+        during execution to save memory. It will then contain the solution. Be
+        careful to pass data of the type (int, float32, float64) you want your
+        computations to use.
     solver : solver class instance, optional
         The solver algorithm. It is an object who must inherit from
         :class:`pyunlocbox.solvers.solver` and implement the :meth:`_pre`,
@@ -247,9 +250,6 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         if verbosity in ['HIGH', 'ALL']:
             print('    objective = %.2e' % current)
 
-    # Solver specific post-processing.
-    solver.post()
-
     # Restore verbosity for functions. In case they are called outside solve().
     for k, f in enumerate(functions):
         f.verbosity = functions_verbosity[k]
@@ -266,6 +266,9 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
               'niter':     niter,
               'time':      time.time() - tstart,
               'objective': objective}
+
+    # Solver specific post-processing (e.g. delete references).
+    solver.post()
 
     return result
 
@@ -323,9 +326,10 @@ class solver(object):
         Solver specific initialization. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
-        self._pre(functions, x0)
+        self.sol = np.asarray(x0)
+        self._pre(functions, np.asarray(x0))
 
-    def _pre(self, x0):
+    def _pre(self, functions, x0):
         raise NotImplementedError("Class user should define this method.")
 
     def algo(self, objective, niter):
@@ -344,14 +348,16 @@ class solver(object):
 
     def post(self):
         """
-        Solver specific post-processing. See parameters documentation in
+        Solver specific post-processing. Mainly used to delete references added
+        during initialization so that the garbage collector can free the
+        memory. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self._post()
+        del self.sol
 
     def _post(self):
-        # Do not need to be necessarily implemented by class user.
-        pass
+        raise NotImplementedError("Class user should define this method.")
 
 
 class forward_backward(solver):
@@ -367,8 +373,9 @@ class forward_backward(solver):
     Parameters
     ----------
     method : {'FISTA', 'ISTA'}, optional
-        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
-        Default is 'FISTA'.
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'. Note
+        that while FISTA is much more time efficient, it is less memory
+        efficient.  Default is 'FISTA'.
     lambda_ : float, optional
         The update term weight for ISTA. It should be between 0 and 1. Default
         is 1.
@@ -412,15 +419,12 @@ class forward_backward(solver):
         if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
 
-        # ISTA and FISTA initialization.
-        self.sol = np.array(x0)
-
         if self.method is 'ISTA':
             self._algo = self._ista
         elif self.method is 'FISTA':
             self._algo = self._fista
-            self.un = np.array(x0)
-            self.tn = 1.
+            self.z = np.array(x0, copy=True)
+            self.t = 1.
         else:
             raise ValueError('The method should be either FISTA or ISTA.')
 
@@ -438,16 +442,21 @@ class forward_backward(solver):
                              'implement prox() and the other grad().')
 
     def _ista(self):
-        yn = self.sol - self.step * self.f2.grad(self.sol)
-        self.sol += self.lambda_ * (self.f1.prox(yn, self.step) - self.sol)
+        x = self.sol - self.step * self.f2.grad(self.sol)
+        self.sol[:] += self.lambda_ * (self.f1.prox(x, self.step) - self.sol)
 
     def _fista(self):
-        xn = self.un - self.step * self.f2.grad(self.un)
-        xn = self.f1.prox(xn, self.step)
-        tn1 = (1. + np.sqrt(1.+4.*self.tn**2.)) / 2.
-        self.un = xn + (self.tn-1) / tn1 * (xn-self.sol)
-        self.tn = tn1
-        self.sol = xn
+        x = self.z - self.step * self.f2.grad(self.z)
+        x[:] = self.f1.prox(x, self.step)
+        tn = (1. + np.sqrt(1.+4.*self.t**2.)) / 2.
+        self.z[:] = x + (self.t-1.) / tn * (x-self.sol)
+        self.t = tn
+        self.sol[:] = x
+
+    def _post(self):
+        del self._algo, self.f1, self.f2
+        if self.method is 'FISTA':
+            del self.z, self.t
 
 
 class generalized_forward_backward(solver):
@@ -500,8 +509,6 @@ class generalized_forward_backward(solver):
         if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
 
-        self.sol = np.array(x0)
-
         self.f = []  # Smooth functions.
         self.g = []  # Non-smooth functions.
         self.z = []
@@ -510,7 +517,7 @@ class generalized_forward_backward(solver):
                 self.f.append(f)
             elif 'PROX' in f.cap(x0):
                 self.g.append(f)
-                self.z.append(np.array(x0))
+                self.z.append(np.array(x0, copy=True))
             else:
                 raise ValueError('Generalized forward-backward requires each '
                                  'function to implement prox() or grad().')
@@ -529,15 +536,18 @@ class generalized_forward_backward(solver):
 
         # Non-smooth functions.
         if not self.g:
-            self.sol -= self.step * grad  # Reduces to gradient descent.
+            self.sol[:] -= self.step * grad  # Reduces to gradient descent.
         else:
             sol = np.zeros(self.sol.shape)
             for i, g in enumerate(self.g):
                 tmp = 2 * self.sol - self.z[i] - self.step * grad
-                tmp = g.prox(tmp, self.step * len(self.g))
+                tmp[:] = g.prox(tmp, self.step * len(self.g))
                 self.z[i] += self.lambda_ * (tmp - self.sol)
-                sol += self.z[i] / float(len(self.g))
-            self.sol = sol
+                sol += 1. * self.z[i] / len(self.g)
+            self.sol[:] = sol
+
+    def _post(self):
+        del self.f, self.g, self.z
 
 
 class douglas_rachford(solver):
@@ -595,10 +605,12 @@ class douglas_rachford(solver):
         self.f1 = functions[0]
         self.f2 = functions[1]
 
-        self.yn = np.array(x0)
-        self.sol = np.array(x0)
+        self.z = np.array(x0, copy=True)
 
     def _algo(self):
-        tmp = self.f1.prox(2 * self.sol - self.yn, self.step)
-        self.yn = self.yn + self.lambda_ * (tmp - self.sol)
-        self.sol = self.f2.prox(self.yn, self.step)
+        tmp = self.f1.prox(2 * self.sol - self.z, self.step)
+        self.z[:] = self.z + self.lambda_ * (tmp - self.sol)
+        self.sol[:] = self.f2.prox(self.z, self.step)
+
+    def _post(self):
+        del self.f1, self.f2, self.z

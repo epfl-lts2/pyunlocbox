@@ -27,7 +27,7 @@ by a call to the solving function.
 >>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
 >>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
->>> ret = pyunlocbox.solvers.solve([f1, f2], [0, 0, 0, 0], solver, atol=1e-5)
+>>> ret = pyunlocbox.solvers.solve([f1, f2], [0., 0, 0, 0], solver, atol=1e-5)
 Solution found after 10 iterations :
     objective function f(sol) = 7.460428e-09
     stopping criterion : ATOL

@@ -57,14 +57,14 @@ def _soft_threshold(z, T, handle_complex=True):
     --------
     >>> import pyunlocbox
     >>> pyunlocbox.functions._soft_threshold([-2, -1, 0, 1, 2], 1)
-    array([-1., -0.,  0.,  0.,  1.])
+    array([-1,  0,  0,  0,  1])
 
     """
     sz = np.maximum(np.abs(z)-T, 0)
 
     if not handle_complex:
         # This soft thresholding method only supports real signal.
-        sz = np.sign(z) * sz
+        sz[:] = np.sign(z) * sz
 
     else:
         # This soft thresholding method supports complex complex signal.
@@ -72,7 +72,7 @@ def _soft_threshold(z, T, handle_complex=True):
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
         old_err_state = np.seterr(invalid='ignore')
-        sz = np.nan_to_num(1. * sz / (sz+T) * z)
+        sz[:] = np.nan_to_num(1. * sz / (sz+T) * z)
         np.seterr(**old_err_state)
 
     return sz
@@ -136,7 +136,7 @@ class func(object):
     def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
                  maxit=200, **kwargs):
 
-        self.y = np.array(y)
+        self.y = np.asarray(y)
 
         if A is None:
             self.A = lambda x: x
@@ -192,7 +192,7 @@ class func(object):
         function to evaluate the objective function. Each function class
         should therefore define it.
         """
-        sol = self._eval(np.array(x))
+        sol = self._eval(np.asarray(x))
         if self.verbosity in ['LOW', 'HIGH']:
             print('    %s evaluation : %e' % (self.__class__.__name__, sol))
         return sol
@@ -227,7 +227,7 @@ class func(object):
         :math:`\operatorname{prox}_{\gamma f}(x) = \operatorname{arg\,min}
         \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
         """
-        return self._prox(np.array(x), T)
+        return self._prox(np.asarray(x), T)
 
     def _prox(self, x, T):
         raise NotImplementedError("Class user should define this method.")
@@ -253,7 +253,7 @@ class func(object):
         -----
         This method is required by some solvers.
         """
-        return self._grad(np.array(x))
+        return self._grad(np.asarray(x))
 
     def _grad(self, x):
         raise NotImplementedError("Class user should define this method.")
@@ -296,7 +296,7 @@ class func(object):
 
 class dummy(func):
     r"""
-    Dummy function objectself.
+    Dummy function object.
 
     This can be used as a second function object when there is only one
     function to minimize. It always evaluates as 0.
@@ -347,7 +347,7 @@ class norm(func):
     def __init__(self, lambda_=1, w=1, **kwargs):
         super(norm, self).__init__(**kwargs)
         self.lambda_ = lambda_
-        self.w = np.array(w)
+        self.w = np.asarray(w)
 
 
 class norm_l1(norm):
@@ -374,7 +374,7 @@ class norm_l1(norm):
     >>> f.eval([1, 2, 3, 4])
     10
     >>> f.prox([1, 2, 3, 4], 1)
-    array([ 0.,  1.,  2.,  3.])
+    array([0, 1, 2, 3])
 
     """
 
@@ -383,9 +383,8 @@ class norm_l1(norm):
         super(norm_l1, self).__init__(**kwargs)
 
     def _eval(self, x):
-        sol = self.A(np.array(x)) - self.y
-        sol = self.lambda_ * np.sum(np.abs(self.w * sol))
-        return sol
+        sol = self.A(x) - self.y
+        return self.lambda_ * np.sum(np.abs(self.w * sol))
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
@@ -393,8 +392,8 @@ class norm_l1(norm):
         if self.tight:
             # Nati: I've checked this code the use of 'y' seems correct
             sol = self.A(x) - self.y
-            sol = _soft_threshold(sol, gamma*self.nu*self.w) - sol
-            sol = x + self.At(sol) / self.nu
+            sol[:] = _soft_threshold(sol, gamma*self.nu*self.w) - sol
+            sol[:] = x + self.At(sol) / self.nu
         else:
             raise NotImplementedError('Not implemented for non tight frame.')
         return sol
@@ -437,22 +436,21 @@ class norm_l2(norm):
         super(norm_l2, self).__init__(**kwargs)
 
     def _eval(self, x):
-        sol = self.A(np.array(x)) - self.y
-        sol = self.lambda_ * np.sum((self.w * sol)**2)
-        return sol
+        sol = self.A(x) - self.y
+        return self.lambda_ * np.sum((self.w * sol)**2)
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
-            sol = np.array(x) + 2. * gamma * self.At(self.y * self.w**2)
+            sol = x + 2. * gamma * self.At(self.y * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
             raise NotImplementedError('Not implemented for non tight frame.')
         return sol
 
     def _grad(self, x):
-        sol = self.A(np.array(x)) - self.y
+        sol = self.A(x) - self.y
         return 2 * self.lambda_ * self.w * self.At(sol)
 
 
@@ -493,8 +491,7 @@ class norm_nuclear(norm):
     def _eval(self, x):
         # TODO: take care of sparse matrices.
         _, s, _ = np.linalg.svd(x)
-        sol = self.lambda_ * np.sum(np.abs(s))
-        return sol
+        return self.lambda_ * np.sum(np.abs(s))
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
@@ -503,8 +500,7 @@ class norm_nuclear(norm):
         U, s, V = np.linalg.svd(x)
         s = _soft_threshold(s, gamma)
         S = np.diag(s)
-        sol = np.dot(U, np.dot(S, V))
-        return sol
+        return np.dot(U, np.dot(S, V))
 
 
 class norm_tv(norm):
@@ -548,12 +544,12 @@ class norm_tv(norm):
             for g in grads:
                 y += np.power(abs(g), 2)
             y = np.sqrt(y)
-            return np.sum(np.array(y))
+            return np.sum(y)
 
         if self.dim == 1:
             dx = op.grad(x, dim=self.dim, **self.kwargs)
             y = np.sum(np.abs(dx), axis=0)
-            return np.sum(np.array(y))
+            return np.sum(y)
 
     def _prox(self, x, T):
         # Time counter

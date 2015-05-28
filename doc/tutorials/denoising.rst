@@ -67,7 +67,8 @@ The Douglas-Rachford splitting algorithm is instantiated with
 
 and the problem solved with
 
->>> ret = solvers.solve([f1, f2], im_noisy, solver)
+>>> x0 = np.array(im_noisy)  # Make a copy to preserve y aka im_noisy.
+>>> ret = solvers.solve([f1, f2], x0, solver)
 Solution found after 25 iterations :
     objective function f(sol) = 2.080376e+03
     stopping criterion : RTOL

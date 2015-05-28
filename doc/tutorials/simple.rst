@@ -46,7 +46,7 @@ We can now instantiate the solver object :
 
 And finally solve the problem :
 
->>> x0 = [0, 0, 0, 0]
+>>> x0 = [0., 0., 0., 0.]
 >>> ret = solvers.solve([f2, f1], x0, solver, atol=1e-5, verbosity='HIGH')
     func evaluation : 0.000000e+00
     norm_l2 evaluation : 1.260000e+02
@@ -105,13 +105,10 @@ As we passed two function objects (L2-norm and dummy), the `objective` is a 2
 by 11 (10 iterations plus the evaluation at `x0`) ``ndarray``. Lets plot a
 convergence graph out of it :
 
+>>> import numpy as np
+>>> objective = np.array(ret['objective'])
 >>> try:
-...     import numpy as np
-...     import matplotlib, sys
-...     cmd_backend = 'matplotlib.use("AGG")'
-...     _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
 ...     import matplotlib.pyplot as plt
-...     objective = np.array(ret['objective'])
 ...     _ = plt.figure()
 ...     _ = plt.semilogy(objective[:, 1], 'x', label='L2-norm')
 ...     _ = plt.semilogy(objective[:, 0], label='Dummy')
@@ -121,8 +118,8 @@ convergence graph out of it :
 ...     _ = plt.legend(numpoints=1)
 ...     _ = plt.xlabel('Iteration number')
 ...     _ = plt.ylabel('Objective function value')
-...     _ = plt.savefig('doc/tutorials/simple_convergence.pdf')
-...     _ = plt.savefig('doc/tutorials/simple_convergence.png')
+...     #plt.savefig('doc/tutorials/simple_convergence.pdf')
+...     #plt.savefig('doc/tutorials/simple_convergence.png')
 ... except:
 ...     pass
 
