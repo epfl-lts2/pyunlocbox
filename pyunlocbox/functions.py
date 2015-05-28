@@ -136,7 +136,10 @@ class func(object):
     def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
                  maxit=200, **kwargs):
 
-        self.y = np.asarray(y)
+        if callable(y):
+            self.y = lambda: np.asarray(y())
+        else:
+            self.y = lambda: np.asarray(y)
 
         if A is None:
             self.A = lambda x: x
@@ -383,7 +386,7 @@ class norm_l1(norm):
         super(norm_l1, self).__init__(**kwargs)
 
     def _eval(self, x):
-        sol = self.A(x) - self.y
+        sol = self.A(x) - self.y()
         return self.lambda_ * np.sum(np.abs(self.w * sol))
 
     def _prox(self, x, T):
@@ -391,7 +394,7 @@ class norm_l1(norm):
         gamma = self.lambda_ * T
         if self.tight:
             # Nati: I've checked this code the use of 'y' seems correct
-            sol = self.A(x) - self.y
+            sol = self.A(x) - self.y()
             sol[:] = _soft_threshold(sol, gamma*self.nu*self.w) - sol
             sol[:] = x + self.At(sol) / self.nu
         else:
@@ -436,21 +439,21 @@ class norm_l2(norm):
         super(norm_l2, self).__init__(**kwargs)
 
     def _eval(self, x):
-        sol = self.A(x) - self.y
+        sol = self.A(x) - self.y()
         return self.lambda_ * np.sum((self.w * sol)**2)
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
-            sol = x + 2. * gamma * self.At(self.y * self.w**2)
+            sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
             raise NotImplementedError('Not implemented for non tight frame.')
         return sol
 
     def _grad(self, x):
-        sol = self.A(x) - self.y
+        sol = self.A(x) - self.y()
         return 2 * self.lambda_ * self.w * self.At(sol)
 
 
@@ -807,7 +810,7 @@ class proj_b2(proj):
 
         # Tight frame.
         if self.tight:
-            tmp1 = self.A(x) - self.y
+            tmp1 = self.A(x) - self.y()
             scale = self.epsilon / np.sqrt(np.sum(tmp1*tmp1, axis=0))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
@@ -819,7 +822,7 @@ class proj_b2(proj):
 
             # Initialization.
             sol = x
-            u = np.zeros(np.shape(self.y))
+            u = np.zeros(np.shape(self.y()))
             if self.method is 'FISTA':
                 v_last = u
                 t_last = 1.
@@ -831,7 +834,7 @@ class proj_b2(proj):
             epsilon_up = self.epsilon / (1. - self.tol)
 
             # Check if we are already in the L2-ball.
-            norm_res = np.linalg.norm(self.y - self.A(sol), 2)
+            norm_res = np.linalg.norm(self.y() - self.A(sol), 2)
             if norm_res <= epsilon_up:
                 crit = 'INBALL'
 
@@ -841,7 +844,7 @@ class proj_b2(proj):
                 niter += 1
 
                 # Residual.
-                res = self.A(sol) - self.y
+                res = self.A(sol) - self.y()
                 norm_res = np.linalg.norm(res, 2)
 
                 if self.verbosity is 'HIGH':
@@ -874,7 +877,7 @@ class proj_b2(proj):
                     crit = 'MAXIT'
 
             if self.verbosity in ['LOW', 'HIGH']:
-                norm_res = np.linalg.norm(self.y - self.A(sol), 2)
+                norm_res = np.linalg.norm(self.y() - self.A(sol), 2)
                 print('    proj_b2 : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
                       '%s, niter = %d' % (self.epsilon, norm_res, crit, niter))
 
