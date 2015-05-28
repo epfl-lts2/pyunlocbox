@@ -54,6 +54,32 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.grad(x), self.grad(x))
         self.assertEqual(f.prox(x, T), self.prox(x, T))
 
+        def assert_equivalent(param1, param2):
+            x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
+            f0 = functions.dummy
+            f1 = functions.norm_l1
+            f2 = functions.norm_l2
+            f3 = functions.norm_nuclear
+            f4 = functions.norm_tv
+            f5 = functions.proj_b2
+            for f in [f0, f1, f2, f3, f4, f5]:
+                f1 = f(**param1)
+                f2 = f(**param2)
+                self.assertEqual(f1.eval(x), f2.eval(x))
+                nptest.assert_array_equal(f1.prox(x, 3), f2.prox(x, 3))
+                if 'GRAD' in f1.cap(x):
+                    nptest.assert_array_equal(f1.grad(x), f2.grad(x))
+
+        # Default parameters. Callable or matrices.
+        assert_equivalent({}, {'A': None, 'y': 0, 'At': 1})
+        assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
+        assert_equivalent({'A': None}, {'A': np.identity(3)})
+        assert_equivalent({'A': None}, {'A': 1})
+        assert_equivalent({'A': 6.4}, {'A': lambda x: 6.4*x})
+        A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
+        assert_equivalent({'A': A}, {'A': A, 'At': A.T})
+        assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A})
+
     def test_dummy(self):
         """
         Test the dummy derived class.
