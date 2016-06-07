@@ -15,7 +15,7 @@ and is a port of the Matlab UNLocBoX toolbox.
 .. image:: https://img.shields.io/pypi/l/pyunlocbox.svg
 
 * Development : https://github.com/epfl-lts2/pyunlocbox
-* Documentation : http://pyunlocbox.readthedocs.org
+* Documentation : http://pyunlocbox.readthedocs.io
 * PyPI package : https://pypi.python.org/pypi/pyunlocbox
 * Travis continuous integration : https://travis-ci.org/epfl-lts2/pyunlocbox
 * UNLocBoX matlab toolbox : http://unlocbox.sourceforge.net
