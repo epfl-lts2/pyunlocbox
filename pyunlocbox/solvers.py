@@ -263,6 +263,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
+              'dual_sol':  solver.dual_sol,
               'solver':    solver.__class__.__name__,  # algo for consistency ?
               'crit':      crit,
               'niter':     niter,
@@ -329,6 +330,7 @@ class solver(object):
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self.sol = np.asarray(x0)
+        self.dual_sol = None
         self._pre(functions, np.asarray(x0))
 
     def _pre(self, functions, x0):
@@ -356,7 +358,7 @@ class solver(object):
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self._post()
-        del self.sol
+        del self.sol, self.dual_sol
 
     def _post(self):
         raise NotImplementedError("Class user should define this method.")
@@ -616,3 +618,87 @@ class douglas_rachford(solver):
 
     def _post(self):
         del self.f1, self.f2, self.z
+
+class MLFBF(solver):
+    r"""
+    Monotone + Lipschitz Forward-Backward-Forward primal-dual algorithm.
+
+    This algorithm solves convex optimization problems of the form
+    :math:`f(x) + g(Lx) + h(x)`,
+
+    where f and g are proper, convex, lower-semicontinuous functions with easy-to-compute proximity operators, and h has Lipschitzian gradient with constant beta.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.solvers.solver` base class.
+
+    Notes
+    -----
+    This algorithm requires the first two functions to implement the
+    :meth:`pyunlocbox.functions.func.prox` method, and the third function to implement the
+    :meth:`pyunlocbox.functions.func.grad` method.
+
+    Also, the map L and its adjoint Lt should be implemented in the A() and At() methods, respectively, of the second function in the list.
+
+    Stepsize should be in ]0, 1/(1 + beta + ||L||_2)[
+
+    See :cite:`komodakis2014primaldual`, Algorithm 6, for details.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers
+    >>> import numpy as np
+    >>> y = np.array([[582], [771], [798]])
+    >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+    >>> x0 = np.zeros(len(y))
+    >>> f = functions.dummy()
+    >>> f._prox = lambda x, T: np.maximum(np.zeros(len(x)), x)
+    >>> g = functions.norm_l2(lambda_=0.5, A=L)
+    >>> h = functions.norm_l2(y=y, lambda_=0.5)
+    >>> solver = solvers.MLFBF(step=0.04)
+    >>> ret = solvers.solve([f, g, h], x0, solver)
+    Solution found after 2 iterations :
+        objective function f(sol) = 1.463100e+01
+        stopping criterion : RTOL
+    >>> ret['sol']
+    array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(MLFBF, self).__init__(*args, **kwargs)
+
+    def _pre(self, functions, x0):
+
+        if len(functions) != 3:
+            raise ValueError('MLFBF requires 3 convex functions.')
+
+        # Non-smooth functions.
+        if 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0):
+            self.f = functions[0]
+            self.g = functions[1]
+        else:
+            raise ValueError('MLFBF requires first two functions to '
+                             'implement prox().')
+
+        # Smooth function.
+        if 'GRAD' in functions[2].cap(x0):
+            self.h = functions[2]
+        else:
+            raise ValueError('MLFBF requires last function to '
+                             'implement grad().')
+
+        self.dual_sol = self.g.A(x0)
+        self.g.prox_star = lambda x, T: x - T * self.g.prox(x / T, 1 / T)
+
+    def _algo(self):
+        y1 = self.sol - self.step * (self.h.grad(self.sol) + self.g.At(self.dual_sol))
+        y2 = self.dual_sol + self.step * self.g.A(self.sol)
+        p1 = self.f.prox(y1, self.step)
+        p2 = self.g.prox_star(y2, self.step)
+        q1 = p1 - self.step * (self.h.grad(p1) + self.g.At(p2))
+        q2 = p2 + self.step * self.g.A(p1)
+        self.sol[:] = self.sol - y1 + q1
+        self.dual_sol[:] = self.dual_sol - y2 + q2
+
+    def _post(self):
+        del self.f, self.g, self.z

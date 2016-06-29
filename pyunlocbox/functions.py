@@ -449,6 +449,7 @@ class norm_l2(norm):
             sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
+            # TODO: Implement
             raise NotImplementedError('Not implemented for non tight frame.')
         return sol
 
