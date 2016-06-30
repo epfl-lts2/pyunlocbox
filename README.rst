@@ -15,10 +15,10 @@ and is a port of the Matlab UNLocBoX toolbox.
 .. image:: https://img.shields.io/pypi/l/pyunlocbox.svg
 
 * Development : https://github.com/epfl-lts2/pyunlocbox
-* Documentation : http://pyunlocbox.readthedocs.io
+* Documentation : https://pyunlocbox.readthedocs.io
 * PyPI package : https://pypi.python.org/pypi/pyunlocbox
 * Travis continuous integration : https://travis-ci.org/epfl-lts2/pyunlocbox
-* UNLocBoX matlab toolbox : http://unlocbox.sourceforge.net
+* UNLocBoX matlab toolbox : https://lts2.epfl.ch/unlocbox
 
 Features
 --------
@@ -67,7 +67,7 @@ Authors
 -------
 
 PyUNLocBoX was started in 2014 as an academic project for research purpose at
-the LTS2 laboratory from EPFL. See our website at http://lts2www.epfl.ch.
+the LTS2 laboratory from EPFL (https://lts2.epfl.ch).
 
 Development lead :
 
