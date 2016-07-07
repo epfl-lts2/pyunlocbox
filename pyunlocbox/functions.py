@@ -28,6 +28,7 @@ inherit from it implement the methods. These classes include :
 from time import time
 import numpy as np
 from copy import deepcopy
+from scipy.optimize import minimize
 
 from pyunlocbox import operators as op
 
@@ -449,13 +450,18 @@ class norm_l2(norm):
             sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
-            # TODO: Implement
-            raise NotImplementedError('Not implemented for non tight frame.')
+            fun = lambda z: 0.5 * np.sum((z - x)**2) + gamma * np.sum( ( self.w * ( self.A(z) - self.y() ) )**2 )
+            jac = lambda z: z - x + 2. * gamma * self.At( (self.w**2) * (self.A(z) - self.y() ) )
+            res = minimize(fun=fun, x0=x, method='BFGS', jac=jac)
+            if res.success:
+                sol = res.x
+            else:
+                raise RuntimeError('norm_l2.prox: ' + res.message)
         return sol
 
     def _grad(self, x):
         sol = self.A(x) - self.y()
-        return 2 * self.lambda_ * self.w * self.At(sol)
+        return 2 * self.lambda_ * self.At((self.w**2) * sol)
 
 
 class norm_nuclear(norm):

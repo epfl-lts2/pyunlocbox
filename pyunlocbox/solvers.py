@@ -330,7 +330,6 @@ class solver(object):
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self.sol = np.asarray(x0)
-        self.dual_sol = None
         self._pre(functions, np.asarray(x0))
 
     def _pre(self, functions, x0):
@@ -358,7 +357,7 @@ class solver(object):
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self._post()
-        del self.sol, self.dual_sol
+        del self.sol
 
     def _post(self):
         raise NotImplementedError("Class user should define this method.")
@@ -619,7 +618,63 @@ class douglas_rachford(solver):
     def _post(self):
         del self.f1, self.f2, self.z
 
-class MLFBF(solver):
+
+#---------------------#
+# Primal-dual solvers #
+#---------------------#
+
+class primal_dual(solver):
+    r"""
+    Parent class of all primal-dual algorithms.
+
+    Parameters
+    ----------
+    L : ndarray or callable, optional
+        Transformation L that maps from the primal variable space to the dual variable space. By default the transformation is the identity map.
+    d0: ndarray, optional
+        Initialization of the dual variable.
+
+    """
+
+    def __init__(self, L=None, Lt=None, d0=None, *args, **kwargs):
+        super(primal_dual, self).__init__(*args, **kwargs)
+
+        if L is None:
+            self.L = lambda x: x
+        else:
+            if callable(L):
+                self.L = L
+            else:
+                # Transform matrix form to operator form.
+                self.L = lambda x: np.dot(L, x)
+
+        if Lt is None:
+            if L is None:
+                self.Lt = lambda x: x
+            elif callable(L):
+                self.Lt = L
+            else:
+                self.Lt = lambda x: np.dot(np.transpose(L), x)
+        else:
+            if callable(Lt):
+                self.Lt = Lt
+            else:
+                self.Lt = lambda x: np.dot(Lt, x)
+
+        self.d0 = d0
+
+    def _pre(self, functions, x0):
+        # Dual variable
+        if self.d0 is None:
+            self.dual_sol = self.L(x0)
+        else:
+            self.dual_sol = self.d0
+
+    def _post(self):
+        del self.dual_sol, self.d0
+
+
+class MLFBF(primal_dual):
     r"""
     Monotone + Lipschitz Forward-Backward-Forward primal-dual algorithm.
 
@@ -637,37 +692,37 @@ class MLFBF(solver):
     :meth:`pyunlocbox.functions.func.prox` method, and the third function to implement the
     :meth:`pyunlocbox.functions.func.grad` method.
 
-    Also, the map L and its adjoint Lt should be implemented in the A() and At() methods, respectively, of the second function in the list.
+    Stepsize should be in ]0, 1/(beta + ||L||_2)[
 
-    Stepsize should be in ]0, 1/(1 + beta + ||L||_2)[
-
-    See :cite:`komodakis2014primaldual`, Algorithm 6, for details.
+    See :cite:`komodakis2015primaldual`, Algorithm 6, for details.
 
     Examples
     --------
     >>> from pyunlocbox import functions, solvers
     >>> import numpy as np
-    >>> y = np.array([[582], [771], [798]])
+    >>> y = np.array([294, 390, 361])
     >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
     >>> x0 = np.zeros(len(y))
     >>> f = functions.dummy()
     >>> f._prox = lambda x, T: np.maximum(np.zeros(len(x)), x)
-    >>> g = functions.norm_l2(lambda_=0.5, A=L)
+    >>> g = functions.norm_l2(lambda_=0.5)
     >>> h = functions.norm_l2(y=y, lambda_=0.5)
-    >>> solver = solvers.MLFBF(step=0.04)
-    >>> ret = solvers.solve([f, g, h], x0, solver)
-    Solution found after 2 iterations :
-        objective function f(sol) = 1.463100e+01
-        stopping criterion : RTOL
+    >>> max_step = 1/(1 + np.linalg.norm(L, 2))
+    >>> solver = solvers.MLFBF(L=L, step=max_step/2.)
+    >>> ret = solvers.solve([f, g, h], x0, solver, maxit = 1000, rtol=0)
+    Solution found after 1000 iterations :
+        objective function f(sol) = 1.833865e+05
+        stopping criterion : MAXIT
     >>> ret['sol']
-    array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
+    array([ 1.,  1.,  1.])
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, lambda_=None, *args, **kwargs):
         super(MLFBF, self).__init__(*args, **kwargs)
 
     def _pre(self, functions, x0):
+        super(MLFBF, self)._pre(functions, x0)
 
         if len(functions) != 3:
             raise ValueError('MLFBF requires 3 convex functions.')
@@ -687,18 +742,19 @@ class MLFBF(solver):
             raise ValueError('MLFBF requires last function to '
                              'implement grad().')
 
-        self.dual_sol = self.g.A(x0)
-        self.g.prox_star = lambda x, T: x - T * self.g.prox(x / T, 1 / T)
+        # Proximity operator of the convex conjugate of g.
+        self.g.prox_star = lambda z, T: z - T * self.g.prox(z / T, 1 / T)
 
     def _algo(self):
-        y1 = self.sol - self.step * (self.h.grad(self.sol) + self.g.At(self.dual_sol))
-        y2 = self.dual_sol + self.step * self.g.A(self.sol)
+        y1 = self.sol - self.step * (self.h.grad(self.sol) + self.Lt(self.dual_sol))
+        y2 = self.dual_sol + self.step * self.L(self.sol)
         p1 = self.f.prox(y1, self.step)
         p2 = self.g.prox_star(y2, self.step)
-        q1 = p1 - self.step * (self.h.grad(p1) + self.g.At(p2))
-        q2 = p2 + self.step * self.g.A(p1)
+        q1 = p1 - self.step * (self.h.grad(p1) + self.Lt(p2))
+        q2 = p2 + self.step * self.L(p1)
         self.sol[:] = self.sol - y1 + q1
         self.dual_sol[:] = self.dual_sol - y2 + q2
 
     def _post(self):
-        del self.f, self.g, self.z
+        super(MLFBF, self)._post()
+        del self.f, self.g, self.h

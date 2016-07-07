@@ -275,6 +275,24 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['niter'], 25)
 
+    def test_MLFBF(self):
+        """
+        Test MLFBF solver with arbitrarily selected functions.
+        """
+        x = [1., 1., 1.]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        max_step = 1/(1 + np.linalg.norm(L, 2))
+        solver = solvers.MLFBF(L=L, step=maxstep/2.)
+        param = {'solver': solver, 'verbosity': 'NONE'}
+
+        # L2-norm prox and dummy prox.
+        f = functions.dummy()
+        f._prox = lambda x, T: np.maximum(np.zeros(len(x)), x)
+        g = functions.norm_l2(lambda_=0.5)
+        h = functions.norm_l2(y=np.array([294, 390, 361]), lambda_=0.5)
+        ret = solvers.solve([f, g, h], np.zeros(len(x)), solver, maxit = 1000, rtol=0)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
     def test_solver_comparison(self):
         """
         Test that all solvers return the same and correct solution.
@@ -287,6 +305,8 @@ class FunctionsTestCase(unittest.TestCase):
         f1 = functions.norm_l2(y=y, lambda_=w1/2.)  # Smooth.
         f2 = functions.norm_l1(lambda_=w2/2.)       # Non-smooth.
         #f3 = functions.proj_b2(epsilon=0.6)         # Non-smooth.
+
+        #TODO: add test for MLFBF
 
         # Solvers.
         L = w1  # Lipschitz continuous gradient.

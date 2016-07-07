@@ -134,6 +134,15 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(f.prox([2.2, 4.2], 1), [2.04, 4.04])
         nptest.assert_allclose(f.prox([2.04, 4.04], 1), [2.008, 4.008])
 
+        #Test prox for non-tight matrices A
+        L = np.array([[8, 1, 10], [1, 9, 1], [3, 7, 5], [1, 4, 4]])
+        f = functions.norm_l2(A=L, tight=False, y=np.array([1, 2, 3, 4]), w=np.array([1, 1, 0.5, 0.75]))
+        nptest.assert_allclose(f.eval([1, 1, 1]), 455.0625)
+        nptest.assert_allclose(f.grad([1, 1, 1]), [329.625, 262.500, 430.500], rtol=1e-3)
+        nptest.assert_allclose(f.prox([1, 1, 1], 1), [-0.887,  0.252,  0.798], rtol=1e-3)
+        nptest.assert_allclose(f.prox([6, 7, 3], 1), [-0.345,  0.298,  0.388], rtol=1e-3)
+        nptest.assert_allclose(f.prox([10, 0, -5], 1), [1.103,  0.319,  -0.732], rtol=1e-3)
+
     def test_soft_thresholding(self):
         """
         Test the soft thresholding helper function.
