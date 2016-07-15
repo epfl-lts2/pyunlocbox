@@ -61,7 +61,7 @@ def _soft_threshold(z, T, handle_complex=True):
     array([-1,  0,  0,  0,  1])
 
     """
-    sz = np.maximum(np.abs(z)-T, 0)
+    sz = np.maximum(np.abs(z) - T, 0)
 
     if not handle_complex:
         # This soft thresholding method only supports real signal.
@@ -73,7 +73,7 @@ def _soft_threshold(z, T, handle_complex=True):
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
         old_err_state = np.seterr(invalid='ignore')
-        sz[:] = np.nan_to_num(1. * sz / (sz+T) * z)
+        sz[:] = np.nan_to_num(1. * sz / (sz + T) * z)
         np.seterr(**old_err_state)
 
     return sz
@@ -396,7 +396,7 @@ class norm_l1(norm):
         if self.tight:
             # Nati: I've checked this code the use of 'y' seems correct
             sol = self.A(x) - self.y()
-            sol[:] = _soft_threshold(sol, gamma*self.nu*self.w) - sol
+            sol[:] = _soft_threshold(sol, gamma * self.nu * self.w) - sol
             sol[:] = x + self.At(sol) / self.nu
         else:
             raise NotImplementedError('Not implemented for non tight frame.')
@@ -450,9 +450,13 @@ class norm_l2(norm):
             sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
-            fun = lambda z: 0.5 * np.sum((z - x)**2) + gamma * np.sum( ( self.w * ( self.A(z) - self.y() ) )**2 )
-            jac = lambda z: z - x + 2. * gamma * self.At( (self.w**2) * (self.A(z) - self.y() ) )
-            res = minimize(fun=fun, x0=x, method='BFGS', jac=jac)
+            res = minimize(fun=lambda z: 0.5 * np.sum((z - x)**2) +
+                           gamma *
+                           np.sum((self.w * (self.A(z) - self.y()))**2),
+                           x0=x,
+                           method='BFGS',
+                           jac=lambda z: z - x + 2. * gamma *
+                           self.At((self.w**2) * (self.A(z) - self.y())))
             if res.success:
                 sol = res.x
             else:
@@ -573,16 +577,16 @@ class norm_tv(norm):
         sol = x
 
         if self.dim == 1:
-            r = op.grad(x*0, dim=self.dim, **self.kwargs)
+            r = op.grad(x * 0, dim=self.dim, **self.kwargs)
             rr = deepcopy(r)
         elif self.dim == 2:
-            r, s = op.grad(x*0, dim=self.dim, **self.kwargs)
+            r, s = op.grad(x * 0, dim=self.dim, **self.kwargs)
             rr, ss = deepcopy(r), deepcopy(s)
         elif self.dim == 3:
-            r, s, k = op.grad(x*0, dim=self.dim, **self.kwargs)
+            r, s, k = op.grad(x * 0, dim=self.dim, **self.kwargs)
             rr, ss, kk = deepcopy(r), deepcopy(s), deepcopy(k)
         elif self.dim == 4:
-            r, s, k, u = op.grad(x*0, dim=self.dim, **self.kwargs)
+            r, s, k, u = op.grad(x * 0, dim=self.dim, **self.kwargs)
             rr, ss, kk, uu = deepcopy(r), deepcopy(s), deepcopy(k), deepcopy(u)
 
         if self.dim >= 1:
@@ -643,9 +647,9 @@ class norm_tv(norm):
                 sol = x - T * op.div(rr, ss, kk, uu, **self.kwargs)
 
             #  Objective function value
-            obj = 0.5*np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
+            obj = 0.5 * np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
                 T * np.sum(self._eval(sol), axis=0)
-            rel_obj = np.abs(obj - prev_obj)/obj
+            rel_obj = np.abs(obj - prev_obj) / obj
             prev_obj = obj
 
             if self.verbosity in ['HIGH', 'ALL']:
@@ -659,60 +663,60 @@ class norm_tv(norm):
             #  Update divergence vectors and project
             if self.dim == 1:
                 dx = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= 1./(4*T*mt**2) * dx
+                r -= 1. / (4 * T * mt**2) * dx
                 weights = np.maximum(1, np.abs(r))
 
             elif self.dim == 2:
                 dx, dy = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= (1./(8.*T*mt**2.)) * dx
-                s -= (1./(8.*T*mt**2.)) * dy
+                r -= (1. / (8. * T * mt**2.)) * dx
+                s -= (1. / (8. * T * mt**2.)) * dy
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2)))
 
             elif self.dim == 3:
                 dx, dy, dz = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= 1./(12.*T*mt**2) * dx
-                s -= 1./(12.*T*mt**2) * dy
-                k -= 1./(12.*T*mt**2) * dz
+                r -= 1. / (12. * T * mt**2) * dx
+                s -= 1. / (12. * T * mt**2) * dy
+                k -= 1. / (12. * T * mt**2) * dz
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2) +
                                                 np.power(np.abs(k), 2)))
 
             elif self.dim == 4:
                 dx, dy, dz, dt = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= 1./(16*T*mt**2) * dx
-                s -= 1./(16*T*mt**2) * dy
-                k -= 1./(16*T*mt**2) * dz
-                u -= 1./(16*T*mt**2) * dt
+                r -= 1. / (16 * T * mt**2) * dx
+                s -= 1. / (16 * T * mt**2) * dy
+                k -= 1. / (16 * T * mt**2) * dz
+                u -= 1. / (16 * T * mt**2) * dt
                 weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
                                                 np.power(np.abs(s), 2) +
                                                 np.power(np.abs(k), 2) +
                                                 np.power(np.abs(u), 2)))
 
             # FISTA update
-            t = (1 + np.sqrt(4*told**2))/2.
+            t = (1 + np.sqrt(4 * told**2)) / 2.
 
             if self.dim >= 1:
                 p = r / weights
-                r = p + (told - 1)/t * (p - pold)
+                r = p + (told - 1) / t * (p - pold)
                 pold = p
                 rr = deepcopy(r)
 
             if self.dim >= 2:
                 q = s / weights
-                s = q + (told - 1)/t * (q - qold)
+                s = q + (told - 1) / t * (q - qold)
                 ss = deepcopy(s)
                 qold = q
 
             if self.dim >= 3:
                 o = k / weights
-                k = o + (told - 1)/t * (o - kold)
+                k = o + (told - 1) / t * (o - kold)
                 kk = deepcopy(k)
                 kold = o
 
             if self.dim >= 4:
                 m = u / weights
-                u = m + (told-1)/t * (m - uold)
+                u = m + (told - 1) / t * (m - uold)
                 uu = deepcopy(u)
                 uold = m
 
@@ -818,7 +822,7 @@ class proj_b2(proj):
         # Tight frame.
         if self.tight:
             tmp1 = self.A(x) - self.y()
-            scale = self.epsilon / np.sqrt(np.sum(tmp1*tmp1, axis=0))
+            scale = self.epsilon / np.sqrt(np.sum(tmp1 * tmp1, axis=0))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'
@@ -863,12 +867,12 @@ class proj_b2(proj):
                 res += u * self.nu
                 norm_proj = np.linalg.norm(res, 2)
 
-                ratio = min(1, self.epsilon/norm_proj)
-                v = 1. / self.nu * (res - res*ratio)
+                ratio = min(1, self.epsilon / norm_proj)
+                v = 1. / self.nu * (res - res * ratio)
 
                 if self.method is 'FISTA':
-                    t = (1. + np.sqrt(1.+4.*t_last**2.)) / 2.  # Time step.
-                    u = v + (t_last-1.) / t * (v-v_last)
+                    t = (1. + np.sqrt(1. + 4. * t_last**2.)) / 2.  # Time step.
+                    u = v + (t_last - 1.) / t * (v - v_last)
                     v_last = v
                     t_last = t
                 else:

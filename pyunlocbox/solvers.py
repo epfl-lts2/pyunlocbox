@@ -10,6 +10,8 @@ it and implement the class methods. The following solvers are included :
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 * :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
 * :class:`generalized_forward_backward`: Generalized Forward-Backward.
+* :class:`primal_dual`: Primal-dual algorithms.
+    * :class:`mlfbf`: Monotone + Lipschitz Forward-Backward-Forward algorithm.
 """
 
 import numpy as np
@@ -173,9 +175,12 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     # Choose a solver if none provided.
     if not solver:
         if len(functions) == 2:
-            fb0 = 'GRAD' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
-            fb1 = 'GRAD' in functions[1].cap(x0) and 'PROX' in functions[0].cap(x0)
-            dg0 = 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0)
+            fb0 = 'GRAD' in functions[0].cap(
+                x0) and 'PROX' in functions[1].cap(x0)
+            fb1 = 'GRAD' in functions[1].cap(
+                x0) and 'PROX' in functions[0].cap(x0)
+            dg0 = 'PROX' in functions[0].cap(
+                x0) and 'PROX' in functions[1].cap(x0)
             if fb0 or fb1:
                 solver = forward_backward()  # Need one prox and 1 grad.
             elif dg0:
@@ -209,7 +214,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
         niter += 1
 
-        if xtol != None:
+        if xtol is not None:
             last_sol = np.array(solver.sol, copy=True)
 
         if verbosity in ['HIGH', 'ALL']:
@@ -223,11 +228,11 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         last = np.sum(objective[-2])
 
         # Verify stopping criteria.
-        if atol != None and current < atol:
+        if atol is not None and current < atol:
             crit = 'ATOL'
-        if dtol != None and np.abs(current - last) < dtol:
+        if dtol is not None and np.abs(current - last) < dtol:
             crit = 'DTOL'
-        if rtol != None:
+        if rtol is not None:
             div = current  # Prevent division by 0.
             if div == 0:
                 if verbosity in ['LOW', 'HIGH', 'ALL']:
@@ -241,12 +246,12 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
             relative = np.abs((current - last) / div)
             if relative < rtol and not rtol_only_zeros:
                 crit = 'RTOL'
-        if xtol != None:
+        if xtol is not None:
             err = np.linalg.norm(solver.sol - last_sol)
             err /= np.sqrt(last_sol.size)
             if err < xtol:
                 crit = 'XTOL'
-        if maxit != None and niter >= maxit:
+        if maxit is not None and niter >= maxit:
             crit = 'MAXIT'
 
         if verbosity in ['HIGH', 'ALL']:
@@ -263,12 +268,15 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
-              'dual_sol':  solver.dual_sol,
               'solver':    solver.__class__.__name__,  # algo for consistency ?
               'crit':      crit,
               'niter':     niter,
               'time':      time.time() - tstart,
               'objective': objective}
+    try:
+        result['dual_sol'] = solver.dual_sol
+    except AttributeError:
+        pass
 
     # Solver specific post-processing (e.g. delete references).
     solver.post()
@@ -451,8 +459,8 @@ class forward_backward(solver):
     def _fista(self):
         x = self.z - self.step * self.f2.grad(self.z)
         x[:] = self.f1.prox(x, self.step)
-        tn = (1. + np.sqrt(1.+4.*self.t**2.)) / 2.
-        self.z[:] = x + (self.t-1.) / tn * (x-self.sol)
+        tn = (1. + np.sqrt(1. + 4. * self.t**2.)) / 2.
+        self.z[:] = x + (self.t - 1.) / tn * (x - self.sol)
         self.t = tn
         self.sol[:] = x
 
@@ -619,9 +627,8 @@ class douglas_rachford(solver):
         del self.f1, self.f2, self.z
 
 
-#---------------------#
-# Primal-dual solvers #
-#---------------------#
+# -----------------------------------------------------------------------------
+# Primal-dual solvers  #
 
 class primal_dual(solver):
     r"""
@@ -630,7 +637,8 @@ class primal_dual(solver):
     Parameters
     ----------
     L : ndarray or callable, optional
-        Transformation L that maps from the primal variable space to the dual variable space. By default the transformation is the identity map.
+        Transformation L that maps from the primal variable space to the dual
+        variable space. By default the transformation is the identity map.
     d0: ndarray, optional
         Initialization of the dual variable.
 
@@ -674,14 +682,16 @@ class primal_dual(solver):
         del self.dual_sol, self.d0
 
 
-class MLFBF(primal_dual):
+class mlfbf(primal_dual):
     r"""
     Monotone + Lipschitz Forward-Backward-Forward primal-dual algorithm.
 
     This algorithm solves convex optimization problems of the form
     :math:`f(x) + g(Lx) + h(x)`,
 
-    where f and g are proper, convex, lower-semicontinuous functions with easy-to-compute proximity operators, and h has Lipschitzian gradient with constant beta.
+    where :math:`f` and :math:`g` are proper, convex, lower-semicontinuous
+    functions with easy-to-compute proximity operators, and :math:`h` has
+    Lipschitz-continuous gradient with constant :math:`\beta`.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.solvers.solver` base class.
@@ -689,10 +699,10 @@ class MLFBF(primal_dual):
     Notes
     -----
     This algorithm requires the first two functions to implement the
-    :meth:`pyunlocbox.functions.func.prox` method, and the third function to implement the
-    :meth:`pyunlocbox.functions.func.grad` method.
+    :meth:`pyunlocbox.functions.func.prox` method, and the third function to
+    implement the :meth:`pyunlocbox.functions.func.grad` method.
 
-    Stepsize should be in ]0, 1/(beta + ||L||_2)[
+    Stepsize should be in the interval :math:`\left] 0, \frac{1}{\beta + \|L\|_{2}}\right[`.
 
     See :cite:`komodakis2015primaldual`, Algorithm 6, for details.
 
@@ -708,7 +718,7 @@ class MLFBF(primal_dual):
     >>> g = functions.norm_l2(lambda_=0.5)
     >>> h = functions.norm_l2(y=y, lambda_=0.5)
     >>> max_step = 1/(1 + np.linalg.norm(L, 2))
-    >>> solver = solvers.MLFBF(L=L, step=max_step/2.)
+    >>> solver = solvers.mlfbf(L=L, step=max_step/2.)
     >>> ret = solvers.solve([f, g, h], x0, solver, maxit = 1000, rtol=0)
     Solution found after 1000 iterations :
         objective function f(sol) = 1.833865e+05
@@ -719,10 +729,10 @@ class MLFBF(primal_dual):
     """
 
     def __init__(self, lambda_=None, *args, **kwargs):
-        super(MLFBF, self).__init__(*args, **kwargs)
+        super(mlfbf, self).__init__(*args, **kwargs)
 
     def _pre(self, functions, x0):
-        super(MLFBF, self)._pre(functions, x0)
+        super(mlfbf, self)._pre(functions, x0)
 
         if len(functions) != 3:
             raise ValueError('MLFBF requires 3 convex functions.')
@@ -746,7 +756,8 @@ class MLFBF(primal_dual):
         self.g.prox_star = lambda z, T: z - T * self.g.prox(z / T, 1 / T)
 
     def _algo(self):
-        y1 = self.sol - self.step * (self.h.grad(self.sol) + self.Lt(self.dual_sol))
+        y1 = self.sol - self.step * (self.h.grad(self.sol) +
+                                     self.Lt(self.dual_sol))
         y2 = self.dual_sol + self.step * self.L(self.sol)
         p1 = self.f.prox(y1, self.step)
         p2 = self.g.prox_star(y2, self.step)
@@ -756,5 +767,5 @@ class MLFBF(primal_dual):
         self.dual_sol[:] = self.dual_sol - y2 + q2
 
     def _post(self):
-        super(MLFBF, self)._post()
+        super(mlfbf, self)._post()
         del self.f, self.g, self.h
