@@ -295,6 +295,22 @@ class FunctionsTestCase(unittest.TestCase):
             len(x)), maxit=1000, rtol=0, **params)
         nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
 
+    def test_projection_based(self):
+        """
+        Test projection-based solver with arbitrarily selected functions.
+        """
+        x = [0, 0, 0]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        solver = solvers.projection_based(L=L, step=1.)
+        params = {'solver': solver, 'verbosity': 'NONE'}
+
+        # L2-norm prox and dummy prox.
+        f = functions.norm_l1(y=np.array([294, 390, 361]))
+        g = functions.norm_l1()
+        ret = solvers.solve([f, g], np.array(
+            [500, 1000, -400]), maxit=1000, rtol=None, xtol=0.1, **params)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
     def test_solver_comparison(self):
         """
         Test that all solvers return the same and correct solution.

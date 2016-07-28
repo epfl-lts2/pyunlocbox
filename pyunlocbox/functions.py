@@ -732,8 +732,8 @@ class norm_tv(norm):
         exec_time = t_end - t_init
 
         if self.verbosity in ['HIGH', 'ALL']:
-            print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, \
-                  iter = {3}".format(obj, rel_obj, crit, iter))
+            print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, iter = {3}".format(
+                obj, rel_obj, crit, iter))
             print("exec_time = ", exec_time)
         return sol
 

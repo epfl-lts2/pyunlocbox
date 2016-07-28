@@ -50,3 +50,11 @@ Monotone + Lipschitz Forward-Backward-Forward algorithm
     :members:
     :undoc-members:
     :show-inheritance:
+
+Projection-based primal-dual algorithm
+---------------------------------------------------------
+
+.. autoclass:: pyunlocbox.solvers.projection_based
+    :members:
+    :undoc-members:
+    :show-inheritance:
