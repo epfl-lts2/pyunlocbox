@@ -10,8 +10,12 @@ it and implement the class methods. The following solvers are included :
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 * :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
 * :class:`generalized_forward_backward`: Generalized Forward-Backward.
+
 * :class:`primal_dual`: Primal-dual algorithms.
-    * :class:`mlfbf`: Monotone + Lipschitz Forward-Backward-Forward algorithm.
+
+  * :class:`mlfbf`: Monotone+Lipschitz Forward-Backward-Forward primal-dual
+    algorithm.
+  * :class:`projection_based`: Projection-based primal-dual algorithm.
 """
 
 import numpy as np
@@ -175,12 +179,12 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     # Choose a solver if none provided.
     if not solver:
         if len(functions) == 2:
-            fb0 = 'GRAD' in functions[0].cap(
-                x0) and 'PROX' in functions[1].cap(x0)
-            fb1 = 'GRAD' in functions[1].cap(
-                x0) and 'PROX' in functions[0].cap(x0)
-            dg0 = 'PROX' in functions[0].cap(
-                x0) and 'PROX' in functions[1].cap(x0)
+            fb0 = 'GRAD' in functions[0].cap(x0) and \
+                  'PROX' in functions[1].cap(x0)
+            fb1 = 'GRAD' in functions[1].cap(x0) and \
+                  'PROX' in functions[0].cap(x0)
+            dg0 = 'PROX' in functions[0].cap(x0) and \
+                  'PROX' in functions[1].cap(x0)
             if fb0 or fb1:
                 solver = forward_backward()  # Need one prox and 1 grad.
             elif dg0:
@@ -282,6 +286,11 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     solver.post()
 
     return result
+
+
+def _prox_star(func, z, T):
+    r"""Proximity operator of the convex conjugate of a function."""
+    return z - T * func.prox(z / T, 1 / T)
 
 
 class solver(object):
@@ -627,9 +636,6 @@ class douglas_rachford(solver):
         del self.f1, self.f2, self.z
 
 
-# -----------------------------------------------------------------------------
-# Primal-dual solvers  #
-
 class primal_dual(solver):
     r"""
     Parent class of all primal-dual algorithms.
@@ -639,9 +645,15 @@ class primal_dual(solver):
 
     Parameters
     ----------
-    L : ndarray or callable, optional
-        Transformation L that maps from the primal variable space to the dual
-        variable space. By default the transformation is the identity map.
+    L : function or ndarray, optional
+        The transformation L that maps from the primal variable space to the
+        dual variable space. Default is the identity, :math:`L(x)=x`. If `L` is
+        an ``ndarray``, it will be converted to the operator form.
+    Lt : function or ndarray, optional
+        The adjoint operator. If `Lt` is an ``ndarray``, it will be converted
+        to the operator form. If `L` is an ``ndarray``, default is the
+        transpose of `L`. If `L` is a function, default is `L`,
+        :math:`Lt(x)=L(x)`.
     d0: ndarray, optional
         Initialization of the dual variable.
 
@@ -675,7 +687,7 @@ class primal_dual(solver):
         self.d0 = d0
 
     def _pre(self, functions, x0):
-        # Dual variable
+        # Dual variable.
         if self.d0 is None:
             self.dual_sol = self.L(x0)
         else:
@@ -689,25 +701,26 @@ class mlfbf(primal_dual):
     r"""
     Monotone + Lipschitz Forward-Backward-Forward primal-dual algorithm.
 
-    This algorithm solves convex optimization problems with objective of the form :math:`f(x) + g(Lx) + h(x)`,
-
-    where :math:`f` and :math:`g` are proper, convex, lower-semicontinuous
-    functions with easy-to-compute proximity operators, and :math:`h` has
-    Lipschitz-continuous gradient with constant :math:`\beta`.
+    This algorithm solves convex optimization problems with objective of the
+    form :math:`f(x) + g(Lx) + h(x)`, where :math:`f` and :math:`g` are proper,
+    convex, lower-semicontinuous functions with easy-to-compute proximity
+    operators, and :math:`h` has Lipschitz-continuous gradient with constant
+    :math:`\beta`.
 
     See generic attributes descriptions of the
-    :class:`pyunlocbox.solvers.solver`
-    :class:`pyunlocbox.solvers.primal_dual` base classes.
+    :class:`pyunlocbox.solvers.primal_dual` base class.
 
     Notes
     -----
-    The order of the functions matters: set :math:`f` first on the list, :math:`g` second, and :math:`h` third.
+    The order of the functions matters: set :math:`f` first on the list,
+    :math:`g` second, and :math:`h` third.
 
     This algorithm requires the first two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method, and the third function to
     implement the :meth:`pyunlocbox.functions.func.grad` method.
 
-    Stepsize should be in the interval :math:`\left] 0, \frac{1}{\beta + \|L\|_{2}}\right[`.
+    The step-size should be in the interval :math:`\left] 0, \frac{1}{\beta +
+    \|L\|_{2}}\right[`.
 
     See :cite:`komodakis2015primaldual`, Algorithm 6, for details.
 
@@ -733,39 +746,22 @@ class mlfbf(primal_dual):
 
     """
 
-    def __init__(self, lambda_=None, *args, **kwargs):
-        super(mlfbf, self).__init__(*args, **kwargs)
-
     def _pre(self, functions, x0):
         super(mlfbf, self)._pre(functions, x0)
 
         if len(functions) != 3:
             raise ValueError('MLFBF requires 3 convex functions.')
 
-        # Non-smooth functions.
-        if 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0):
-            self.f = functions[0]
-            self.g = functions[1]
-        else:
-            raise ValueError('MLFBF requires first two functions to '
-                             'implement prox().')
-
-        # Smooth function.
-        if 'GRAD' in functions[2].cap(x0):
-            self.h = functions[2]
-        else:
-            raise ValueError('MLFBF requires last function to '
-                             'implement grad().')
-
-        # Proximity operator of the convex conjugate of g.
-        self.g.prox_star = lambda z, T: z - T * self.g.prox(z / T, 1 / T)
+        self.f = functions[0]
+        self.g = functions[1]
+        self.h = functions[2]
 
     def _algo(self):
         y1 = self.sol - self.step * (self.h.grad(self.sol) +
                                      self.Lt(self.dual_sol))
         y2 = self.dual_sol + self.step * self.L(self.sol)
         p1 = self.f.prox(y1, self.step)
-        p2 = self.g.prox_star(y2, self.step)
+        p2 = _prox_star(self.g, y2, self.step)
         q1 = p1 - self.step * (self.h.grad(p1) + self.Lt(p2))
         q2 = p2 + self.step * self.L(p1)
         self.sol[:] = self.sol - y1 + q1
@@ -778,16 +774,15 @@ class mlfbf(primal_dual):
 
 class projection_based(primal_dual):
     r"""
-    Projection based primal-dual algorithm.
+    Projection-based primal-dual algorithm.
 
-    This algorithm solves convex optimization problems with objective of the form :math:`f(x) + g(Lx)`,
-
-    where :math:`f` and :math:`g` are proper, convex, lower-semicontinuous
-    functions with easy-to-compute proximity operators.
+    This algorithm solves convex optimization problems with objective of the
+    form :math:`f(x) + g(Lx)`, where :math:`f` and :math:`g` are proper,
+    convex, lower-semicontinuous functions with easy-to-compute proximity
+    operators.
 
     See generic attributes descriptions of the
-    :class:`pyunlocbox.solvers.solver`
-    :class:`pyunlocbox.solvers.primal_dual` base classes.
+    :class:`pyunlocbox.solvers.primal_dual` base class.
 
     Parameters
     ----------
@@ -796,12 +791,13 @@ class projection_based(primal_dual):
 
     Notes
     -----
-    The order of the functions matters: set :math:`f` first on the list, and :math:`g` second.
+    The order of the functions matters: set :math:`f` first on the list, and
+    :math:`g` second.
 
     This algorithm requires the two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method.
 
-    Stepsize should be in the interval :math:`\left] 0, \infty \right[` .
+    The step-size should be in the interval :math:`\left] 0, \infty \right[`.
 
     See :cite:`komodakis2015primaldual`, Algorithm 7, for details.
 
@@ -837,12 +833,8 @@ class projection_based(primal_dual):
         if len(functions) != 2:
             raise ValueError('projection_based requires 2 convex functions.')
 
-        if 'PROX' in functions[0].cap(x0) and 'PROX' in functions[1].cap(x0):
-            self.f = functions[0]
-            self.g = functions[1]
-        else:
-            raise ValueError(
-                'projection_based requires first two functions to implement prox().')
+        self.f = functions[0]
+        self.g = functions[1]
 
     def _algo(self):
         a = self.f.prox(self.sol - self.step *
@@ -856,9 +848,8 @@ class projection_based(primal_dual):
             self.sol[:] = a
             self.dual_sol[:] = self.dual_sol + (l - b) / self.step
         else:
-            theta = self.lambda_ * \
-                (np.sum((self.sol - a)**2) / self.step +
-                 np.sum((l - b)**2) / self.step) / tau
+            theta = self.lambda_ * (np.sum((self.sol - a)**2) / self.step +
+                                    np.sum((l - b)**2) / self.step) / tau
             self.sol[:] = self.sol - theta * s
             self.dual_sol[:] = self.dual_sol - theta * t
 

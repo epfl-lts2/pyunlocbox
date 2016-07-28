@@ -35,16 +35,15 @@ Generalized-Forward-backward proximal splitting algorithm
     :show-inheritance:
 
 Primal-dual algorithms
----------------------------------------------------------
+----------------------
 
 .. autoclass:: pyunlocbox.solvers.primal_dual
     :members:
     :undoc-members:
     :show-inheritance:
 
-
-Monotone + Lipschitz Forward-Backward-Forward algorithm
----------------------------------------------------------
+Monotone+Lipschitz Forward-Backward-Forward algorithm
+-----------------------------------------------------
 
 .. autoclass:: pyunlocbox.solvers.mlfbf
     :members:
@@ -52,7 +51,7 @@ Monotone + Lipschitz Forward-Backward-Forward algorithm
     :show-inheritance:
 
 Projection-based primal-dual algorithm
----------------------------------------------------------
+--------------------------------------
 
 .. autoclass:: pyunlocbox.solvers.projection_based
     :members:

@@ -450,8 +450,7 @@ class norm_l2(norm):
             sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
-            res = minimize(fun=lambda z: 0.5 * np.sum((z - x)**2) +
-                           gamma *
+            res = minimize(fun=lambda z: 0.5 * np.sum((z - x)**2) + gamma *
                            np.sum((self.w * (self.A(z) - self.y()))**2),
                            x0=x,
                            method='BFGS',

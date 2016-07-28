@@ -278,7 +278,7 @@ class FunctionsTestCase(unittest.TestCase):
 
     def test_mlfbf(self):
         """
-        Test MLFBF solver with arbitrarily selected functions.
+        Test the MLFBF solver with arbitrarily selected functions.
         """
         x = [1., 1., 1.]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
@@ -291,24 +291,24 @@ class FunctionsTestCase(unittest.TestCase):
         f._prox = lambda x, T: np.maximum(np.zeros(len(x)), x)
         g = functions.norm_l2(lambda_=0.5)
         h = functions.norm_l2(y=np.array([294, 390, 361]), lambda_=0.5)
-        ret = solvers.solve([f, g, h], np.zeros(
-            len(x)), maxit=1000, rtol=0, **params)
+        ret = solvers.solve([f, g, h], np.zeros(len(x)),
+                            maxit=1000, rtol=0, **params)
         nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
 
     def test_projection_based(self):
         """
-        Test projection-based solver with arbitrarily selected functions.
+        Test the projection-based solver with arbitrarily selected functions.
         """
         x = [0, 0, 0]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
         solver = solvers.projection_based(L=L, step=1.)
         params = {'solver': solver, 'verbosity': 'NONE'}
 
-        # L2-norm prox and dummy prox.
+        # L1-norm prox and dummy prox.
         f = functions.norm_l1(y=np.array([294, 390, 361]))
         g = functions.norm_l1()
-        ret = solvers.solve([f, g], np.array(
-            [500, 1000, -400]), maxit=1000, rtol=None, xtol=0.1, **params)
+        ret = solvers.solve([f, g], np.array([500, 1000, -400]),
+                            maxit=1000, rtol=None, xtol=0.1, **params)
         nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
 
     def test_solver_comparison(self):
@@ -320,28 +320,33 @@ class FunctionsTestCase(unittest.TestCase):
         y = [1, 0, 0.1, 8, -6.5, 0.2, 0.004, 0.01]
         sol = [0.75, 0, 0, 7.75, -6.25, 0, 0, 0]
         w1, w2 = .8, .4
-        f1 = functions.norm_l2(y=y, lambda_=w1 / 2.)  # Smooth.
-        f2 = functions.norm_l1(lambda_=w2 / 2.)       # Non-smooth.
+        f1 = functions.norm_l2(y=y, lambda_=w1/2.)  # Smooth.
+        f2 = functions.norm_l1(lambda_=w2/2.)       # Non-smooth.
         # f3 = functions.proj_b2(epsilon=0.6)         # Non-smooth.
-
-        # TODO: add test for MLFBF
 
         # Solvers.
         L = w1  # Lipschitz continuous gradient.
-        params = {'step': 1. / L, 'lambda_': 0.5}
-        solver1 = solvers.forward_backward(method='ISTA', **params)
-        solver2 = solvers.forward_backward(method='FISTA', **params)
-        solver3 = solvers.douglas_rachford(**params)
-        solver4 = solvers.generalized_forward_backward(**params)
+        params = {'step': 1./L, 'lambda_': 0.5}
+        slvs = []
+        slvs.append(solvers.forward_backward(method='ISTA', **params))
+        slvs.append(solvers.forward_backward(method='FISTA', **params))
+        slvs.append(solvers.douglas_rachford(**params))
+        slvs.append(solvers.generalized_forward_backward(**params))
+        # slvs.append(solvers.mlfbf(step=.7/L))  # TODO
+        slvs.append(solvers.projection_based(step=1e-3))
 
         # Compare solutions.
-        params = {'rtol': 1e-14, 'verbosity': 'NONE'}
-        niters = [26, 2, 61, 26]
-        for i, solver in enumerate([solver1, solver2, solver3, solver4]):
+        params = {'rtol': 1e-14, 'verbosity': 'NONE', 'maxit': 1e4}
+        niters = [26, 2, 61, 26, 1e4]
+        for solver, niter in zip(slvs, niters):
             x0 = np.zeros(len(y))
             ret = solvers.solve([f1, f2], x0, solver, **params)
-            nptest.assert_allclose(ret['sol'], sol)
-            self.assertEqual(ret['niter'], niters[i])
+            # These primal-dual solvers are much slower.
+            if type(solver) is solvers.projection_based:
+                nptest.assert_allclose(ret['sol'], sol, atol=0.2)
+            else:
+                nptest.assert_allclose(ret['sol'], sol)
+            self.assertEqual(ret['niter'], niter)
             self.assertIs(ret['sol'], x0)  # The initial value was modified.
 
 

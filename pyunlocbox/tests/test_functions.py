@@ -136,17 +136,17 @@ class FunctionsTestCase(unittest.TestCase):
 
         # Test prox for non-tight matrices A
         L = np.array([[8, 1, 10], [1, 9, 1], [3, 7, 5], [1, 4, 4]])
-        f = functions.norm_l2(A=L, tight=False, y=np.array(
-            [1, 2, 3, 4]), w=np.array([1, 1, 0.5, 0.75]))
+        f = functions.norm_l2(A=L, tight=False, y=np.array([1, 2, 3, 4]),
+                              w=np.array([1, 1, 0.5, 0.75]))
         nptest.assert_allclose(f.eval([1, 1, 1]), 455.0625)
-        nptest.assert_allclose(f.grad([1, 1, 1]), [
-                               329.625, 262.500, 430.500], rtol=1e-3)
-        nptest.assert_allclose(
-            f.prox([1, 1, 1], 1), [-0.887,  0.252,  0.798], rtol=1e-3)
-        nptest.assert_allclose(
-            f.prox([6, 7, 3], 1), [-0.345,  0.298,  0.388], rtol=1e-3)
-        nptest.assert_allclose(
-            f.prox([10, 0, -5], 1), [1.103,  0.319,  -0.732], rtol=1e-3)
+        nptest.assert_allclose(f.grad([1, 1, 1]),
+                               [329.625, 262.500, 430.500], rtol=1e-3)
+        nptest.assert_allclose(f.prox([1, 1, 1], 1),
+                               [-0.887,  0.252,  0.798], rtol=1e-3)
+        nptest.assert_allclose(f.prox([6, 7, 3], 1),
+                               [-0.345,  0.298,  0.388], rtol=1e-3)
+        nptest.assert_allclose(f.prox([10, 0, -5], 1),
+                               [1.103,  0.319,  -0.732], rtol=1e-3)
 
     def test_soft_thresholding(self):
         """
@@ -174,8 +174,8 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval([10, 0]), 30)
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
         self.assertEqual(f.eval([-3, 4]), 21)
-        nptest.assert_array_equal(
-            f.prox(np.array([[1, -4], [5, -2]]), 1), [[0, -1], [2, 0]])
+        nptest.assert_array_equal(f.prox(np.array([[1, -4], [5, -2]]), 1),
+                                  [[0, -1], [2, 0]])
 
     def test_norm_nuclear(self):
         """
@@ -187,8 +187,8 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval(np.diag([10, 0])), 30)
         self.assertEqual(f.eval(np.diag(np.array([-10, 0]))), 30)
         self.assertEqual(f.eval([[-3]]), 9)
-        nptest.assert_allclose(
-            f.prox(np.array([[1, 1], [1, 1]]), 1. / 3), [[.5, .5], [.5, .5]])
+        nptest.assert_allclose(f.prox(np.array([[1, 1], [1, 1]]), 1. / 3),
+                               [[.5, .5], [.5, .5]])
 
     def test_norm_tv(self):
         """
@@ -203,11 +203,9 @@ class FunctionsTestCase(unittest.TestCase):
         # test for a 3 dim matrice (testing with a 2x3x2)
         mat3d = np.arange(1, stop=13).reshape(2, 2, 3).transpose((1, 2, 0))
         # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.arange(1, stop=25).reshape(
-            2, 2, 2, 3).transpose((2, 3, 1, 0))
+        mat4d = np.arange(1, stop=25).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
         # test for a 5dim matrice (2x2x3x2x2)
-        mat5d = np.arange(1, stop=49).reshape(
-            2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
+        mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
 
         # Test for evals
         def test_eval():
@@ -227,8 +225,7 @@ class FunctionsTestCase(unittest.TestCase):
             nptest.assert_array_equal(xeval, f.eval(mat2d))
             f = functions.norm_tv(dim=2, wx=0.5, wy=2)
             xeval = np.array([71.1092])
-            nptest.assert_array_equal(
-                xeval, np.around(f.eval(mat2d), decimals=4))
+            nptest.assert_array_equal(xeval, np.around(f.eval(mat2d), decimals=4))
 
             # test with 3d matrices (2x3x2)
             # test without weight
@@ -242,13 +239,11 @@ class FunctionsTestCase(unittest.TestCase):
             # test with weights
             f = functions.norm_tv(dim=2, wx=2, wy=3)
             sol = np.sum(np.array([25.4164, 25.4164]))
-            nptest.assert_array_equal(
-                sol, np.around(f.eval(mat3d), decimals=4))
+            nptest.assert_array_equal(sol, np.around(f.eval(mat3d), decimals=4))
 
             f = functions.norm_tv(dim=3, wx=2, wy=3, wz=.5)
             xeval = np.array([58.3068])
-            nptest.assert_array_equal(
-                xeval, np.around(f.eval(mat3d), decimals=4))
+            nptest.assert_array_equal(xeval, np.around(f.eval(mat3d), decimals=4))
 
         # Test for prox
         def test_prox():
