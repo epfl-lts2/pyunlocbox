@@ -11,6 +11,8 @@ python:
 #  - "pypy" fails to install numpy
 
 install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y gfortran libatlas-base-dev  # For scipy.
     # Backport of new unittest features for Python 2.6.
     - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi
     # Not an usage dependency, only required to test tutorials.
