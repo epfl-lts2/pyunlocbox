@@ -30,10 +30,10 @@ class FunctionsTestCase(unittest.TestCase):
         return x**2 - 5
 
     def grad(self, x):
-        return 2*x
+        return 2 * x
 
     def prox(self, x, T):
-        return x+T
+        return x + T
 
     def test_func(self):
         """
@@ -75,7 +75,7 @@ class FunctionsTestCase(unittest.TestCase):
         assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
         assert_equivalent({'A': None}, {'A': np.identity(3)})
         assert_equivalent({'A': None}, {'A': 1})
-        assert_equivalent({'A': 6.4}, {'A': lambda x: 6.4*x})
+        assert_equivalent({'A': 6.4}, {'A': lambda x: 6.4 * x})
         A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
         assert_equivalent({'A': A}, {'A': A, 'At': A.T})
         assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A})
@@ -105,26 +105,26 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval(np.array([-10, 0])), 300)
         nptest.assert_allclose(f.grad([10, 0]), [60, 0])
         nptest.assert_allclose(f.grad([-10, 0]), [-60, 0])
-        self.assertEqual(f.eval([3, 4]), 3*5**2)
-        self.assertEqual(f.eval(np.array([-3, 4])), 3*5**2)
+        self.assertEqual(f.eval([3, 4]), 3 * 5**2)
+        self.assertEqual(f.eval(np.array([-3, 4])), 3 * 5**2)
         nptest.assert_allclose(f.grad([3, 4]), [18, 24])
         nptest.assert_allclose(f.grad([3, -4]), [18, -24])
         self.assertEqual(f.prox(0, 1), 0)
-        self.assertEqual(f.prox(7, 1./6), 3.5)
+        self.assertEqual(f.prox(7, 1. / 6), 3.5)
         f = functions.norm_l2(lambda_=4)
         nptest.assert_allclose(f.prox([7, -22], .125), [3.5, -11])
 
-        f = functions.norm_l2(lambda_=1, A=lambda x: 2*x, At=lambda x: x/2,
+        f = functions.norm_l2(lambda_=1, A=lambda x: 2 * x, At=lambda x: x / 2,
                               y=[8, 12])
         self.assertEqual(f.eval([4, 6]), 0)
-        self.assertEqual(f.eval([5, -2]), 256+4)
+        self.assertEqual(f.eval([5, -2]), 256 + 4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
 #        nptest.assert_allclose(f.grad([5, -2]), [8, -64])
         nptest.assert_allclose(f.prox([4, 6], 1), [4, 6])
 
-        f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4])/np.sqrt(2),
-                              A=lambda x: np.fft.fft(x)/np.sqrt(x.size),
-                              At=lambda x: np.fft.ifft(x)*np.sqrt(x.size))
+        f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4]) / np.sqrt(2),
+                              A=lambda x: np.fft.fft(x) / np.sqrt(x.size),
+                              At=lambda x: np.fft.ifft(x) * np.sqrt(x.size))
 #        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
 #        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
         nptest.assert_allclose(f.grad([2, 4]), 0)
@@ -133,6 +133,20 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(f.prox([3, 5], 1), [2.2, 4.2])
         nptest.assert_allclose(f.prox([2.2, 4.2], 1), [2.04, 4.04])
         nptest.assert_allclose(f.prox([2.04, 4.04], 1), [2.008, 4.008])
+
+        # Test prox for non-tight matrices A
+        L = np.array([[8, 1, 10], [1, 9, 1], [3, 7, 5], [1, 4, 4]])
+        f = functions.norm_l2(A=L, tight=False, y=np.array([1, 2, 3, 4]),
+                              w=np.array([1, 1, 0.5, 0.75]))
+        nptest.assert_allclose(f.eval([1, 1, 1]), 455.0625)
+        nptest.assert_allclose(f.grad([1, 1, 1]),
+                               [329.625, 262.500, 430.500], rtol=1e-3)
+        nptest.assert_allclose(f.prox([1, 1, 1], 1),
+                               [-0.887,  0.252,  0.798], rtol=1e-3)
+        nptest.assert_allclose(f.prox([6, 7, 3], 1),
+                               [-0.345,  0.298,  0.388], rtol=1e-3)
+        nptest.assert_allclose(f.prox([10, 0, -5], 1),
+                               [1.103,  0.319,  -0.732], rtol=1e-3)
 
     def test_soft_thresholding(self):
         """
@@ -160,7 +174,8 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval([10, 0]), 30)
         self.assertEqual(f.eval(np.array([-10, 0])), 30)
         self.assertEqual(f.eval([-3, 4]), 21)
-        nptest.assert_array_equal(f.prox(np.array([[1, -4],[5,-2]]),1), [[0, -1],[2,0]])
+        nptest.assert_array_equal(f.prox(np.array([[1, -4], [5, -2]]), 1),
+                                  [[0, -1], [2, 0]])
 
     def test_norm_nuclear(self):
         """
@@ -172,7 +187,8 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(f.eval(np.diag([10, 0])), 30)
         self.assertEqual(f.eval(np.diag(np.array([-10, 0]))), 30)
         self.assertEqual(f.eval([[-3]]), 9)
-        nptest.assert_allclose(f.prox(np.array([[1, 1],[1, 1]]),1./3), [[.5, .5],[.5,.5]])
+        nptest.assert_allclose(f.prox(np.array([[1, 1], [1, 1]]), 1. / 3),
+                               [[.5, .5], [.5, .5]])
 
     def test_norm_tv(self):
         """
@@ -247,9 +263,9 @@ class FunctionsTestCase(unittest.TestCase):
             f = functions.norm_tv(tol=10e-4, dim=2)
             gamma = 1.5
             x2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5], [2, 10, 7, 8]])
-            sol = np.array([[ 3.44427, 2.87332, 2.51662, 2.45336],
-                            [18.38207, 3.10251, 4.0028 , 4.64074],
-                            [ 4.50809, 6.44118, 6.38421, 6.25082]])
+            sol = np.array([[3.44427, 2.87332, 2.51662, 2.45336],
+                            [18.38207, 3.10251, 4.0028, 4.64074],
+                            [4.50809, 6.44118, 6.38421, 6.25082]])
             nptest.assert_array_equal(np.around(sol, decimals=5),
                                       np.around((f.prox(x2d, gamma)),
                                                 decimals=5))
@@ -279,8 +295,8 @@ class FunctionsTestCase(unittest.TestCase):
             f = functions.norm_tv(tol=10e-10, dim=2, wx=5, wy=10)
             gamma = 3
             x3d = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]],
-                          [[4, 13, 22], [5, 14, 23], [6, 15, 24]],
-                          [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
+                            [[4, 13, 22], [5, 14, 23], [6, 15, 24]],
+                            [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
             sol = np.array([[[5, 14, 23],
                              [5, 14, 23],
                              [5, 14, 23]],
@@ -291,8 +307,6 @@ class FunctionsTestCase(unittest.TestCase):
                              [5, 14, 23],
                              [5, 14, 23]]])
             nptest.assert_array_equal(sol, np.around(f.prox(x3d, gamma)))
-
-
 
             # Test with 4d matrices
             # Test without weights
@@ -365,7 +379,7 @@ class FunctionsTestCase(unittest.TestCase):
         A = np.random.standard_normal((ny, nx))
         nu = np.linalg.norm(A, ord=2)**2
         f = functions.proj_b2(y=y, A=A, nu=nu, tight=False, method='FISTA',
-                              epsilon=5, tol=tol/10)
+                              epsilon=5, tol=tol / 10)
         sol_fista = f.prox(x, 0)
         f.method = 'ISTA'
         sol_ista = f.prox(x, 0)
@@ -397,7 +411,7 @@ class FunctionsTestCase(unittest.TestCase):
             if func[0] not in ['func', 'norm', 'norm_nuclear', 'proj']:
                 res = 0
                 for iN in range(N):
-                    res += f.eval(X[:,iN])
+                    res += f.eval(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.eval(X))
 
             # Each column is the prox of one of the N problems.
@@ -406,7 +420,7 @@ class FunctionsTestCase(unittest.TestCase):
                                'proj']:
                 res = np.zeros((n, N))
                 for iN in range(N):
-                    res[:,iN] = f.prox(X[:,iN], step)
+                    res[:, iN] = f.prox(X[:, iN], step)
                 nptest.assert_array_almost_equal(res, f.prox(X, step))
 
             # Each column is the gradient of one of the N problems.
@@ -414,7 +428,7 @@ class FunctionsTestCase(unittest.TestCase):
                                'norm_tv', 'proj', 'proj_b2']:
                 res = np.zeros((n, N))
                 for iN in range(N):
-                    res[:,iN] = f.grad(X[:,iN])
+                    res[:, iN] = f.grad(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.grad(X))
 
 

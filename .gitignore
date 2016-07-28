@@ -44,3 +44,9 @@ doc/_build
 
 # Vim swap files
 .*.swp
+
+# Mac junk
+.DS_Store
+
+#iPython notebook junk
+.ipynb*

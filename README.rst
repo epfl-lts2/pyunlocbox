@@ -27,6 +27,8 @@ Features
 
   * Forward-backward splitting algorithm
   * Douglas-Rachford splitting algorithm
+  * Monotone+Lipschitz Forward-Backward-Forward primal-dual algorithm
+  * Projection-based primal-dual algorithm
 
 * Proximal operators
 
@@ -79,3 +81,4 @@ Contributors :
 * Alexandre Lafaye from EPFL LTS2 <alexandre.lafaye@epfl.ch>
 * Basile Châtillon from EPFL LTS2 <basile.chatillon@epfl.ch>
 * Nicolas Rod from EPFL LTS2 <nicolas.rod@epfl.ch>
+* Rodrigo Pena from EPFL LTS2 <rodrigo.pena@epfl.ch>

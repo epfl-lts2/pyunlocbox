@@ -3,14 +3,21 @@
 =======
 History
 =======
-0.2.3 (2015-02-06)
+
+x.x.x (xxxx-xx-xx)
 ------------------
 
-Bug fix version. Still experimental.
+New Features:
+
+* Monotone+Lipschitz Forward-Backward-Forward primal-dual algorithm
+* Projection-based primal-dual algorithm
+* L2-norm proximal operator supports non-tight frames
 
 Bug fixes :
 
-* prox tv 2d has been fixed
+* prox_tv_2d has been fixed
+
+
 0.2.2 (2015-01-16)
 ------------------
 
@@ -20,7 +27,7 @@ New Features:
 
 * norm_tv has been added with gradient, div, evaluation and prox.
 * Module signals has been added.
-* A demo for douglas rachford is also now presenta.
+* A demo for douglas rachford is also now present.
 
 
 0.2.1 (2014-08-20)

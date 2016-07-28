@@ -30,7 +30,8 @@ class FunctionsTestCase(unittest.TestCase):
         Test some features of the solving function.
         """
         y = 5 - 10 * np.random.uniform(size=(15, 4))
-        x0 = lambda: np.zeros(y.shape)
+
+        def x0(): return np.zeros(y.shape)
         nverb = {'verbosity': 'NONE'}
 
         # Function verbosity.
@@ -47,8 +48,8 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertRaises(ValueError, solvers.solve, [], x0(), **nverb)
         solver = solvers.forward_backward()
         solvers.solve([f], x0(), solver, **nverb)
-        #self.assertIsInstance(solver.f1, functions.dummy)
-        #self.assertIsInstance(solver.f2, functions.dummy)
+        # self.assertIsInstance(solver.f1, functions.dummy)
+        # self.assertIsInstance(solver.f2, functions.dummy)
 
         # Automatic solver selection.
         f0 = functions.func()
@@ -96,7 +97,7 @@ class FunctionsTestCase(unittest.TestCase):
         tol = 1e-4
         r = solvers.solve([f], x0(), None, None, None, None, tol, None, 'NONE')
         self.assertEqual(r['crit'], 'XTOL')
-        r2 = solvers.solve([f], x0(), maxit=r['niter']-1, **nverb)
+        r2 = solvers.solve([f], x0(), maxit=r['niter'] - 1, **nverb)
         err = np.linalg.norm(r['sol'] - r2['sol']) / np.sqrt(x0().size)
         self.assertLess(err, tol)
         self.assertEqual(r['niter'], 12)
@@ -243,12 +244,12 @@ class FunctionsTestCase(unittest.TestCase):
         """
         y = [4, 5, 6, 7]
         L = 4  # Gradient of the smooth function is Lipschitz continuous.
-        solver = solvers.generalized_forward_backward(step=.9/L, lambda_=.8)
+        solver = solvers.generalized_forward_backward(step=.9 / L, lambda_=.8)
         params = {'solver': solver, 'verbosity': 'NONE'}
 
         # Functions.
         f1 = functions.norm_l1(y=y, lambda_=.7)    # Non-smooth.
-        f2 = functions.norm_l2(y=y, lambda_=L/2.)  # Smooth.
+        f2 = functions.norm_l2(y=y, lambda_=L / 2.)  # Smooth.
 
         # Solve with 1 smooth and 1 non-smooth.
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **params)
@@ -275,6 +276,41 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['niter'], 25)
 
+    def test_mlfbf(self):
+        """
+        Test the MLFBF solver with arbitrarily selected functions.
+        """
+        x = [1., 1., 1.]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        max_step = 1 / (1 + np.linalg.norm(L, 2))
+        solver = solvers.mlfbf(L=L, step=max_step / 2.)
+        params = {'solver': solver, 'verbosity': 'NONE'}
+
+        # L2-norm prox and dummy prox.
+        f = functions.dummy()
+        f._prox = lambda x, T: np.maximum(np.zeros(len(x)), x)
+        g = functions.norm_l2(lambda_=0.5)
+        h = functions.norm_l2(y=np.array([294, 390, 361]), lambda_=0.5)
+        ret = solvers.solve([f, g, h], np.zeros(len(x)),
+                            maxit=1000, rtol=0, **params)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
+    def test_projection_based(self):
+        """
+        Test the projection-based solver with arbitrarily selected functions.
+        """
+        x = [0, 0, 0]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        solver = solvers.projection_based(L=L, step=1.)
+        params = {'solver': solver, 'verbosity': 'NONE'}
+
+        # L1-norm prox and dummy prox.
+        f = functions.norm_l1(y=np.array([294, 390, 361]))
+        g = functions.norm_l1()
+        ret = solvers.solve([f, g], np.array([500, 1000, -400]),
+                            maxit=1000, rtol=None, xtol=0.1, **params)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
     def test_solver_comparison(self):
         """
         Test that all solvers return the same and correct solution.
@@ -286,24 +322,31 @@ class FunctionsTestCase(unittest.TestCase):
         w1, w2 = .8, .4
         f1 = functions.norm_l2(y=y, lambda_=w1/2.)  # Smooth.
         f2 = functions.norm_l1(lambda_=w2/2.)       # Non-smooth.
-        #f3 = functions.proj_b2(epsilon=0.6)         # Non-smooth.
+        # f3 = functions.proj_b2(epsilon=0.6)         # Non-smooth.
 
         # Solvers.
         L = w1  # Lipschitz continuous gradient.
         params = {'step': 1./L, 'lambda_': 0.5}
-        solver1 = solvers.forward_backward(method='ISTA', **params)
-        solver2 = solvers.forward_backward(method='FISTA', **params)
-        solver3 = solvers.douglas_rachford(**params)
-        solver4 = solvers.generalized_forward_backward(**params)
+        slvs = []
+        slvs.append(solvers.forward_backward(method='ISTA', **params))
+        slvs.append(solvers.forward_backward(method='FISTA', **params))
+        slvs.append(solvers.douglas_rachford(**params))
+        slvs.append(solvers.generalized_forward_backward(**params))
+        # slvs.append(solvers.mlfbf(step=.7/L))  # TODO
+        slvs.append(solvers.projection_based(step=1e-3))
 
         # Compare solutions.
-        params = {'rtol': 1e-14, 'verbosity': 'NONE'}
-        niters = [26, 2, 61, 26]
-        for i, solver in enumerate([solver1, solver2, solver3, solver4]):
+        params = {'rtol': 1e-14, 'verbosity': 'NONE', 'maxit': 1e4}
+        niters = [26, 2, 61, 26, 1e4]
+        for solver, niter in zip(slvs, niters):
             x0 = np.zeros(len(y))
             ret = solvers.solve([f1, f2], x0, solver, **params)
-            nptest.assert_allclose(ret['sol'], sol)
-            self.assertEqual(ret['niter'], niters[i])
+            # These primal-dual solvers are much slower.
+            if type(solver) is solvers.projection_based:
+                nptest.assert_allclose(ret['sol'], sol, atol=0.2)
+            else:
+                nptest.assert_allclose(ret['sol'], sol)
+            self.assertEqual(ret['niter'], niter)
             self.assertIs(ret['sol'], x0)  # The initial value was modified.
 
 
