@@ -85,9 +85,6 @@ Solution found after 35 iterations :
 Let's display the results :
 
 >>> try:
-...     import matplotlib, sys
-...     cmd_backend = 'matplotlib.use("AGG")'
-...     _ = eval(cmd_backend) if 'matplotlib.pyplot' not in sys.modules else 0
 ...     import matplotlib.pyplot as plt
 ...     _ = plt.figure()
 ...     _ = plt.plot(x, 'o', label='Original')
@@ -97,12 +94,12 @@ Let's display the results :
 ...     _ = plt.legend(numpoints=1)
 ...     _ = plt.xlabel('Signal dimension number')
 ...     _ = plt.ylabel('Signal value')
-...     _ = plt.savefig('doc/tutorials/cs_dr_results.pdf')
-...     _ = plt.savefig('doc/tutorials/cs_dr_results.png')
+...     #plt.savefig('doc/tutorials/img/cs_dr_results.pdf')
+...     #plt.savefig('doc/tutorials/img/cs_dr_results.png')
 ... except:
 ...     pass
 
-.. image:: cs_dr_results.*
+.. image:: img/cs_dr_results.*
 
 The above figure shows a good reconstruction which is both sparse (thanks to
 the L1-norm objective) and close to the measurements (thanks to the L2-ball
@@ -119,9 +116,9 @@ Let's display the convergence of the objective function :
 ...     _ = plt.legend()
 ...     _ = plt.xlabel('Iteration number')
 ...     _ = plt.ylabel('Objective function value')
-...     _ = plt.savefig('doc/tutorials/cs_dr_convergence.pdf')
-...     _ = plt.savefig('doc/tutorials/cs_dr_convergence.png')
+...     #plt.savefig('doc/tutorials/img/cs_dr_convergence.pdf')
+...     #plt.savefig('doc/tutorials/img/cs_dr_convergence.png')
 ... except:
 ...     pass
 
-.. image:: cs_dr_convergence.*
+.. image:: img/cs_dr_convergence.*
