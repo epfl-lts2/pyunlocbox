@@ -1,28 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 from setuptools import setup
 
 
 setup(
-    name = 'pyunlocbox',
-    version = '0.2.2',
-    description = 'A convex optimization toolbox using proximal '
-                  'splitting methods.',
-    long_description = open('README.rst').read(),
-    author = 'Michaël Defferrard (EPFL LTS2) and '
-             'Nathanaël Perraudin (EPFL LTS2)',
-    author_email = 'michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch',
-    url = 'https://github.com/epfl-lts2/pyunlocbox',
-    packages = ['pyunlocbox', 'pyunlocbox.tests'],
-    test_suite = 'pyunlocbox.tests.test_all.suite',
-    install_requires = ['numpy','scipy'],
-    license = "BSD",
-    keywords = 'convex optimization',
-    platforms = 'any',
-    classifiers = [
+    name='pyunlocbox',
+    version='0.2.2',
+    description='A convex optimization toolbox using proximal '
+                'splitting methods.',
+    long_description=open('README.rst').read(),
+    author='Michaël Defferrard (EPFL LTS2) and '
+           'Nathanaël Perraudin (EPFL LTS2)',
+    author_email='michael.defferrard@epfl.ch, nathanael.perraudin@epfl.ch',
+    url='https://github.com/epfl-lts2/pyunlocbox',
+    packages=['pyunlocbox', 'pyunlocbox.tests'],
+    test_suite='pyunlocbox.tests.test_all.suite',
+    install_requires=['numpy', 'scipy'],
+    license="BSD",
+    keywords='convex optimization',
+    platforms='any',
+    classifiers=[
         'Topic :: Scientific/Engineering :: Mathematics',
         'Environment :: Console',
         'Development Status :: 3 - Alpha',
