@@ -5,16 +5,11 @@
 Test suite for the operators module of the pyunlocbox package
 """
 
-import sys
+import unittest
 import numpy as np
 import numpy.testing as nptest
 from pyunlocbox import operators
 
-# Use the unittest2 backport on Python 2.6 to profit from the new features.
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
 
 class OperatorsTestCase(unittest.TestCase): 
 
@@ -39,28 +34,25 @@ class OperatorsTestCase(unittest.TestCase):
         mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
 
         # test without weight
-        dx = op.grad(mat1d, dim=1)
+        dx = operators.grad(mat1d, dim=1)
         nptest.assert_array_equal(np.array([1, 1, 1, 1, 0]), dx)
 
         # test without weight
-        dx = op.grad(mat2d, dim=2)
         mat_dx = np.array([[20, -2, 4, 4], [0, 0, 0, 0]])
         mat_dy = np.array([[1, -3, 1, 0], [-21, 3, 1, 0]])
-        nptest.assert_array_equal(mat_dx, dx)
-
-        dx, dy = op.grad(mat2d, dim=2)
+        dx, dy = operators.grad(mat2d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
 
         # test with weights
-        dx, dy = op.grad(mat2d, dim=2, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy = operators.grad(mat2d, dim=2, wx=2, wy=0.5, wz=3, wt=2)
         mat_dx_w = mat_dx * 2.
         mat_dy_w = mat_dy * 0.5
         nptest.assert_array_equal(mat_dx_w, dx)
         nptest.assert_array_equal(mat_dy_w, dy)
 
         # test without weight
-        dx = op.grad(mat3d, dim=1)
+        dx = operators.grad(mat3d, dim=1)
         mat_dx = np.array([[[3, 3], [3, 3], [3, 3]],
                            [[0, 0], [0, 0], [0, 0]]])
         mat_dy = np.array([[[1, 1], [1, 1], [0, 0]],
@@ -68,16 +60,16 @@ class OperatorsTestCase(unittest.TestCase):
         mat_dz = np.array([[[6, 0], [6, 0], [6, 0]],
                            [[6, 0], [6, 0], [6, 0]]])
         nptest.assert_array_equal(mat_dx, dx)
-        dx, dy = op.grad(mat3d, dim=2)
+        dx, dy = operators.grad(mat3d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
-        dx, dy, dz = op.grad(mat3d, dim=3)
+        dx, dy, dz = operators.grad(mat3d, dim=3)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
         nptest.assert_array_equal(mat_dz, dz)
 
         # test with weights
-        dx, dy, dz = op.grad(mat3d, dim=3, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy, dz = operators.grad(mat3d, dim=3, wx=2, wy=0.5, wz=3, wt=2)
         mat_dx_w = mat_dx * 2.
         mat_dy_w = mat_dy * 0.5
         mat_dz_w = mat_dz * 3.
@@ -86,7 +78,7 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dz_w, dz)
 
         # test without weight
-        dx = op.grad(mat4d, dim=1)
+        dx = operators.grad(mat4d, dim=1)
         mat_dx = np.array([[[[3, 3], [3, 3]],
                             [[3, 3], [3, 3]],
                             [[3, 3], [3, 3]]],
@@ -112,21 +104,21 @@ class OperatorsTestCase(unittest.TestCase):
                             [[12, 0], [12, 0]],
                             [[12, 0], [12, 0]]]])
         nptest.assert_array_equal(mat_dx, dx)
-        dx, dy = op.grad(mat4d, dim=2)
+        dx, dy = operators.grad(mat4d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
-        dx, dy, dz = op.grad(mat4d, dim=3)
+        dx, dy, dz = operators.grad(mat4d, dim=3)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
         nptest.assert_array_equal(mat_dz, dz)
-        dx, dy, dz, dt = op.grad(mat4d, dim4)
+        dx, dy, dz, dt = operators.grad(mat4d, dim=4)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
         nptest.assert_array_equal(mat_dz, dz)
         nptest.assert_array_equal(mat_dt, dt)
 
         # test with weights
-        dx, dy, dz, dt = op.grad(mat4d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy, dz, dt = operators.grad(mat4d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
         # Because oop numpy, can't *=
         mat_dx_w = mat_dx * 2.
         mat_dy_w = mat_dy * 0.5
@@ -138,7 +130,7 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dt_w, dt)
 
         # test without weight
-        dx = op.grad(mat5d, dim=1)
+        dx = operators.grad(mat5d, dim=1)
         mat_dx = np.array([[[[[2, 2], [2, 2]],
                              [[2, 2], [2, 2]],
                              [[2, 2], [2, 2]]],
@@ -188,21 +180,21 @@ class OperatorsTestCase(unittest.TestCase):
                              [[12, 12], [0, 0]],
                              [[12, 12], [0, 0]]]]])
         nptest.assert_array_equal(mat_dx, dx)
-        dx, dy = op.grad(mat5d, dim=2)
+        dx, dy = operators.grad(mat5d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
-        dx, dy, dz = op.grad(mat5d, dim=3)
+        dx, dy, dz = operators.grad(mat5d, dim=3)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
         nptest.assert_array_equal(mat_dz, dz)
-        dx, dy, dz, dt = op.grad(mat5d, dim=4)
+        dx, dy, dz, dt = operators.grad(mat5d, dim=4)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
         nptest.assert_array_equal(mat_dz, dz)
         nptest.assert_array_equal(mat_dt, dt)
 
         # test with weights
-        dx, dy, dz, dt = op.grad(mat5d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy, dz, dt = operators.grad(mat5d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
         mat_dx_w = mat_dx * 2.
         mat_dy_w = mat_dy * 0.5
         mat_dz_w = mat_dz * 3.
@@ -218,11 +210,11 @@ class OperatorsTestCase(unittest.TestCase):
         dx = np.array([1, 2, 3, 4, 5])
 
         # test without weights
-        nptest.assert_array_equal(np.array([1, 1, 1, 1, -4]), op.div(dx))
+        nptest.assert_array_equal(np.array([1, 1, 1, 1, -4]), operators.div(dx))
 
         # test with weights
         weights = {'wx': 2, 'wy': 3, 'wz': 4, 'wt': 2}
-        nptest.assert_array_equal(np.array([2, 2, 2, 2, -8]), op.div(dx, **weights))
+        nptest.assert_array_equal(np.array([2, 2, 2, 2, -8]), operators.div(dx, **weights))
 
         # test with 2dim matrices
         dx = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
@@ -235,14 +227,14 @@ class OperatorsTestCase(unittest.TestCase):
         xy_mat = np.array([[14, 3, 4, -11],
                            [21, 5, 5, -15],
                            [16, -5, -6, -31]])
-        nptest.assert_array_equal(x_mat, op.div(dx))
-        nptest.assert_array_equal(xy_mat, op.div(dx, dy))
+        nptest.assert_array_equal(x_mat, operators.div(dx))
+        nptest.assert_array_equal(xy_mat, operators.div(dx, dy))
 
         # test with weights
         xy_mat_w = np.array([[41, 7, 9, -37],
                              [59, 11, 11, -49],
                              [53, -9, -11, -85]])
-        nptest.assert_array_equal(xy_mat_w, op.div(dx, dy, **weights))
+        nptest.assert_array_equal(xy_mat_w, operators.div(dx, dy, **weights))
 
         # test with 3dim matrices (3x3x3)
         dx = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]],
@@ -267,14 +259,14 @@ class OperatorsTestCase(unittest.TestCase):
         xyzt_mat = np.array([[[9, 86, 55], [15, 61, -1], [12, 27, -66]],
                              [[34, 81, 20], [29, 45, -47], [15, 0, -123]],
                              [[41, 58, -33], [25, 11, -111], [0, -45, -198]]])
-        nptest.assert_array_equal(x_mat, op.div(dx))
-        nptest.assert_array_equal(xy_mat,  op.div(dx, dy))
-        nptest.assert_array_equal(xyz_mat, op.div(dx, dy, dz))
+        nptest.assert_array_equal(x_mat, operators.div(dx))
+        nptest.assert_array_equal(xy_mat,  operators.div(dx, dy))
+        nptest.assert_array_equal(xyz_mat, operators.div(dx, dy, dz))
         # test with weights
         xyz_mat_w = np.array([[[9, 86, 55], [15, 61, -1], [12, 27, -66]],
                               [[34, 81, 20], [29, 45, -47], [15, 0, -123]],
                               [[41, 58, -33], [25, 11, -111], [0, -45, -198]]])
-        nptest.assert_array_equal(xyz_mat_w, op.div(dx, dy, dz, **weights))
+        nptest.assert_array_equal(xyz_mat_w, operators.div(dx, dy, dz, **weights))
 
         # test with 4d matrices (3x3x3x3)
         dx = np.array([[[[1, 28, 55], [10, 37, 64], [19, 46, 73]],
@@ -350,10 +342,10 @@ class OperatorsTestCase(unittest.TestCase):
                              [[[17, 64, 30], [28, 39, -31], [12, -13, -119]],
                               [[12, 31, -31], [13, -4, -102], [-13, -66, -200]],
                               [[4, -5, -95], [-5, -50, -176], [-41, -122, -284]]]])
-        nptest.assert_array_equal(x_mat, op.div(dx))
-        nptest.assert_array_equal(xy_mat, op.div(dx, dy))
-        nptest.assert_array_equal(xyz_mat, op.div(dx, dy, dz))
-        nptest.assert_array_equal(xyzt_mat, op.div(dx, dy, dz, dt))
+        nptest.assert_array_equal(x_mat, operators.div(dx))
+        nptest.assert_array_equal(xy_mat, operators.div(dx, dy))
+        nptest.assert_array_equal(xyz_mat, operators.div(dx, dy, dz))
+        nptest.assert_array_equal(xyzt_mat, operators.div(dx, dy, dz, dt))
         # test with weights
         xyzt_mat_w = np.array([[[[11, 306, 439], [106, 275, 282], [93, 136, 17]],
                                 [[19, 231, 281], [83, 169, 93], [39, -1, -203]],
@@ -364,4 +356,15 @@ class OperatorsTestCase(unittest.TestCase):
                                [[[55, 230, 243], [90, 139, 26], [17, -60, -299]],
                                 [[41, 133, 63], [45, 11, -185], [-59, -219, -541]],
                                 [[18, 27, -126], [-9, -126, -405], [-144, -387, -792]]]])
-        nptest.assert_array_equal(xyzt_mat_w, op.div(dx, dy, dz, dt, **weights))
+        nptest.assert_array_equal(xyzt_mat_w, operators.div(dx, dy, dz, dt, **weights))
+
+
+suite = unittest.TestLoader().loadTestsFromTestCase(OperatorsTestCase)
+
+
+def run():
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+if __name__ == '__main__':
+    run()
