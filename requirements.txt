@@ -5,8 +5,11 @@ scipy
 # Required to build documentation.
 sphinx
 numpydoc
-matplotlib  # Also required to test tutorials.
 sphinxcontrib-bibtex
+
+# Required for testing.
+coverage
+matplotlib
 
 # Required for packaging.
 wheel

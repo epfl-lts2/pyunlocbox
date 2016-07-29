@@ -36,9 +36,9 @@ suites.append(test_tutorials())
 suite = unittest.TestSuite(suites)
 
 
-def run():
+def run():  # pragma: no cover
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     run()
