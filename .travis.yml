@@ -1,5 +1,7 @@
 # Configuration file for automatic testing at travis-ci.org
 
+sudo: false
+
 language: python
 
 python:
@@ -8,11 +10,20 @@ python:
   - "3.4"
   - "3.5"
 
-install:
-    - sudo apt-get -qq update
-    - sudo apt-get install -y gfortran libatlas-base-dev  # For scipy.
-    # Not an usage dependency, only required to test tutorials.
-    - pip install matplotlib
-    - python setup.py install
+addons:
+  apt:
+    packages:
+      - gfortran  # scipy
+      - libatlas-base-dev  # scipy
+      - graphviz  # sphinx inheritance diagrams
 
-script: python setup.py test
+install:
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+  - python setup.py install
+
+script:
+  - make test
+  - make doc
+  - make -C doc linkcheck
+#  - make lint
