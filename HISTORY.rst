@@ -21,6 +21,7 @@ Infrastructure :
 
 * Continuous integration testing on Python 2.7, 3.3, 3.4 and 3.5
 * Travis-ci: check style and build doc
+* Removed tox config (too cumbersome to use on dev box)
 
 
 0.2.2 (2015-01-16)
