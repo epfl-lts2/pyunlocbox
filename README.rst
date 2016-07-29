@@ -40,7 +40,7 @@ Features
 Installation
 ------------
 
-PyUnLocBox is continuously tested with Python 2.6, 2.7, 3.2, 3.3 and 3.4.
+PyUnLocBox is continuously tested on Python 2.7, 3.3, 3.4 and 3.5.
 
 System-wide installation::
 
