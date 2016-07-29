@@ -14,21 +14,6 @@ from pyunlocbox import functions
 
 class FunctionsTestCase(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
-    def eval(self, x):
-        return x**2 - 5
-
-    def grad(self, x):
-        return 2 * x
-
-    def prox(self, x, T):
-        return x + T
-
     def test_func(self):
         """
         Test the func base class.
@@ -41,28 +26,21 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertRaises(NotImplementedError, f.eval, x)
         self.assertRaises(NotImplementedError, f.prox, x, T)
         self.assertRaises(NotImplementedError, f.grad, x)
-        f.eval = self.eval
-        f.grad = self.grad
-        f.prox = self.prox
-        self.assertEqual(f.eval(x), self.eval(x))
-        self.assertEqual(f.grad(x), self.grad(x))
-        self.assertEqual(f.prox(x, T), self.prox(x, T))
+        f.eval = lambda x: x**2 - 5
+        f.grad = lambda x: 2 * x
+        f.prox = lambda x, T: x + T
 
         def assert_equivalent(param1, param2):
             x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
-            f0 = functions.dummy
-            f1 = functions.norm_l1
-            f2 = functions.norm_l2
-            f3 = functions.norm_nuclear
-            f4 = functions.norm_tv
-            f5 = functions.proj_b2
-            for f in [f0, f1, f2, f3, f4, f5]:
-                f1 = f(**param1)
-                f2 = f(**param2)
-                self.assertEqual(f1.eval(x), f2.eval(x))
-                nptest.assert_array_equal(f1.prox(x, 3), f2.prox(x, 3))
-                if 'GRAD' in f1.cap(x):
-                    nptest.assert_array_equal(f1.grad(x), f2.grad(x))
+            funcs = inspect.getmembers(functions, inspect.isclass)
+            for f in funcs:
+                if f[0] not in ['func', 'norm', 'proj']:
+                    f1 = f[1](**param1)
+                    f2 = f[1](**param2)
+                    self.assertEqual(f1.eval(x), f2.eval(x))
+                    nptest.assert_array_equal(f1.prox(x, 3), f2.prox(x, 3))
+                    if 'GRAD' in f1.cap(x):
+                        nptest.assert_array_equal(f1.grad(x), f2.grad(x))
 
         # Default parameters. Callable or matrices.
         assert_equivalent({}, {'A': None, 'y': 0, 'At': 1})
@@ -427,11 +405,3 @@ class FunctionsTestCase(unittest.TestCase):
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
-
-
-def run():
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-
-if __name__ == '__main__':
-    run()

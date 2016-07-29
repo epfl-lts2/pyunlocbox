@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Test suite for the operators module of the pyunlocbox package
+Test suite for the operators module of the pyunlocbox package.
 """
 
 import unittest
@@ -11,13 +11,7 @@ import numpy.testing as nptest
 from pyunlocbox import operators
 
 
-class OperatorsTestCase(unittest.TestCase): 
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
+class OperatorsTestCase(unittest.TestCase):
 
     def test_grad(self):
 
@@ -360,11 +354,3 @@ class OperatorsTestCase(unittest.TestCase):
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(OperatorsTestCase)
-
-
-def run():
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-
-if __name__ == '__main__':
-    run()

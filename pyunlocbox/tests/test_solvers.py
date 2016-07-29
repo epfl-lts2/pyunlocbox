@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Test suite for the functions module of the pyunlocbox package.
+Test suite for the solvers module of the pyunlocbox package.
 """
 
 import unittest
@@ -12,12 +12,6 @@ from pyunlocbox import functions, solvers
 
 
 class FunctionsTestCase(unittest.TestCase):
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
 
     def test_solve(self):
         """
@@ -345,11 +339,3 @@ class FunctionsTestCase(unittest.TestCase):
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
-
-
-def run():
-    unittest.TextTestRunner(verbosity=2).run(suite)
-
-
-if __name__ == '__main__':
-    run()
