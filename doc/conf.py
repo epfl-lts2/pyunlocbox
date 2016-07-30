@@ -11,8 +11,18 @@ sys.path.insert(0, project_root)
 import pyunlocbox  # noqa: E402
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',
-              'sphinx.ext.autosummary', 'sphinx.ext.mathjax', 'numpydoc',
+              'sphinx.ext.autosummary', 'sphinx.ext.mathjax',
               'sphinx.ext.inheritance_diagram', 'sphinxcontrib.bibtex']
+
+extensions.append('matplotlib.sphinxext.plot_directive')
+plot_include_source = True
+plot_html_show_source_link = False
+plot_html_show_formats = False
+plot_working_directory = '.'
+
+extensions.append('numpydoc')
+numpydoc_show_class_members = False
+
 exclude_patterns = ['_build']
 source_suffix = '.rst'
 master_doc = 'index'
@@ -23,7 +33,6 @@ version = pyunlocbox.__version__
 release = pyunlocbox.__version__
 copyright = 'EPFL LTS2'
 
-numpydoc_show_class_members = False
 pygments_style = 'sphinx'
 html_theme = 'default'
 latex_elements = {
@@ -31,6 +40,6 @@ latex_elements = {
     'pointsize': '10pt',
 }
 latex_documents = [
-    ('index', 'pyunlocbox.tex', 'PPyUNLocBoX documentation',
+    ('index', 'pyunlocbox.tex', 'PyUNLocBoX documentation',
      u'Michaël Defferrard, EPFL LTS2', 'manual'),
 ]

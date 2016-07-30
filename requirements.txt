@@ -6,10 +6,10 @@ scipy
 sphinx
 numpydoc
 sphinxcontrib-bibtex
+matplotlib >= 1.4  # plot_directive
 
 # Required for testing.
 coverage
-matplotlib
 
 # Required for packaging.
 wheel

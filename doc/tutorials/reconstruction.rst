@@ -15,21 +15,30 @@ trade-off between the two terms.
 
 Load an image and convert it to grayscale
 
->>> import matplotlib.image as mpimg
->>> import numpy as np
->>> im_original = mpimg.imread('doc/tutorials/img/lena.png')
->>> im_original = np.dot(im_original[..., :3], [0.299, 0.587, 0.144])
+.. plot::
+   :context: reset
+
+   >>> import matplotlib.image as mpimg
+   >>> import numpy as np
+   >>> im_original = mpimg.imread('doc/tutorials/lena.png')
+   >>> im_original = np.dot(im_original[..., :3], [0.299, 0.587, 0.144])
 
 and generate a random masking matrix
 
->>> np.random.seed(14)  # Reproducible results.
->>> mask = np.random.uniform(size=im_original.shape)
->>> mask = mask > 0.85
+.. plot::
+   :context:
+
+   >>> np.random.seed(14)  # Reproducible results.
+   >>> mask = np.random.uniform(size=im_original.shape)
+   >>> mask = mask > 0.85
 
 which masks 85% of the pixels. The masked image is given by
 
->>> g = lambda x: mask * x
->>> im_masked = g(im_original)
+.. plot::
+   :context:
+
+   >>> g = lambda x: mask * x
+   >>> im_masked = g(im_original)
 
 The prior objective to minimize is defined by
 
@@ -38,8 +47,11 @@ The prior objective to minimize is defined by
 which can be expressed by the toolbox TV-norm function object, instantiated
 with
 
->>> from pyunlocbox import functions
->>> f1 = functions.norm_tv(maxit=50, dim=2)
+.. plot::
+   :context:
+
+   >>> from pyunlocbox import functions
+   >>> f1 = functions.norm_tv(maxit=50, dim=2)
 
 The fidelity objective to minimize is defined by
 
@@ -48,8 +60,11 @@ The fidelity objective to minimize is defined by
 which can be expressed by the toolbox L2-norm function object, instantiated
 with
 
->>> tau = 100
->>> f2 = functions.norm_l2(y=im_masked, A=g, lambda_=tau)
+.. plot::
+   :context:
+
+   >>> tau = 100
+   >>> f2 = functions.norm_l2(y=im_masked, A=g, lambda_=tau)
 
 .. note:: We set :math:`\tau` to a large value as we trust our measurements and
    want the solution to be close to them. For noisy measurements a lower value
@@ -60,41 +75,42 @@ The step size for optimal convergence is :math:`\frac{1}{\beta}` where
 :cite:`beck2009FISTA`. The Forward-Backward splitting algorithm is instantiated
 with
 
->>> from pyunlocbox import solvers
->>> solver = solvers.forward_backward(method='FISTA', step=0.5/tau)
+.. plot::
+   :context:
+
+   >>> from pyunlocbox import solvers
+   >>> solver = solvers.forward_backward(method='FISTA', step=0.5/tau)
 
 and the problem solved with
 
->>> x0 = np.array(im_masked)  # Make a copy to preserve im_masked.
->>> ret = solvers.solve([f1, f2], x0, solver, maxit=100)
-Solution found after 94 iterations :
-    objective function f(sol) = 4.268147e+03
-    stopping criterion : RTOL
+.. plot::
+   :context:
+
+   >>> x0 = np.array(im_masked)  # Make a copy to preserve im_masked.
+   >>> ret = solvers.solve([f1, f2], x0, solver, maxit=100)
+   Solution found after 94 iterations :
+       objective function f(sol) = 4.268147e+03
+       stopping criterion : RTOL
 
 Let's display the results:
 
->>> try:
-...     import matplotlib.pyplot as plt
-...     fig = plt.figure()
-...     ax1 = fig.add_subplot(1, 3, 1)
-...     _ = ax1.imshow(im_original, cmap='gray')
-...     _ = ax1.axis('off')
-...     _ = ax1.set_title('Original image')
-...     ax2 = fig.add_subplot(1, 3, 2)
-...     _ = ax2.imshow(im_masked, cmap='gray')
-...     _ = ax2.axis('off')
-...     _ = ax2.set_title('Masked image')
-...     ax3 = fig.add_subplot(1, 3, 3)
-...     _ = ax3.imshow(ret['sol'], cmap='gray')
-...     _ = ax3.axis('off')
-...     _ = ax3.set_title('Reconstructed image')
-...     #fig.show()
-...     #fig.savefig('doc/tutorials/img/reconstruct.pdf', bbox_inches='tight')
-...     #fig.savefig('doc/tutorials/img/reconstruct.png', bbox_inches='tight')
-... except:
-...     pass
+.. plot::
+   :context:
 
-.. image:: img/reconstruct.*
+   >>> import matplotlib.pyplot as plt
+   >>> fig = plt.figure(figsize=(8,2.5))
+   >>> ax1 = fig.add_subplot(1, 3, 1)
+   >>> _ = ax1.imshow(im_original, cmap='gray')
+   >>> _ = ax1.axis('off')
+   >>> _ = ax1.set_title('Original image')
+   >>> ax2 = fig.add_subplot(1, 3, 2)
+   >>> _ = ax2.imshow(im_masked, cmap='gray')
+   >>> _ = ax2.axis('off')
+   >>> _ = ax2.set_title('Masked image')
+   >>> ax3 = fig.add_subplot(1, 3, 3)
+   >>> _ = ax3.imshow(ret['sol'], cmap='gray')
+   >>> _ = ax3.axis('off')
+   >>> _ = ax3.set_title('Reconstructed image')
 
 The above figure shows a good reconstruction which is both smooth (the TV
 prior) and close to the measurements (the L2 fidelity).
