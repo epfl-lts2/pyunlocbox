@@ -138,8 +138,8 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
     Verify the stopping criterion (should be smaller than atol=1e-2):
 
-    >>> np.linalg.norm(ret['sol'] - y)**2
-    0.008780587752251795
+    >>> np.linalg.norm(ret['sol'] - y)**2  # doctest:+ELLIPSIS
+    0.00878058...
 
     Show the solution (should be close to y w.r.t. the L2-norm measure):
 
@@ -159,9 +159,9 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     4
     >>> ret['time']  # doctest:+SKIP
     0.0012578964233398438
-    >>> ret['objective']  # doctest:+NORMALIZE_WHITESPACE
-    [[126.0, 0], [13.999999999999998, 0], [1.5555555555555558, 0],
-    [0.032930436204105726, 0], [0.0087805877522517933, 0]]
+    >>> ret['objective']  # doctest:+NORMALIZE_WHITESPACE,+ELLIPSIS
+    [[126.0, 0], [13.99999999..., 0], [1.55555555..., 0],
+    [0.03293043..., 0], [0.00878058..., 0]]
 
     """
 

@@ -489,8 +489,8 @@ class norm_nuclear(norm):
     --------
     >>> import pyunlocbox
     >>> f = pyunlocbox.functions.norm_nuclear()
-    >>> f.eval([[1, 2],[2, 3]])
-    4.4721359549995787
+    >>> f.eval([[1, 2],[2, 3]])  # doctest:+ELLIPSIS
+    4.47213595...
     >>> f.prox([[1, 2],[2, 3]], 1)
     array([[ 0.89442719,  1.4472136 ],
            [ 1.4472136 ,  2.34164079]])
@@ -537,9 +537,9 @@ class norm_tv(norm):
     >>> f = pyunlocbox.functions.norm_tv()
     >>> x = np.arange(0, 16)
     >>> x = x.reshape(4, 4)
-    >>> f.eval(x)
+    >>> f.eval(x)  # doctest:+ELLIPSIS
         norm_tv evaluation : 5.210795e+01
-    52.107950630558953
+    52.10795063...
 
     """
 
