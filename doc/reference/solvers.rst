@@ -26,7 +26,7 @@ Douglas-Rachford proximal splitting algorithm
     :undoc-members:
     :show-inheritance:
 
-Generalized-Forward-backward proximal splitting algorithm
+Generalized forward-backward proximal splitting algorithm
 ---------------------------------------------------------
 
 .. autoclass:: pyunlocbox.solvers.generalized_forward_backward
@@ -42,7 +42,7 @@ Primal-dual algorithms
     :undoc-members:
     :show-inheritance:
 
-Monotone+Lipschitz Forward-Backward-Forward algorithm
+Monotone+Lipschitz forward-backward-forward algorithm
 -----------------------------------------------------
 
 .. autoclass:: pyunlocbox.solvers.mlfbf
