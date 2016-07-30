@@ -128,4 +128,4 @@ global objective is obviously only composed of the L2-norm as the dummy
 function object was defined to always evaluate to 0 (``f2._eval = lambda x:
 0``).
 
-.. image:: simple_convergence.*
+.. image:: img/simple_convergence.*
