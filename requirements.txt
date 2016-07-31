@@ -6,6 +6,7 @@ scipy
 sphinx
 numpydoc
 sphinxcontrib-bibtex
+sphinx_rtd_theme
 matplotlib >= 1.4  # plot_directive
 
 # Required for testing.

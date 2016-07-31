@@ -34,7 +34,7 @@ release = pyunlocbox.__version__
 copyright = 'EPFL LTS2'
 
 pygments_style = 'sphinx'
-html_theme = 'default'
+html_theme = 'sphinx_rtd_theme'
 latex_elements = {
     'papersize': 'a4paper',
     'pointsize': '10pt',
