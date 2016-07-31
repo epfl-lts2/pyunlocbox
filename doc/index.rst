@@ -1,20 +1,10 @@
-========================
-PyUNLocBoX documentation
-========================
+.. include:: ../README.rst
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
-   readme
    tutorials/index
    reference/index
-   contributing
    history
    references
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
