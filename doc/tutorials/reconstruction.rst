@@ -20,7 +20,10 @@ Load an image and convert it to grayscale
 
    >>> import matplotlib.image as mpimg
    >>> import numpy as np
-   >>> im_original = mpimg.imread('doc/tutorials/lena.png')
+   >>> try:
+   ...     im_original = mpimg.imread('tutorials/lena.png')
+   ... except:
+   ...     im_original = mpimg.imread('doc/tutorials/lena.png')
    >>> im_original = np.dot(im_original[..., :3], [0.299, 0.587, 0.144])
 
 and generate a random masking matrix
