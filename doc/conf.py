@@ -28,10 +28,10 @@ source_suffix = '.rst'
 master_doc = 'index'
 suppress_warnings = ['image.nonlocal_uri']
 
-project = pyunlocbox.__name__
+project = 'PyUNLocBoX'
 version = pyunlocbox.__version__
 release = pyunlocbox.__version__
-copyright = 'EPFL LTS2'
+copyright = u'Michaël Defferrard, EPFL LTS2'
 
 pygments_style = 'sphinx'
 html_theme = 'sphinx_rtd_theme'
