@@ -112,29 +112,29 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     >>> x0 = np.zeros(len(y))
     >>> ret = pyunlocbox.solvers.solve([f], x0, atol=1e-2, verbosity='ALL')
     INFO: Dummy objective function added.
-    INFO: Selected solver : forward_backward
-        norm_l2 evaluation : 1.260000e+02
-        dummy evaluation : 0.000000e+00
-    INFO: Forward-backward method : FISTA
-    Iteration 1 of forward_backward :
-        norm_l2 evaluation : 1.400000e+01
-        dummy evaluation : 0.000000e+00
+    INFO: Selected solver: forward_backward
+        norm_l2 evaluation: 1.260000e+02
+        dummy evaluation: 0.000000e+00
+    INFO: Forward-backward method: FISTA
+    Iteration 1 of forward_backward:
+        norm_l2 evaluation: 1.400000e+01
+        dummy evaluation: 0.000000e+00
         objective = 1.40e+01
-    Iteration 2 of forward_backward :
-        norm_l2 evaluation : 1.555556e+00
-        dummy evaluation : 0.000000e+00
+    Iteration 2 of forward_backward:
+        norm_l2 evaluation: 1.555556e+00
+        dummy evaluation: 0.000000e+00
         objective = 1.56e+00
-    Iteration 3 of forward_backward :
-        norm_l2 evaluation : 3.293044e-02
-        dummy evaluation : 0.000000e+00
+    Iteration 3 of forward_backward:
+        norm_l2 evaluation: 3.293044e-02
+        dummy evaluation: 0.000000e+00
         objective = 3.29e-02
-    Iteration 4 of forward_backward :
-        norm_l2 evaluation : 8.780588e-03
-        dummy evaluation : 0.000000e+00
+    Iteration 4 of forward_backward:
+        norm_l2 evaluation: 8.780588e-03
+        dummy evaluation: 0.000000e+00
         objective = 8.78e-03
-    Solution found after 4 iterations :
+    Solution found after 4 iterations:
         objective function f(sol) = 8.780588e-03
-        stopping criterion : ATOL
+        stopping criterion: ATOL
 
     Verify the stopping criterion (should be smaller than atol=1e-2):
 
@@ -194,7 +194,8 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         elif len(functions) > 2:
             solver = generalized_forward_backward()
         if verbosity in ['LOW', 'HIGH', 'ALL']:
-            print('INFO: Selected solver : %s' % (solver.__class__.__name__,))
+            name = solver.__class__.__name__
+            print('INFO: Selected solver: {}'.format(name))
 
     # Set solver and functions verbosity.
     translation = {'ALL': 'HIGH', 'HIGH': 'HIGH', 'LOW': 'LOW', 'NONE': 'NONE'}
@@ -222,7 +223,8 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
             last_sol = np.array(solver.sol, copy=True)
 
         if verbosity in ['HIGH', 'ALL']:
-            print('Iteration %d of %s :' % (niter, solver.__class__.__name__))
+            name = solver.__class__.__name__
+            print('Iteration {} of {}:'.format(niter, name))
 
         # Solver iterative algorithm.
         solver.algo(objective, niter)
@@ -259,16 +261,16 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
             crit = 'MAXIT'
 
         if verbosity in ['HIGH', 'ALL']:
-            print('    objective = %.2e' % current)
+            print('    objective = {:.2e}'.format(current))
 
     # Restore verbosity for functions. In case they are called outside solve().
     for k, f in enumerate(functions):
         f.verbosity = functions_verbosity[k]
 
     if verbosity in ['LOW', 'HIGH', 'ALL']:
-        print('Solution found after %d iterations :' % niter)
-        print('    objective function f(sol) = %e' % current)
-        print('    stopping criterion : %s' % crit)
+        print('Solution found after {} iterations:'.format(niter))
+        print('    objective function f(sol) = {:e}'.format(current))
+        print('    stopping criterion: {}'.format(crit))
 
     # Returned dictionary.
     result = {'sol':       solver.sol,
@@ -418,9 +420,9 @@ class forward_backward(solver):
     >>> f2 = functions.dummy()
     >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 12 iterations :
+    Solution found after 12 iterations:
         objective function f(sol) = 4.135992e-06
-        stopping criterion : ATOL
+        stopping criterion: ATOL
     >>> ret['sol']
     array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
 
@@ -434,7 +436,7 @@ class forward_backward(solver):
     def _pre(self, functions, x0):
 
         if self.verbosity is 'HIGH':
-            print('INFO: Forward-backward method : %s' % (self.method,))
+            print('INFO: Forward-backward method: {}'.format(self.method))
 
         if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
@@ -512,9 +514,9 @@ class generalized_forward_backward(solver):
     >>> f2 = functions.norm_l1()
     >>> solver = solvers.generalized_forward_backward(lambda_=1, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver)
-    Solution found after 2 iterations :
+    Solution found after 2 iterations:
         objective function f(sol) = 1.463100e+01
-        stopping criterion : RTOL
+        stopping criterion: RTOL
     >>> ret['sol']
     array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
 
@@ -543,9 +545,9 @@ class generalized_forward_backward(solver):
                                  'function to implement prox() or grad().')
 
         if self.verbosity is 'HIGH':
-            print('INFO: Generalized forward-backward minimizing %i smooth '
-                  'functions and %i non-smooth functions.'
-                  % (len(self.f), len(self.g)))
+            print('INFO: Generalized forward-backward minimizing {} smooth '
+                  'functions and {} non-smooth functions.'.format(len(self.f),
+                                                                  len(self.g)))
 
     def _algo(self):
 
@@ -602,9 +604,9 @@ class douglas_rachford(solver):
     >>> f2 = functions.dummy()
     >>> solver = solvers.douglas_rachford(lambda_=1, step=1)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 8 iterations :
+    Solution found after 8 iterations:
         objective function f(sol) = 2.927052e-06
-        stopping criterion : ATOL
+        stopping criterion: ATOL
     >>> ret['sol']
     array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
 
@@ -738,9 +740,9 @@ class mlfbf(primal_dual):
     >>> max_step = 1/(1 + np.linalg.norm(L, 2))
     >>> solver = solvers.mlfbf(L=L, step=max_step/2.)
     >>> ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0)
-    Solution found after 1000 iterations :
+    Solution found after 1000 iterations:
         objective function f(sol) = 1.833865e+05
-        stopping criterion : MAXIT
+        stopping criterion: MAXIT
     >>> ret['sol']
     array([ 1.,  1.,  1.])
 
@@ -812,9 +814,9 @@ class projection_based(primal_dual):
     >>> g = functions.norm_l1()
     >>> solver = solvers.projection_based(L=L, step=1.)
     >>> ret = solvers.solve([f, g], x0, solver, maxit=1000, rtol=None, xtol=.1)
-    Solution found after 996 iterations :
+    Solution found after 996 iterations:
         objective function f(sol) = 1.045000e+03
-        stopping criterion : XTOL
+        stopping criterion: XTOL
     >>> ret['sol']
     array([0, 0, 0])
 

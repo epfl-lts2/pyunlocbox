@@ -19,7 +19,7 @@ Create a white circle on a black background
 
    >>> import numpy as np
    >>> N = 650
-   >>> im_original = np.resize(np.linspace(-1, 1, N), (N,N))
+   >>> im_original = np.resize(np.linspace(-1, 1, N), (N, N))
    >>> im_original = np.sqrt(im_original**2 + im_original.T**2)
    >>> im_original = im_original < 0.7
 
@@ -87,9 +87,9 @@ and the problem solved with
 
    >>> x0 = np.array(im_noisy)  # Make a copy to preserve y aka im_noisy.
    >>> ret = solvers.solve([f1, f2], x0, solver)
-   Solution found after 25 iterations :
+   Solution found after 25 iterations:
        objective function f(sol) = 2.080376e+03
-       stopping criterion : RTOL
+       stopping criterion: RTOL
 
 Let's display the results:
 
@@ -97,7 +97,7 @@ Let's display the results:
    :context:
 
    >>> import matplotlib.pyplot as plt
-   >>> fig = plt.figure(figsize=(8,2.5))
+   >>> fig = plt.figure(figsize=(8, 2.5))
    >>> ax1 = fig.add_subplot(1, 3, 1)
    >>> _ = ax1.imshow(im_original, cmap='gray')
    >>> _ = ax1.axis('off')

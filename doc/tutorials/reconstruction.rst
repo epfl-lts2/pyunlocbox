@@ -88,9 +88,9 @@ and the problem solved with
 
    >>> x0 = np.array(im_masked)  # Make a copy to preserve im_masked.
    >>> ret = solvers.solve([f1, f2], x0, solver, maxit=100)
-   Solution found after 94 iterations :
+   Solution found after 94 iterations:
        objective function f(sol) = 4.268147e+03
-       stopping criterion : RTOL
+       stopping criterion: RTOL
 
 Let's display the results:
 
@@ -98,7 +98,7 @@ Let's display the results:
    :context:
 
    >>> import matplotlib.pyplot as plt
-   >>> fig = plt.figure(figsize=(8,2.5))
+   >>> fig = plt.figure(figsize=(8, 2.5))
    >>> ax1 = fig.add_subplot(1, 3, 1)
    >>> _ = ax1.imshow(im_original, cmap='gray')
    >>> _ = ax1.axis('off')

@@ -24,9 +24,9 @@ reconstruction. See :cite:`candes2007CSperfect` for details.
    >>> S = 100
    >>> import numpy as np
    >>> m = int(np.ceil(S * np.log(n)))
-   >>> print('Number of measurements: %d' % (m,))
+   >>> print('Number of measurements: {}'.format(m))
    Number of measurements: 852
-   >>> print('Compression ratio: %3.2f' % (float(n)/m,))
+   >>> print('Compression ratio: {:3.2f}'.format(float(n) / m))
    Compression ratio: 5.87
 
 We generate a random measurement matrix `A`:
@@ -85,9 +85,9 @@ or alternatively as follows:
 .. plot::
    :context:
 
-   >>> A_ = lambda x: np.dot(A, x)
-   >>> At_ = lambda x: np.dot(A.T, x)
-   >>> f3 = functions.norm_l2(y=y, A=A_, At=At_)
+   >>> f3 = functions.norm_l2(y=y)
+   >>> f3.A = lambda x: np.dot(A, x)
+   >>> f3.At = lambda x: np.dot(A.T, x)
 
 .. note:: In this case the forward and adjoint operators were passed as
     functions not as matrices.
@@ -134,9 +134,9 @@ follows:
 
    >>> x0 = np.zeros(n)
    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
-   Solution found after 152 iterations :
+   Solution found after 152 iterations:
        objective function f(sol) = 7.668195e+00
-       stopping criterion : RTOL
+       stopping criterion: RTOL
 
 .. note:: A complete description of the parameters, their default values and
     the returned values is given by the solving function

@@ -198,7 +198,8 @@ class func(object):
         """
         sol = self._eval(np.asarray(x))
         if self.verbosity in ['LOW', 'HIGH']:
-            print('    %s evaluation : %e' % (self.__class__.__name__, sol))
+            name = self.__class__.__name__
+            print('    {} evaluation: {:e}'.format(name, sol))
         return sol
 
     def _eval(self, x):
@@ -538,7 +539,7 @@ class norm_tv(norm):
     >>> x = np.arange(0, 16)
     >>> x = x.reshape(4, 4)
     >>> f.eval(x)  # doctest:+ELLIPSIS
-        norm_tv evaluation : 5.210795e+01
+        norm_tv evaluation: 5.210795e+01
     52.10795063...
 
     """
@@ -858,9 +859,9 @@ class proj_b2(proj):
                 norm_res = np.linalg.norm(res, 2)
 
                 if self.verbosity is 'HIGH':
-                    print('    proj_b2 iteration %3d : epsilon = %.2e, '
-                          '||y-A(z)||_2 = %.2e'
-                          % (niter, self.epsilon, norm_res))
+                    print('    proj_b2 iteration {:3d}: epsilon = {:.2e}, '
+                          '||y-A(z)||_2 = {:.2e}'.format(niter, self.epsilon,
+                                                         norm_res))
 
                 # Scaling for projection.
                 res += u * self.nu
@@ -888,7 +889,8 @@ class proj_b2(proj):
 
             if self.verbosity in ['LOW', 'HIGH']:
                 norm_res = np.linalg.norm(self.y() - self.A(sol), 2)
-                print('    proj_b2 : epsilon = %.2e, ||y-A(z)||_2 = %.2e, '
-                      '%s, niter = %d' % (self.epsilon, norm_res, crit, niter))
+                print('    proj_b2: epsilon = {:.2e}, ||y-A(z)||_2 = {:.2e}, '
+                      '{}, niter = {}'.format(self.epsilon, norm_res, crit,
+                                              niter))
 
         return sol
