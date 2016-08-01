@@ -15,37 +15,32 @@ class OperatorsTestCase(unittest.TestCase):
 
     def test_grad(self):
 
-        # Test Matrices initialization
-        # test for a 1dim matrice (testing with a 5)
-        mat1d = np.arange(5.) + 1
-        # test for a 2dim matrice (testing with a 2x4)
-        mat2d = np.array([[2., 3., 0., 1.], [22., 1., 4., 5.]])
-        # test for a 3 dim matrice (testing with a 2x3x2)
-        mat3d = np.arange(1., stop=13.).reshape(2, 2, 3).transpose((1, 2, 0))
-        # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.arange(1., stop=25.).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
-        # test for a 5dim matrice (2x2x3x2x2)
-        mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
+        # Test matrices initialization.
+        mat1d = np.arange(5) + 1
+        mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
+        mat3d = np.arange(1, 13).reshape(2, 2, 3).transpose((1, 2, 0))
+        mat4d = np.arange(1, 25).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
+        mat5d = np.arange(1, 49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
 
-        # test without weight
+        # 1D without weights.
         dx = operators.grad(mat1d, dim=1)
         nptest.assert_array_equal(np.array([1, 1, 1, 1, 0]), dx)
 
-        # test without weight
+        # 2D without weights.
         mat_dx = np.array([[20, -2, 4, 4], [0, 0, 0, 0]])
         mat_dy = np.array([[1, -3, 1, 0], [-21, 3, 1, 0]])
         dx, dy = operators.grad(mat2d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
         nptest.assert_array_equal(mat_dy, dy)
 
-        # test with weights
+        # 2D with weights.
         dx, dy = operators.grad(mat2d, dim=2, wx=2, wy=0.5, wz=3, wt=2)
-        mat_dx_w = mat_dx * 2.
+        mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
         nptest.assert_array_equal(mat_dx_w, dx)
         nptest.assert_array_equal(mat_dy_w, dy)
 
-        # test without weight
+        # 3D without weights.
         dx = operators.grad(mat3d, dim=1)
         mat_dx = np.array([[[3, 3], [3, 3], [3, 3]],
                            [[0, 0], [0, 0], [0, 0]]])
@@ -62,17 +57,16 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dy, dy)
         nptest.assert_array_equal(mat_dz, dz)
 
-        # test with weights
+        # 3D with weights.
         dx, dy, dz = operators.grad(mat3d, dim=3, wx=2, wy=0.5, wz=3, wt=2)
-        mat_dx_w = mat_dx * 2.
+        mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
-        mat_dz_w = mat_dz * 3.
+        mat_dz_w = mat_dz * 3
         nptest.assert_array_equal(mat_dx_w, dx)
         nptest.assert_array_equal(mat_dy_w, dy)
         nptest.assert_array_equal(mat_dz_w, dz)
 
-        # test without weight
-        dx = operators.grad(mat4d, dim=1)
+        # 4D without weights.
         mat_dx = np.array([[[[3, 3], [3, 3]],
                             [[3, 3], [3, 3]],
                             [[3, 3], [3, 3]]],
@@ -97,6 +91,7 @@ class OperatorsTestCase(unittest.TestCase):
                            [[[12, 0], [12, 0]],
                             [[12, 0], [12, 0]],
                             [[12, 0], [12, 0]]]])
+        dx = operators.grad(mat4d, dim=1)
         nptest.assert_array_equal(mat_dx, dx)
         dx, dy = operators.grad(mat4d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
@@ -111,20 +106,18 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dz, dz)
         nptest.assert_array_equal(mat_dt, dt)
 
-        # test with weights
+        # 4D with weights.
         dx, dy, dz, dt = operators.grad(mat4d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
-        # Because oop numpy, can't *=
-        mat_dx_w = mat_dx * 2.
+        mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
-        mat_dz_w = mat_dz * 3.
-        mat_dt_w = mat_dt * 2.
+        mat_dz_w = mat_dz * 3
+        mat_dt_w = mat_dt * 2
         nptest.assert_array_equal(mat_dx_w, dx)
         nptest.assert_array_equal(mat_dy_w, dy)
         nptest.assert_array_equal(mat_dz_w, dz)
         nptest.assert_array_equal(mat_dt_w, dt)
 
-        # test without weight
-        dx = operators.grad(mat5d, dim=1)
+        # 5D without weights.
         mat_dx = np.array([[[[[2, 2], [2, 2]],
                              [[2, 2], [2, 2]],
                              [[2, 2], [2, 2]]],
@@ -173,6 +166,7 @@ class OperatorsTestCase(unittest.TestCase):
                             [[[12, 12], [0, 0]],
                              [[12, 12], [0, 0]],
                              [[12, 12], [0, 0]]]]])
+        dx = operators.grad(mat5d, dim=1)
         nptest.assert_array_equal(mat_dx, dx)
         dx, dy = operators.grad(mat5d, dim=2)
         nptest.assert_array_equal(mat_dx, dx)
@@ -187,12 +181,12 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dz, dz)
         nptest.assert_array_equal(mat_dt, dt)
 
-        # test with weights
+        # 5D with weights.
         dx, dy, dz, dt = operators.grad(mat5d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
-        mat_dx_w = mat_dx * 2.
+        mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
-        mat_dz_w = mat_dz * 3.
-        mat_dt_w = mat_dt * 2.
+        mat_dz_w = mat_dz * 3
+        mat_dt_w = mat_dt * 2
         nptest.assert_array_equal(mat_dx_w, dx)
         nptest.assert_array_equal(mat_dy_w, dy)
         nptest.assert_array_equal(mat_dz_w, dz)
