@@ -21,6 +21,7 @@ it and implement the class methods. The following solvers are included :
 import numpy as np
 import time
 from pyunlocbox.functions import dummy
+from . import acceleration
 
 
 def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
@@ -280,6 +281,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
               'time':      time.time() - tstart,
               'objective': objective}
     try:
+        # Update dictionary for primal-dual solvers
         result['dual_sol'] = solver.dual_sol
     except AttributeError:
         pass
@@ -291,7 +293,14 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
 
 def _prox_star(func, z, T):
-    r"""Proximity operator of the convex conjugate of a function."""
+    r"""
+    Proximity operator of the convex conjugate of a function.
+
+    Notes
+    -----
+    Based on the Moreau decomposition of a vector w.r.t. a convex function.
+
+    """
     return z - T * func.prox(z / T, 1 / T)
 
 
@@ -313,69 +322,52 @@ class solver(object):
         :math:`\frac{2}{\beta}` where :math:`\beta` is the Lipschitz constant
         of the gradient of the smooth function (or a sum of smooth functions).
         Default is 1.
-    post_step : function
-        User defined function to post-process the step size. This function is
-        called every iteration and permits the user to alter the solver
-        algorithm. The user may start with a high step size and progressively
-        lower it while the algorithm runs to accelerate the convergence. The
-        function parameters are the following : `step` (current step size),
-        `sol` (current problem solution), `objective` (list of successive
-        evaluations of the objective function), `niter` (current iteration
-        number). The function should return a new value for `step`. Default is
-        to return an unchanged value.
-    post_sol : function
-        User defined function to post-process the problem solution. This
-        function is called every iteration and permits the user to alter the
-        solver algorithm. Same parameter as :func:`post_step`. Default is to
-        return an unchanged value.
+    accel : pyunlocbox.acceleration.accel
+        User-defined object used to adaptively change the current step size
+        and solution while the algorithm is running. Default is a dummy
+        object that returns unchanged values.
     """
 
-    def __init__(self, step=1, post_step=None, post_sol=None):
+    def __init__(self, step=1., accel=None):
         if step < 0:
-            raise ValueError('Gamma should be a positive number.')
+            raise ValueError('Step should be a positive number.')
         self.step = step
-        if post_step:
-            self.post_step = post_step
-        else:
-            self.post_step = lambda step, sol, objective, niter: step
-        if post_sol:
-            self.post_sol = post_sol
-        else:
-            self.post_sol = lambda step, sol, objective, niter: sol
+        self.accel = acceleration.dummy() if accel is None else accel
 
     def pre(self, functions, x0):
         """
-        Solver specific initialization. See parameters documentation in
+        Solver-specific pre-processing. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
         """
         self.sol = np.asarray(x0)
-        self._pre(functions, np.asarray(x0))
+        self._pre(functions, self.sol)
+        self.accel.pre(functions, self.sol)
 
     def _pre(self, functions, x0):
         raise NotImplementedError("Class user should define this method.")
 
     def algo(self, objective, niter):
         """
-        Call the solver iterative algorithm while allowing the user to alter
-        it. This makes it possible to dynamically change the `step` step size
-        while the algorithm is running.  See parameters documentation in
-        :func:`pyunlocbox.solvers.solve` documentation.
+        Call the solver iterative algorithm and the provided acceleration
+        scheme. See parameters documentation in
+        :func:`pyunlocbox.solvers.solve`
         """
         self._algo()
-        self.step = self.post_step(self.step, self.sol, objective, niter)
-        self.sol = self.post_sol(self.step, self.sol, objective, niter)
+        self.step = self.accel.update_step(self, objective, niter)
+        self.sol[:] = self.accel.update_sol(self, objective, niter)
 
     def _algo(self):
         raise NotImplementedError("Class user should define this method.")
 
     def post(self):
         """
-        Solver specific post-processing. Mainly used to delete references added
+        Solver-specific post-processing. Mainly used to delete references added
         during initialization so that the garbage collector can free the
         memory. See parameters documentation in
-        :func:`pyunlocbox.solvers.solve` documentation.
+        :func:`pyunlocbox.solvers.solve`.
         """
         self._post()
+        self.accel.post()
         del self.sol
 
     def _post(self):
@@ -394,13 +386,12 @@ class forward_backward(solver):
 
     Parameters
     ----------
-    method : {'FISTA', 'ISTA'}, optional
-        The method used to solve the problem. It can be 'FISTA' or 'ISTA'. Note
-        that while FISTA is much more time efficient, it is less memory
-        efficient.  Default is 'FISTA'.
-    lambda_ : float, optional
-        The update term weight for ISTA. It should be between 0 and 1. Default
-        is 1.
+    accel : pyunlocbox.acceleration.accel
+        Acceleration scheme to use.
+        Default is :class:`pyunlocbox.acceleration.fista`, which corresponds
+        to the 'FISTA' solver. Passing :class:`pyunlocbox.acceleration.dummy`
+        instead results in the ISTA solver. Note that while FISTA is much more
+        time-efficient, it is less memory-efficient.
 
     Notes
     -----
@@ -418,7 +409,7 @@ class forward_backward(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.forward_backward(method='FISTA', lambda_=1, step=0.5)
+    >>> solver = solvers.forward_backward(method='FISTA', step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 12 iterations:
         objective function f(sol) = 4.135992e-06
@@ -428,27 +419,13 @@ class forward_backward(solver):
 
     """
 
-    def __init__(self, method='FISTA', lambda_=1, *args, **kwargs):
+    def __init__(self, accel=acceleration.fista(), *args, **kwargs):
         super(forward_backward, self).__init__(*args, **kwargs)
-        self.method = method
-        self.lambda_ = lambda_
 
     def _pre(self, functions, x0):
 
         if self.verbosity is 'HIGH':
-            print('INFO: Forward-backward method: {}'.format(self.method))
-
-        if self.lambda_ <= 0 or self.lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
-
-        if self.method is 'ISTA':
-            self._algo = self._ista
-        elif self.method is 'FISTA':
-            self._algo = self._fista
-            self.z = np.array(x0, copy=True)
-            self.t = 1.
-        else:
-            raise ValueError('The method should be either FISTA or ISTA.')
+            print('INFO: Forward-backward method')
 
         if len(functions) != 2:
             raise ValueError('Forward-backward requires two convex functions.')
@@ -463,22 +440,14 @@ class forward_backward(solver):
             raise ValueError('Forward-backward requires a function to '
                              'implement prox() and the other grad().')
 
-    def _ista(self):
+    def _algo(self):
+        # Forward step
         x = self.sol - self.step * self.f2.grad(self.sol)
-        self.sol[:] += self.lambda_ * (self.f1.prox(x, self.step) - self.sol)
-
-    def _fista(self):
-        x = self.z - self.step * self.f2.grad(self.z)
-        x[:] = self.f1.prox(x, self.step)
-        tn = (1. + np.sqrt(1. + 4. * self.t**2.)) / 2.
-        self.z[:] = x + (self.t - 1.) / tn * (x - self.sol)
-        self.t = tn
-        self.sol[:] = x
+        # Bacward step
+        self.sol[:] = self.f1.prox(x, self.step)
 
     def _post(self):
-        del self._algo, self.f1, self.f2
-        if self.method is 'FISTA':
-            del self.z, self.t
+        del self.f1, self.f2
 
 
 class generalized_forward_backward(solver):
@@ -841,17 +810,17 @@ class projection_based(primal_dual):
     def _algo(self):
         a = self.f.prox(self.sol - self.step *
                         self.Lt(self.dual_sol), self.step)
-        l = self.L(self.sol)
-        b = self.g.prox(l + self.step * self.dual_sol, self.step)
-        s = (self.sol - a) / self.step + self.Lt(l - b) / self.step
+        ell = self.L(self.sol)
+        b = self.g.prox(ell + self.step * self.dual_sol, self.step)
+        s = (self.sol - a) / self.step + self.Lt(ell - b) / self.step
         t = b - self.L(a)
         tau = np.sum(s**2) + np.sum(t**2)
         if tau == 0:
             self.sol[:] = a
-            self.dual_sol[:] = self.dual_sol + (l - b) / self.step
+            self.dual_sol[:] = self.dual_sol + (ell - b) / self.step
         else:
             theta = self.lambda_ * (np.sum((self.sol - a)**2) / self.step +
-                                    np.sum((l - b)**2) / self.step) / tau
+                                    np.sum((ell - b)**2) / self.step) / tau
             self.sol[:] = self.sol - theta * s
             self.dual_sol[:] = self.dual_sol - theta * t
 
