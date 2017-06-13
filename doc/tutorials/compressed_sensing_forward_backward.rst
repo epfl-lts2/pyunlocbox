@@ -119,7 +119,7 @@ instantiated as follows:
 
    >>> step = 0.5 / np.linalg.norm(A, ord=2)**2
    >>> from pyunlocbox import solvers
-   >>> solver = solvers.forward_backward(method='FISTA', step=step)
+   >>> solver = solvers.forward_backward(step=step)
 
 .. note:: A complete description of the constructor parameters and default
     values is given by the solver object
@@ -134,9 +134,9 @@ follows:
 
    >>> x0 = np.zeros(n)
    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
-   Solution found after 152 iterations:
-       objective function f(sol) = 7.668195e+00
-       stopping criterion: RTOL
+   Solution found after 300 iterations:
+       objective function f(sol) = 1.401112e+01
+       stopping criterion: MAXIT
 
 .. note:: A complete description of the parameters, their default values and
     the returned values is given by the solving function

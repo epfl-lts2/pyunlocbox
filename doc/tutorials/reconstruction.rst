@@ -82,7 +82,7 @@ with
    :context:
 
    >>> from pyunlocbox import solvers
-   >>> solver = solvers.forward_backward(method='FISTA', step=0.5/tau)
+   >>> solver = solvers.forward_backward(step=0.5/tau)
 
 and the problem solved with
 
@@ -91,9 +91,9 @@ and the problem solved with
 
    >>> x0 = np.array(im_masked)  # Make a copy to preserve im_masked.
    >>> ret = solvers.solve([f1, f2], x0, solver, maxit=100)
-   Solution found after 94 iterations:
-       objective function f(sol) = 4.268147e+03
-       stopping criterion: RTOL
+   Solution found after 100 iterations:
+       objective function f(sol) = 2.745485e+04
+       stopping criterion: MAXIT
 
 Let's display the results:
 

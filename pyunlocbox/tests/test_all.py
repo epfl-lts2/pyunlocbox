@@ -5,7 +5,7 @@
 Test suite for the pyunlocbox package.
 """
 
-from . import test_functions, test_operators, test_solvers
+from . import test_functions, test_operators, test_solvers, test_acceleration
 import unittest
 import doctest
 import os
@@ -27,6 +27,7 @@ suites = []
 suites.append(test_functions.suite)
 suites.append(test_operators.suite)
 suites.append(test_solvers.suite)
+suites.append(test_acceleration.suite)
 suites.append(test_docstrings('pyunlocbox', '.py'))
 suites.append(test_docstrings('.', '.rst'))
 suite = unittest.TestSuite(suites)

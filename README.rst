@@ -42,6 +42,11 @@ Features
   * TV-norm
   * Projection on the L2-ball
 
+* Acceleration schemes
+
+  * FISTA acceleration scheme
+  * Backtracking based on a quadratic approximation of the objective
+
 Following is a typical usage example who solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects
 are first instantiated with the desired parameters. The problem is then solved
@@ -52,11 +57,11 @@ by a call to the solving function.
 >>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
 >>> ret = pyunlocbox.solvers.solve([f1, f2], [0., 0, 0, 0], solver, atol=1e-5)
-Solution found after 10 iterations:
-    objective function f(sol) = 7.460428e-09
+Solution found after 8 iterations:
+    objective function f(sol) = 2.927052e-06
     stopping criterion: ATOL
 >>> ret['sol']
-array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
 
 Installation
 ------------

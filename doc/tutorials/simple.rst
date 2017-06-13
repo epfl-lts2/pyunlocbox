@@ -68,7 +68,7 @@ And finally solve the problem :
    >>> ret = solvers.solve([f2, f1], x0, solver, atol=1e-5, verbosity='HIGH')
        func evaluation: 0.000000e+00
        norm_l2 evaluation: 1.260000e+02
-   INFO: Forward-backward method: FISTA
+   INFO: Forward-backward method
    Iteration 1 of forward_backward:
        func evaluation: 0.000000e+00
        norm_l2 evaluation: 1.400000e+01
@@ -79,38 +79,30 @@ And finally solve the problem :
        objective = 1.56e+00
    Iteration 3 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 3.293044e-02
-       objective = 3.29e-02
+       norm_l2 evaluation: 1.728395e-01
+       objective = 1.73e-01
    Iteration 4 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 8.780588e-03
-       objective = 8.78e-03
+       norm_l2 evaluation: 1.920439e-02
+       objective = 1.92e-02
    Iteration 5 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 6.391406e-03
-       objective = 6.39e-03
+       norm_l2 evaluation: 2.133821e-03
+       objective = 2.13e-03
    Iteration 6 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 5.713369e-04
-       objective = 5.71e-04
+       norm_l2 evaluation: 2.370912e-04
+       objective = 2.37e-04
    Iteration 7 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 1.726501e-05
-       objective = 1.73e-05
+       norm_l2 evaluation: 2.634347e-05
+       objective = 2.63e-05
    Iteration 8 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 6.109470e-05
-       objective = 6.11e-05
-   Iteration 9 of forward_backward:
-       func evaluation: 0.000000e+00
-       norm_l2 evaluation: 1.212636e-05
-       objective = 1.21e-05
-   Iteration 10 of forward_backward:
-       func evaluation: 0.000000e+00
-       norm_l2 evaluation: 7.460428e-09
-       objective = 7.46e-09
-   Solution found after 10 iterations:
-       objective function f(sol) = 7.460428e-09
+       norm_l2 evaluation: 2.927052e-06
+       objective = 2.93e-06
+   Solution found after 8 iterations:
+       objective function f(sol) = 2.927052e-06
        stopping criterion: ATOL
 
 The solving function returns several values, one is the found solution :
@@ -119,7 +111,7 @@ The solving function returns several values, one is the found solution :
    :context:
 
    >>> ret['sol']
-   array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+   array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
 
 Another one is the value returned by each function objects at each iteration.
 As we passed two function objects (L2-norm and dummy), the `objective` is a 2

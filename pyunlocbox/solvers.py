@@ -116,7 +116,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     INFO: Selected solver: forward_backward
         norm_l2 evaluation: 1.260000e+02
         dummy evaluation: 0.000000e+00
-    INFO: Forward-backward method: FISTA
+    INFO: Forward-backward method
     Iteration 1 of forward_backward:
         norm_l2 evaluation: 1.400000e+01
         dummy evaluation: 0.000000e+00
@@ -126,26 +126,30 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         dummy evaluation: 0.000000e+00
         objective = 1.56e+00
     Iteration 3 of forward_backward:
-        norm_l2 evaluation: 3.293044e-02
+        norm_l2 evaluation: 1.728395e-01
         dummy evaluation: 0.000000e+00
-        objective = 3.29e-02
+        objective = 1.73e-01
     Iteration 4 of forward_backward:
-        norm_l2 evaluation: 8.780588e-03
+        norm_l2 evaluation: 1.920439e-02
         dummy evaluation: 0.000000e+00
-        objective = 8.78e-03
-    Solution found after 4 iterations:
-        objective function f(sol) = 8.780588e-03
+        objective = 1.92e-02
+    Iteration 5 of forward_backward:
+        norm_l2 evaluation: 2.133821e-03
+        dummy evaluation: 0.000000e+00
+        objective = 2.13e-03
+    Solution found after 5 iterations:
+        objective function f(sol) = 2.133821e-03
         stopping criterion: ATOL
 
     Verify the stopping criterion (should be smaller than atol=1e-2):
 
     >>> np.linalg.norm(ret['sol'] - y)**2  # doctest:+ELLIPSIS
-    0.00878058...
+    0.00213382...
 
     Show the solution (should be close to y w.r.t. the L2-norm measure):
 
     >>> ret['sol']
-    array([ 4.03339154,  5.04173943,  6.05008732,  7.0584352 ])
+    array([ 3.98353909,  4.97942387,  5.97530864,  6.97119342])
 
     Show the used solver:
 
@@ -157,12 +161,12 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     >>> ret['crit']
     'ATOL'
     >>> ret['niter']
-    4
+    5
     >>> ret['time']  # doctest:+SKIP
     0.0012578964233398438
     >>> ret['objective']  # doctest:+NORMALIZE_WHITESPACE,+ELLIPSIS
-    [[126.0, 0], [13.99999999..., 0], [1.55555555..., 0],
-    [0.03293043..., 0], [0.00878058..., 0]]
+    [[126.0, 0], [13.99999999..., 0], [1.55555555..., 0], [0.17283950..., 0],
+    [0.01920438..., 0], [0.00213382..., 0]]
 
     """
 
@@ -386,10 +390,10 @@ class forward_backward(solver):
 
     Parameters
     ----------
-    accel : pyunlocbox.acceleration.accel
+    accel : :class:`pyunlocbox.acceleration.accel`
         Acceleration scheme to use.
-        Default is :class:`pyunlocbox.acceleration.fista`, which corresponds
-        to the 'FISTA' solver. Passing :class:`pyunlocbox.acceleration.dummy`
+        Default is :meth:`pyunlocbox.acceleration.fista`, which corresponds
+        to the 'FISTA' solver. Passing :meth:`pyunlocbox.acceleration.dummy`
         instead results in the ISTA solver. Note that while FISTA is much more
         time-efficient, it is less memory-efficient.
 
@@ -409,13 +413,13 @@ class forward_backward(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.forward_backward(method='FISTA', step=0.5)
+    >>> solver = solvers.forward_backward(step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 12 iterations:
-        objective function f(sol) = 4.135992e-06
+        objective function f(sol) = 7.510185e-06
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99927529,  4.99909411,  5.99891293,  6.99873176])
+    array([ 3.99902344,  4.9987793 ,  5.99853516,  6.99829102])
 
     """
 
@@ -665,7 +669,8 @@ class primal_dual(solver):
             self.dual_sol = self.d0
 
     def _post(self):
-        del self.dual_sol, self.d0
+        self.d0 = None
+        del self.dual_sol
 
 
 class mlfbf(primal_dual):
@@ -791,7 +796,7 @@ class projection_based(primal_dual):
 
     """
 
-    def __init__(self, lambda_=1, *args, **kwargs):
+    def __init__(self, lambda_=1., *args, **kwargs):
         super(projection_based, self).__init__(*args, **kwargs)
         self.lambda_ = lambda_
 
