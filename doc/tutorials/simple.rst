@@ -75,34 +75,38 @@ And finally solve the problem :
        objective = 1.40e+01
    Iteration 2 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 1.555556e+00
-       objective = 1.56e+00
+       norm_l2 evaluation: 2.963739e-01
+       objective = 2.96e-01
    Iteration 3 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 1.728395e-01
-       objective = 1.73e-01
+       norm_l2 evaluation: 7.902529e-02
+       objective = 7.90e-02
    Iteration 4 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 1.920439e-02
-       objective = 1.92e-02
+       norm_l2 evaluation: 5.752265e-02
+       objective = 5.75e-02
    Iteration 5 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 2.133821e-03
-       objective = 2.13e-03
+       norm_l2 evaluation: 5.142032e-03
+       objective = 5.14e-03
    Iteration 6 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 2.370912e-04
-       objective = 2.37e-04
+       norm_l2 evaluation: 1.553851e-04
+       objective = 1.55e-04
    Iteration 7 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 2.634347e-05
-       objective = 2.63e-05
+       norm_l2 evaluation: 5.498523e-04
+       objective = 5.50e-04
    Iteration 8 of forward_backward:
        func evaluation: 0.000000e+00
-       norm_l2 evaluation: 2.927052e-06
-       objective = 2.93e-06
-   Solution found after 8 iterations:
-       objective function f(sol) = 2.927052e-06
+       norm_l2 evaluation: 1.091372e-04
+       objective = 1.09e-04
+   Iteration 9 of forward_backward:
+       func evaluation: 0.000000e+00
+       norm_l2 evaluation: 6.714385e-08
+       objective = 6.71e-08
+   Solution found after 9 iterations:
+       objective function f(sol) = 6.714385e-08
        stopping criterion: ATOL
 
 The solving function returns several values, one is the found solution :
@@ -111,7 +115,7 @@ The solving function returns several values, one is the found solution :
    :context:
 
    >>> ret['sol']
-   array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
+   array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 
 Another one is the value returned by each function objects at each iteration.
 As we passed two function objects (L2-norm and dummy), the `objective` is a 2

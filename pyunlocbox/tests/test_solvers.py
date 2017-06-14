@@ -76,27 +76,27 @@ class FunctionsTestCase(unittest.TestCase):
         r = solvers.solve([f], x0(), None, tol, None, None, None, None, 'NONE')
         self.assertEqual(r['crit'], 'ATOL')
         self.assertLess(np.sum(r['objective'][-1]), tol)
-        self.assertEqual(r['niter'], 10)
+        self.assertEqual(r['niter'], 9)
         tol = 1e-8
         r = solvers.solve([f], x0(), None, None, tol, None, None, None, 'NONE')
         self.assertEqual(r['crit'], 'DTOL')
         err = np.abs(np.sum(r['objective'][-1]) - np.sum(r['objective'][-2]))
         self.assertLess(err, tol)
-        self.assertEqual(r['niter'], 13)
+        self.assertEqual(r['niter'], 17)
         tol = .1
         r = solvers.solve([f], x0(), None, None, None, tol, None, None, 'NONE')
         self.assertEqual(r['crit'], 'RTOL')
         err = np.abs(np.sum(r['objective'][-1]) - np.sum(r['objective'][-2]))
         err /= np.sum(r['objective'][-1])
         self.assertLess(err, tol)
-        self.assertEqual(r['niter'], 35)
+        self.assertEqual(r['niter'], 13)
         tol = 1e-4
         r = solvers.solve([f], x0(), None, None, None, None, tol, None, 'NONE')
         self.assertEqual(r['crit'], 'XTOL')
         r2 = solvers.solve([f], x0(), maxit=r['niter'] - 1, **nverb)
         err = np.linalg.norm(r['sol'] - r2['sol']) / np.sqrt(x0().size)
         self.assertLess(err, tol)
-        self.assertEqual(r['niter'], 10)
+        self.assertEqual(r['niter'], 14)
         nit = 15
         r = solvers.solve([f], x0(), None, None, None, None, None, nit, 'NONE')
         self.assertEqual(r['crit'], 'MAXIT')
@@ -112,6 +112,19 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertIsInstance(ret['niter'], int)
         self.assertIsInstance(ret['time'], float)
         self.assertIsInstance(ret['objective'], list)
+
+    def test_solver(self):
+        """
+        Base solver class.
+        """
+        funs = [functions.dummy(), functions.dummy()]
+        x0 = np.zeros((4,))
+        s = solvers.solver()
+        s.sol = x0
+        self.assertRaises(ValueError, s.__init__, -1.)
+        self.assertRaises(NotImplementedError, s.pre, funs, x0)
+        self.assertRaises(NotImplementedError, s._algo)
+        self.assertRaises(NotImplementedError, s.post)
 
     def test_forward_backward(self):
         """
@@ -138,6 +151,11 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertEqual(ret['crit'], 'RTOL')
         self.assertEqual(ret['niter'], 4)
 
+        # Sanity check
+        f3 = functions.dummy()
+        x0 = np.zeros((4,))
+        self.assertRaises(ValueError, solver.pre, [f1, f2, f3], x0)
+
     def test_douglas_rachford(self):
         """
         Test douglas-rachford solver with L1-norm, L2-norm and dummy functions.
@@ -161,6 +179,14 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
         self.assertEqual(ret['niter'], 4)
+
+        # Sanity checks
+        x0 = np.zeros((4,))
+        solver.lambda_ = 2.
+        self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
+        solver.lambda_ = -2.
+        self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
+        self.assertRaises(ValueError, solver.pre, [f1, f2, f1], x0)
 
     def test_generalized_forward_backward(self):
         """
@@ -200,6 +226,18 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['niter'], 25)
 
+        # Sanity checks
+        x0 = np.zeros((4,))
+        solver.lambda_ = 2.
+        self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
+        solver.lambda_ = -2.
+        self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
+        f1 = functions.func()
+        f2 = functions.func()
+        f3 = functions.func()
+        solver.lambda_ = 1.
+        self.assertRaises(ValueError, solver.pre, [f1, f2, f3], x0)
+
     def test_mlfbf(self):
         """
         Test the MLFBF solver with arbitrarily selected functions.
@@ -210,14 +248,26 @@ class FunctionsTestCase(unittest.TestCase):
         solver = solvers.mlfbf(L=L, step=max_step / 2.)
         params = {'solver': solver, 'verbosity': 'NONE'}
 
+        def x0(): return np.zeros(len(x))
+
         # L2-norm prox and dummy prox.
         f = functions.dummy()
         f._prox = lambda x, T: np.maximum(np.zeros(len(x)), x)
         g = functions.norm_l2(lambda_=0.5)
         h = functions.norm_l2(y=np.array([294, 390, 361]), lambda_=0.5)
-        ret = solvers.solve([f, g, h], np.zeros(len(x)),
-                            maxit=1000, rtol=0, **params)
+        ret = solvers.solve([f, g, h], x0(), maxit=1000, rtol=0, **params)
         nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
+        # Same test, but with callable L
+        solver = solvers.mlfbf(L=lambda x: np.dot(L, x),
+                               Lt=lambda y: np.dot(L.T, y),
+                               d0=np.dot(L, x0()),
+                               step=max_step / 2.)
+        ret = solvers.solve([f, g, h], x0(), maxit=1000, rtol=0, **params)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
+        # Sanity check
+        self.assertRaises(ValueError, solver.pre, [f, g], x0())
 
     def test_projection_based(self):
         """
@@ -234,6 +284,14 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f, g], np.array([500, 1000, -400]),
                             maxit=1000, rtol=None, xtol=0.1, **params)
         nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
+        # Sanity checks
+        def x0(): return np.zeros(len(x))
+        self.assertRaises(ValueError, solver.pre, [f], x0())
+        solver.lambda_ = 3.
+        self.assertRaises(ValueError, solver.pre, [f, g], x0())
+        solver.lambda_ = -3.
+        self.assertRaises(ValueError, solver.pre, [f, g], x0())
 
     def test_solver_comparison(self):
         """

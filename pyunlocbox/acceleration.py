@@ -125,6 +125,7 @@ class dummy(accel):
         return solver.step
 
     def _update_sol(self, solver, objective, niter):
+        # Track the solution, but otherwise do nothing
         self.sol[:] = solver.sol
         return solver.sol
 
@@ -228,11 +229,11 @@ class fista(dummy):
     >>> accel=acceleration.fista()
     >>> solver = solvers.forward_backward(accel=accel, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 12 iterations:
-        objective function f(sol) = 7.510185e-06
+    Solution found after 15 iterations:
+        objective function f(sol) = 4.957288e-07
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99902344,  4.9987793 ,  5.99853516,  6.99829102])
+    array([ 4.0002509 ,  5.00031362,  6.00037635,  7.00043907])
 
     """
 
@@ -241,8 +242,8 @@ class fista(dummy):
         super(fista, self).__init__(**kwargs)
 
     def _update_sol(self, solver, objective, niter):
-        self.t = 1. if niter == 1 else self.t  # Restart variable t if needed
-        t = 1. + np.sqrt(1. + 4. * self.t**2) / 2.
+        self.t = 1. if (niter == 1) else self.t  # Restart variable t if needed
+        t = (1. + np.sqrt(1. + 4. * self.t**2.)) / 2.
         y = solver.sol + ((self.t - 1) / t) * (solver.sol - self.sol)
         self.t = t
         self.sol[:] = solver.sol
@@ -269,14 +270,21 @@ class fista_backtracking(backtracking, fista):
     >>> accel=acceleration.fista_backtracking()
     >>> solver = solvers.forward_backward(accel=accel, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 12 iterations:
-        objective function f(sol) = 7.510185e-06
+    Solution found after 13 iterations:
+        objective function f(sol) = 9.518528e-08
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99902344,  4.9987793 ,  5.99853516,  6.99829102])
+    array([ 3.99989006,  4.99986257,  5.99983509,  6.9998076 ])
 
     """
 
     def __init__(self, **kwargs):
+        """
+        I can do multiple inheritance here and avoid the deadly diamond of
+        death because the classes backtracking and fista modify different
+        methods of their parent class dummy. If that would not be the case, I
+        guess the best solution would be to inherit from accel and rewrite the
+        _update_step() and _update_sol() methods.
+        """
         backtracking.__init__(self, **kwargs)
         fista.__init__(self, **kwargs)

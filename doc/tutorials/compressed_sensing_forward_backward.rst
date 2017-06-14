@@ -134,9 +134,9 @@ follows:
 
    >>> x0 = np.zeros(n)
    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
-   Solution found after 300 iterations:
-       objective function f(sol) = 1.401112e+01
-       stopping criterion: MAXIT
+   Solution found after 151 iterations:
+       objective function f(sol) = 7.668167e+00
+       stopping criterion: RTOL
 
 .. note:: A complete description of the parameters, their default values and
     the returned values is given by the solving function

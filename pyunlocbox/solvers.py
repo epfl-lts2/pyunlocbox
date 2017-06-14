@@ -122,34 +122,34 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         dummy evaluation: 0.000000e+00
         objective = 1.40e+01
     Iteration 2 of forward_backward:
-        norm_l2 evaluation: 1.555556e+00
+        norm_l2 evaluation: 2.963739e-01
         dummy evaluation: 0.000000e+00
-        objective = 1.56e+00
+        objective = 2.96e-01
     Iteration 3 of forward_backward:
-        norm_l2 evaluation: 1.728395e-01
+        norm_l2 evaluation: 7.902529e-02
         dummy evaluation: 0.000000e+00
-        objective = 1.73e-01
+        objective = 7.90e-02
     Iteration 4 of forward_backward:
-        norm_l2 evaluation: 1.920439e-02
+        norm_l2 evaluation: 5.752265e-02
         dummy evaluation: 0.000000e+00
-        objective = 1.92e-02
+        objective = 5.75e-02
     Iteration 5 of forward_backward:
-        norm_l2 evaluation: 2.133821e-03
+        norm_l2 evaluation: 5.142032e-03
         dummy evaluation: 0.000000e+00
-        objective = 2.13e-03
+        objective = 5.14e-03
     Solution found after 5 iterations:
-        objective function f(sol) = 2.133821e-03
+        objective function f(sol) = 5.142032e-03
         stopping criterion: ATOL
 
     Verify the stopping criterion (should be smaller than atol=1e-2):
 
     >>> np.linalg.norm(ret['sol'] - y)**2  # doctest:+ELLIPSIS
-    0.00213382...
+    0.00514203...
 
     Show the solution (should be close to y w.r.t. the L2-norm measure):
 
     >>> ret['sol']
-    array([ 3.98353909,  4.97942387,  5.97530864,  6.97119342])
+    array([ 4.02555301,  5.03194126,  6.03832952,  7.04471777])
 
     Show the used solver:
 
@@ -165,8 +165,8 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     >>> ret['time']  # doctest:+SKIP
     0.0012578964233398438
     >>> ret['objective']  # doctest:+NORMALIZE_WHITESPACE,+ELLIPSIS
-    [[126.0, 0], [13.99999999..., 0], [1.55555555..., 0], [0.17283950..., 0],
-    [0.01920438..., 0], [0.00213382..., 0]]
+    [[126.0, 0], [13.99999999..., 0], [0.29637392..., 0], [0.07902528..., 0],
+    [0.05752265..., 0], [0.00514203..., 0]]
 
     """
 
@@ -355,10 +355,25 @@ class solver(object):
         Call the solver iterative algorithm and the provided acceleration
         scheme. See parameters documentation in
         :func:`pyunlocbox.solvers.solve`
+
+        Notes
+        -----
+        The method :meth:`self.accel.update_sol` is called before
+        :meth:`self._algo` because the acceleration schemes usually involves
+        some sort of averaging of previous solutions, which can add some
+        unwanted artifacts on the output solution. With this ordering, we
+        guarantee that the output of solver.algo is not corrupted by the
+        acceleration scheme.
+
+        Similarly, the method :meth:`self.accel.update_step` is caled after
+        :meth:`self._algo` to allow the step update procedure to act directly
+        on the solution output by the underlying algorithm, and not on the
+        intermediate solution output by the acceleration scheme in
+        :meth:`self.accel.update_sol`.
         """
+        self.sol[:] = self.accel.update_sol(self, objective, niter)
         self._algo()
         self.step = self.accel.update_step(self, objective, niter)
-        self.sol[:] = self.accel.update_sol(self, objective, niter)
 
     def _algo(self):
         raise NotImplementedError("Class user should define this method.")
@@ -415,16 +430,16 @@ class forward_backward(solver):
     >>> f2 = functions.dummy()
     >>> solver = solvers.forward_backward(step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 12 iterations:
-        objective function f(sol) = 7.510185e-06
+    Solution found after 15 iterations:
+        objective function f(sol) = 4.957288e-07
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99902344,  4.9987793 ,  5.99853516,  6.99829102])
+    array([ 4.0002509 ,  5.00031362,  6.00037635,  7.00043907])
 
     """
 
-    def __init__(self, accel=acceleration.fista(), *args, **kwargs):
-        super(forward_backward, self).__init__(*args, **kwargs)
+    def __init__(self, accel=acceleration.fista(), **kwargs):
+        super(forward_backward, self).__init__(accel=accel, **kwargs)
 
     def _pre(self, functions, x0):
 
@@ -445,10 +460,8 @@ class forward_backward(solver):
                              'implement prox() and the other grad().')
 
     def _algo(self):
-        # Forward step
-        x = self.sol - self.step * self.f2.grad(self.sol)
-        # Bacward step
-        self.sol[:] = self.f1.prox(x, self.step)
+        x = self.sol - self.step * self.f2.grad(self.sol)  # Forward step
+        self.sol[:] = self.f1.prox(x, self.step)  # Backward step
 
     def _post(self):
         del self.f1, self.f2
@@ -733,13 +746,20 @@ class mlfbf(primal_dual):
         self.h = functions[2]
 
     def _algo(self):
+        # Forward steps (in both primal and dual spaces)
         y1 = self.sol - self.step * (self.h.grad(self.sol) +
                                      self.Lt(self.dual_sol))
         y2 = self.dual_sol + self.step * self.L(self.sol)
+
+        # Backward steps (in both primal and dual spaces)
         p1 = self.f.prox(y1, self.step)
         p2 = _prox_star(self.g, y2, self.step)
+
+        # Forward steps (in both primal and dual spaces)
         q1 = p1 - self.step * (self.h.grad(p1) + self.Lt(p2))
         q2 = p2 + self.step * self.L(p1)
+
+        # Update solution (in both primal and dual spaces)
         self.sol[:] = self.sol - y1 + q1
         self.dual_sol[:] = self.dual_sol - y2 + q2
 

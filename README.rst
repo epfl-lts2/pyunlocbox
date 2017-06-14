@@ -57,11 +57,11 @@ by a call to the solving function.
 >>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
 >>> ret = pyunlocbox.solvers.solve([f1, f2], [0., 0, 0, 0], solver, atol=1e-5)
-Solution found after 8 iterations:
-    objective function f(sol) = 2.927052e-06
+Solution found after 9 iterations:
+    objective function f(sol) = 6.714385e-08
     stopping criterion: ATOL
 >>> ret['sol']
-array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
+array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 
 Installation
 ------------

@@ -13,6 +13,54 @@ from pyunlocbox import functions, solvers, acceleration
 
 class FunctionsTestCase(unittest.TestCase):
 
+    def test_accel(self):
+        """
+        Test base acceleration scheme class
+        """
+        funs = [functions.dummy(), functions.dummy()]
+        x0 = np.zeros((4,))
+        a = acceleration.accel()
+        s = solvers.forward_backward()
+        o = [[1., 2.], [0., 1.]]
+        n = 2
+
+        self.assertRaises(NotImplementedError, a.pre, funs, x0)
+        self.assertRaises(NotImplementedError, a.update_step, s, o, n)
+        self.assertRaises(NotImplementedError, a.update_sol, s, o, n)
+        self.assertRaises(NotImplementedError, a.post)
+
+    def test_backtracking(self):
+        """
+        Test forward-backward splitting solver with backtracking, solving
+        problems with L1-norm, L2-norm, and dummy functions.
+        """
+        # Test constructor sanity
+        a = acceleration.backtracking()
+        self.assertRaises(ValueError, a.__init__, 2.)
+        self.assertRaises(ValueError, a.__init__, -2.)
+
+        y = [4., 5., 6., 7.]
+        accel = acceleration.backtracking()
+        step = 1e2  # Make sure backtracking is called
+        solver = solvers.forward_backward(accel=accel, step=step)
+        param = {'solver': solver, 'rtol': 1e-6, 'verbosity': 'NONE'}
+
+        # L2-norm prox and dummy gradient.
+        f1 = functions.norm_l2(y=y)
+        f2 = functions.dummy()
+        ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
+        nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['crit'], 'RTOL')
+        self.assertEqual(ret['niter'], 24)
+
+        # L1-norm prox and L2-norm gradient.
+        f1 = functions.norm_l1(y=y, lambda_=1.0)
+        f2 = functions.norm_l2(y=y, lambda_=0.8)
+        ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
+        nptest.assert_allclose(ret['sol'], y)
+        self.assertEqual(ret['crit'], 'RTOL')
+        self.assertEqual(ret['niter'], 4)
+
     def test_forward_backward_fista(self):
         """
         Test forward-backward splitting solver with fista acceleration,
@@ -28,7 +76,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 35)
+        self.assertEqual(ret['niter'], 60)
 
         # Dummy prox and L2-norm gradient.
         f1 = functions.dummy()
@@ -36,15 +84,15 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 25)
+        self.assertEqual(ret['niter'], 84)
 
         # L2-norm prox and L2-norm gradient.
         f1 = functions.norm_l2(y=y)
         f2 = functions.norm_l2(y=y)
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
-        nptest.assert_allclose(ret['sol'], y)
-        self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 35)
+        nptest.assert_allclose(ret['sol'], y, rtol=1e-2)
+        self.assertEqual(ret['crit'], 'MAXIT')
+        self.assertEqual(ret['niter'], 200)
 
         # L1-norm prox and dummy gradient.
         f1 = functions.norm_l1(y=y)
@@ -52,7 +100,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 8)
+        self.assertEqual(ret['niter'], 6)
 
         # Dummy prox and L1-norm gradient. As L1-norm possesses no gradient,
         # the algorithm exchanges the functions : exact same solution.
@@ -61,7 +109,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 8)
+        self.assertEqual(ret['niter'], 6)
 
         # L1-norm prox and L1-norm gradient. L1-norm possesses no gradient.
         f1 = functions.norm_l1(y=y)
@@ -75,7 +123,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 4)
+        self.assertEqual(ret['niter'], 10)
 
     def test_forward_backward_fista_backtracking(self):
         """
@@ -94,7 +142,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 35)
+        self.assertEqual(ret['niter'], 145)
 
         # L1-norm prox and L2-norm gradient.
         f1 = functions.norm_l1(y=y, lambda_=1.0)
@@ -102,7 +150,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 4)
+        self.assertEqual(ret['niter'], 6)
 
     def test_acceleration_comparison(self):
         """

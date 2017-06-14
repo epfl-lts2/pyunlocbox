@@ -128,7 +128,7 @@ def grad3d(x, **kwargs):
 
 
 def grad4d(x, **kwargs):
-    return grad(x, dim=4)
+    return grad(x, dim=4, **kwargs)
 
 
 def div(*args, **kwargs):
