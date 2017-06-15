@@ -19,8 +19,8 @@ reconstruction. See :cite:`candes2007CSperfect` for details.
 .. plot::
    :context: reset
 
-   >>> n = 5000
-   >>> S = 100
+   >>> n = 900
+   >>> S = 45
    >>> import numpy as np
    >>> m = int(np.ceil(S * np.log(n)))
    >>> print('Number of measurements: {}'.format(m))
