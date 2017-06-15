@@ -20,6 +20,14 @@ def gen_recursive_file(root, ext):
 
 def test_docstrings(root, ext):
     files = list(gen_recursive_file(root, ext))
+
+    """ The following snippet removes from the doctest list any files which
+    might be problematic, e.g., files that cause build timeout in TracisCI.
+    """
+    keyword_filter = ['compressed_sensing_douglas_rachford']
+    files = [elem for elem in files
+             if not any(word in elem for word in keyword_filter)]
+
     return doctest.DocFileSuite(*files, module_relative=False)
 
 
