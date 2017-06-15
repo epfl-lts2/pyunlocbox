@@ -24,9 +24,9 @@ reconstruction. See :cite:`candes2007CSperfect` for details.
    >>> import numpy as np
    >>> m = int(np.ceil(S * np.log(n)))
    >>> print('Number of measurements: {}'.format(m))
-   Number of measurements: 852
+   Number of measurements: 307
    >>> print('Compression ratio: {:3.2f}'.format(float(n) / m))
-   Compression ratio: 5.87
+   Compression ratio: 2.93
 
 We generate a random measurement matrix `A`:
 
@@ -101,8 +101,8 @@ follows:
 
    >>> x0 = np.zeros(n)
    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-4, maxit=300)
-   Solution found after 56 iterations:
-       objective function f(sol) = 7.590460e+00
+   Solution found after 43 iterations:
+       objective function f(sol) = 5.607407e+00
        stopping criterion: RTOL
 
 Let's display the results:
