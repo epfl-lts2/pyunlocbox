@@ -20,6 +20,7 @@ addons:
       - texlive-latex-recommended
       - texlive-latex-extra
       - texlive-fonts-recommended
+      - latexmk
 
 install:
   - pip install --upgrade pip

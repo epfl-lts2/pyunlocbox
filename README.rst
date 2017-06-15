@@ -66,7 +66,7 @@ array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 Installation
 ------------
 
-PyUnLocBox is continuously tested on Python 2.7, 3.3, 3.4 and 3.5.
+PyUnLocBox is continuously tested on Python 2.7, 3.4, 3.5, and 3.6.
 
 System-wide installation::
 
