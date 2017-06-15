@@ -102,8 +102,8 @@ class func(object):
         transpose of `A`.  If `A` is a function, default is `A`,
         :math:`At(x)=A(x)`.
     tight : bool, optional
-        ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
-        ``True``.
+        ``True`` if `A` is a tight frame (semi-orthogonal linear transform),
+        ``False`` otherwise. Default is ``True``.
     nu : float, optional
         Bound on the norm of the operator `A`, i.e. :math:`\|A(x)\|^2 \leq \nu
         \|x\|^2`. Default is 1.
@@ -226,11 +226,19 @@ class func(object):
 
         Notes
         -----
-        This method is required by some solvers.
-
         The proximal operator is defined by
         :math:`\operatorname{prox}_{\gamma f}(x) = \operatorname{arg\,min}
         \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
+
+        This method is required by some solvers.
+
+        When the map A in the function construction is a tight frame
+        (semi-orthogonal linear transformation), we can use property (x) of
+        Table 10.1 in :cite:`combettes:2011iq` to compute the proximal
+        operator of the composition of A with the base function. Whenever
+        this is not the case, we have to resort to some iterative procedure,
+        which may be very inefficient.
+
         """
         return self._prox(np.asarray(x), T)
 
@@ -400,7 +408,7 @@ class norm_l1(norm):
             sol[:] = _soft_threshold(sol, gamma * self.nu * self.w) - sol
             sol[:] = x + self.At(sol) / self.nu
         else:
-            raise NotImplementedError('Not implemented for non tight frame.')
+            raise NotImplementedError('Not implemented for non-tight frame.')
         return sol
 
 
