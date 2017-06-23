@@ -126,6 +126,25 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertRaises(NotImplementedError, s._algo)
         self.assertRaises(NotImplementedError, s.post)
 
+    def test_gradient_descent(self):
+        """
+        Test gradient descent solver with l2-norms in the objective.
+        """
+        y = [4., 5., 6., 7.]
+        A = np.array([[1., 1., 1., 0.], [0., 1., 1., 1.], [0., 1., 0., 0.],
+                      [1., 0., 0., 1.]])
+        sol = np.array([0.28846154,  0.11538462,  1.23076923,  1.78846154])
+        step = 0.5 / (np.linalg.norm(A) + 1.)
+        solver = solvers.gradient_descent(step=step)
+        param = {'solver': solver, 'rtol': 0, 'verbosity': 'NONE'}
+
+        f1 = functions.norm_l2(y=y)
+        f2 = functions.norm_l2(A=A)
+        ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
+        nptest.assert_allclose(ret['sol'], sol)
+        self.assertEqual(ret['crit'], 'MAXIT')
+        self.assertEqual(ret['niter'], 200)
+
     def test_forward_backward(self):
         """
         Test forward-backward splitting algorithm without acceleration, and

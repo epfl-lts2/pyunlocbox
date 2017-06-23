@@ -393,6 +393,71 @@ class solver(object):
         raise NotImplementedError("Class user should define this method.")
 
 
+class gradient_descent(solver):
+    r"""
+    Gradient descent algorithm.
+
+    This algorithm solves optimization problems composed of the sum of
+    any number of smooth functions.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.solvers.solver` base class.
+
+    Notes
+    -----
+    This algorithm requires each function implement the
+    :meth:`pyunlocbox.functions.func.grad` method.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers
+    >>> import numpy as np
+    >>> y = [4., 5., 6., 7.]
+    >>> A = np.ones((4,4))
+    >>> A[(1,2), 0] = 0
+    >>> A[3, 1] = 0
+    >>> A[(2,3), 2] = 0
+    >>> A[(0,2), 3] = 0
+    >>> x0 = np.zeros(len(y))
+    >>> f1 = functions.norm_l2(y=y)
+    >>> f2 = functions.norm_l2(A=A)
+    >>> solver = solvers.gradient_descent(step=0.5/(np.linalg.norm(A) + 1.))
+    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=0)
+    Solution found after 200 iterations:
+        objective function f(sol) = 1.043654e+02
+        stopping criterion: MAXIT
+    >>> ret['sol']
+    array([ 0.28846154,  0.11538462,  1.23076923,  1.78846154])
+
+    """
+
+    def __init__(self, **kwargs):
+        super(gradient_descent, self).__init__(**kwargs)
+
+    def _pre(self, functions, x0):
+
+        self.smooth_funs = []  # Smooth functions.
+        for f in functions:
+            if 'GRAD' in f.cap(x0):
+                self.smooth_funs.append(f)
+            else:
+                raise ValueError('Gradient descent requires each function to '
+                                 'implement grad().')
+
+        if self.verbosity is 'HIGH':
+            print('INFO: Gradient descent minimizing {} smooth '
+                  'functions.'.format(len(self.smooth_funs)))
+
+    def _algo(self):
+        grad = np.zeros(self.sol.shape)
+        for f in self.smooth_funs:
+            grad += f.grad(self.sol)
+        self.sol[:] -= self.step * grad
+
+    def _post(self):
+        del self.smooth_funs
+
+
 class forward_backward(solver):
     r"""
     Forward-backward proximal splitting algorithm.
