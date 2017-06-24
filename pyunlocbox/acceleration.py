@@ -15,6 +15,7 @@ methods. The following acceleration schemes are included :
 
 """
 
+import logging
 import numpy as np
 
 
@@ -142,7 +143,8 @@ class backtracking(dummy):
     eta : float
         A number between 0 and 1 representing the ratio of the geometric
         sequence formed by successive step sizes. In other words, it
-        establishes the relation `step_new = eta * step_old`. Default is 0.5.
+        establishes the relation `step_new = eta * step_old`.
+        Default is 0.5.
 
     Notes
     -----
@@ -157,7 +159,7 @@ class backtracking(dummy):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> accel=acceleration.backtracking()
+    >>> accel = acceleration.backtracking()
     >>> solver = solvers.forward_backward(accel=accel, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 12 iterations:
@@ -288,3 +290,164 @@ class fista_backtracking(backtracking, fista):
         """
         backtracking.__init__(self, **kwargs)
         fista.__init__(self, **kwargs)
+
+
+class regularized_nonlinear(dummy):
+    r"""
+    Regularized nonlinear acceleration for gradient descent.
+
+    Parameters
+    ----------
+    k : int, optional
+        Number of points to keep in the buffer for computing the extrapolation.
+        Default is 10
+
+    Notes
+    -----
+    This is the acceleration scheme proposed in :cite:`scieur2016`
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers, acceleration
+    >>> import numpy as np
+    >>> y = [4., 5., 6., 7.]
+    >>> A = np.ones((4,4))
+    >>> A[(1,2), 0] = 0
+    >>> A[3, 1] = 0
+    >>> A[(2,3), 2] = 0
+    >>> A[(0,2), 3] = 0
+    >>> x0 = np.zeros(len(y))
+    >>> f1 = functions.norm_l2(y=y)
+    >>> f2 = functions.norm_l2(A=A)
+    >>> accel = acceleration.regularized_nonlinear()
+    >>> solver = solvers.gradient_descent(step=0.5/(np.linalg.norm(A) + 1.))
+    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-32)
+    Solution found after 58 iterations:
+        objective function f(sol) = 1.043654e+02
+        stopping criterion: RTOL
+    >>> ret['sol']
+    array([ 0.28846153, 0.1153846, 1.23076922, 1.78846153])
+
+    """
+
+    def __init__(self, k=10, _lambda=1e-6, adaptive=True, line_search=True,
+                 **kwargs):
+        self.k = k
+        self.adaptive = adaptive
+        if self.adaptive:
+            self._lambda = 1.
+            self._lambda_min = 2.**(-self.k)
+        else:
+            self._lambda = _lambda
+        self.line_search = True
+        self.buffer = []
+
+    def _pre(self, functions, x0):
+        self.buffer.append(x0)
+        self.functions = functions
+
+    def _update_sol(self, solver, objective, niter):
+
+        if (niter % self.k) == 0:  # Extrapolate at each k iterations
+
+            logging.debug('Entering extrapolation snippet')
+
+            self.buffer.append(solver.sol)
+            logging.debug('buffer = {}'.format(self.buffer))
+
+            # (Normalized) matrix of differences
+            U = np.diff(self.buffer, axis=0)
+            UU = np.dot(U, U.T)
+            normUU = np.linalg.norm(UU)
+            UU /= normUU
+
+            logging.debug('U = {}'.format(U))
+            logging.debug('UU = {}'.format(UU))
+
+            # Coefficients of the extrapolation
+            c = np.linalg.solve(UU + self._lambda * np.eye(self.k),
+                                np.ones(self.k))
+            c /= np.linalg.norm(c)
+
+            logging.debug('c = {}'.format(c))
+
+            extrap = np.dot(np.asarray(self.buffer[:-1]).T, c)
+
+            logging.debug('extrap = {}'.format(extrap))
+
+            if self.adaptive:  # Find the best regularization parameter
+
+                logging.debug('Entering adaptative snippet')
+
+                f_pre = -np.inf
+                f_pos = np.sum([f.eval(extrap) for f in self.functions])
+
+                logging.debug('f_pre = {}'.format(f_pre))
+                logging.debug('f_pos = {}'.format(f_pos))
+
+                while (f_pos > f_pre) and self._lambda >= self._lambda_min:
+                    f_pre = f_pos
+
+                    self._lambda /= 2.
+
+                    logging.debug('_lambda = {}'.format(self._lambda))
+
+                    c = np.linalg.solve(UU + self._lambda * np.eye(self.k),
+                                        np.ones(self.k))
+                    c /= np.linalg.norm(c)
+
+                    logging.debug('c = {}'.format(c))
+
+                    extrap = np.dot(np.asarray(self.buffer[:-1]).T, c)
+
+                    logging.debug('extrap = {}'.format(extrap))
+
+                    f_pos = np.sum([f.eval(extrap) for f in self.functions])
+
+                    logging.debug('f_pre = {}'.format(f_pre))
+                    logging.debug('f_pos = {}'.format(f_pos))
+
+            if self.line_search:  # Improve proposal with line search
+
+                logging.debug('Entering line search snippet')
+
+                direct = extrap - solver.sol  # Direction of the line
+                stepsize = 1.
+
+                f_pre = np.sum([f.eval(solver.sol + stepsize * direct)
+                                for f in self.functions])
+
+                while True:
+                    stepsize *= 2.
+
+                    logging.debug('stepsize = {}'.format(stepsize))
+
+                    f_pos = np.sum([f.eval(solver.sol + stepsize * direct)
+                                    for f in self.functions])
+
+                    logging.debug('f_pre = {}'.format(f_pre))
+                    logging.debug('f_pos = {}'.format(f_pos))
+
+                    if (f_pre > f_pos):
+                        f_pre = f_pos
+                    else:
+                        stepsize /= 2.
+                        break
+
+                # New point proposal
+                logging.debug('stepsize = {}'.format(stepsize))
+
+                extrap = solver.sol + stepsize * direct
+
+                logging.debug('extrap = {}'.format(extrap))
+
+            # Clear buffer for the next extrapolation process
+            self.buffer = []
+            self.buffer.append(extrap)
+
+            return extrap
+
+        else:  # Gather points for future extrapolation
+            logging.debug('Filling up buffer')
+            self.buffer.append(solver.sol)
+            return solver.sol

@@ -422,12 +422,12 @@ class gradient_descent(solver):
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.norm_l2(A=A)
     >>> solver = solvers.gradient_descent(step=0.5/(np.linalg.norm(A) + 1.))
-    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=0)
-    Solution found after 200 iterations:
+    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-32)
+    Solution found after 58 iterations:
         objective function f(sol) = 1.043654e+02
-        stopping criterion: MAXIT
+        stopping criterion: RTOL
     >>> ret['sol']
-    array([ 0.28846154,  0.11538462,  1.23076923,  1.78846154])
+    array([ 0.28846153, 0.1153846, 1.23076922, 1.78846153])
 
     """
 
