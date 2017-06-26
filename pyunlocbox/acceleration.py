@@ -8,15 +8,19 @@ during its initialization so that the solver can use it. The base class
 specialized acceleration objects inherit from it and implement the class
 methods. The following acceleration schemes are included :
 
-* :class:`dummy`: Dummy acceleration scheme. Does nothing.
+* :class:`dummy`: Dummy acceleration scheme. It does nothing.
 * :class:`backtracking`: Backtracking line search.
 * :class:`fista`: FISTA acceleration scheme.
 * :class:`fista_backtracking`: FISTA with backtracking.
+* :class:`regularized_nonlinear`: Regularized nonlinear acceleration.
 
 """
 
+import copy
 import logging
+import warnings
 import numpy as np
+from scipy.optimize.linesearch import line_search_armijo
 
 
 class accel(object):
@@ -134,6 +138,11 @@ class dummy(accel):
         pass
 
 
+# -----------------------------------------------------------------------------
+# Stepsize optimizers
+# -----------------------------------------------------------------------------
+
+
 class backtracking(dummy):
     r"""
     Backtracking based on a local quadratic approximation of the objective.
@@ -211,6 +220,11 @@ class backtracking(dummy):
         del self.smooth_funs
 
 
+# -----------------------------------------------------------------------------
+# Solution point optimizers
+# -----------------------------------------------------------------------------
+
+
 class fista(dummy):
     r"""
     Acceleration scheme for forward-backward solvers.
@@ -252,6 +266,202 @@ class fista(dummy):
         return y
 
 
+class regularized_nonlinear(dummy):
+    r"""
+    Regularized nonlinear acceleration (RNA) for gradient descent.
+
+    Parameters
+    ----------
+    k : int, optional
+        Number of points to keep in the buffer for computing the extrapolation.
+        (Default is 10.)
+    lambda_ : float or list of floats, optional
+        Regularization parameter in the acceleration scheme. The user can pass
+        a list of candidates, and the acceleration algorithm will pick the one
+        that provides the best extrapolation.
+        (Default is 1e-6.)
+    adaptive : boolean, optional
+        If adaptive = True and the user has not provided a list of
+        regularization parameters, the acceleration algorithm will assemble a
+        grid of possible regularization parameters based on the SVD of the
+        Gram matrix of vectors of differences in the extrapolation buffer.
+        If adaptive = False, the algorithm will simply try to use the value(s)
+        given in lambda_.
+        (Default is True.)
+    dolinesearch : boolean, optional
+        If dolinesearch = True, the acceleration scheme will try to return a
+        point in the line segment between the current extrapolation and the
+        previous one that provides a decrease in the value of the objective
+        function.
+        If dolinesearch = False, the algorithm simply returns the current
+        extrapolation.
+        (Default is True.)
+    forcedecrease : boolean, optional
+        If forcedecrese = True and we obtain a bad extrapolation, the
+        algorithm returns the unchanged solution produced by the solver.
+        If forcedecrease = False, the algorithm returns the new extrapolation
+        no matter what.
+        (Default is True.)
+
+    Notes
+    -----
+    This is the acceleration scheme proposed in :cite:`scieur2016`.
+
+    See also Damien Scieur's `repository <https://github.com/windows7lover
+    /RegularizedNonlinearAcceleration>`_ for the Matlab version that inspired
+    this implementation.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers, acceleration
+    >>> import numpy as np
+    >>> dim = 25;
+    >>> np.random.seed(0)
+    >>> xstar = np.random.rand(dim) # True solution
+    >>> x0 = np.random.rand(dim)
+    >>> x0 = xstar + 5.*(x0 - xstar) / np.linalg.norm(x0 - xstar)
+    >>> A = np.random.rand(dim, dim)
+    >>> step = 1/np.linalg.norm(np.dot(A.T, A))
+    >>> f = functions.norm_l2(lambda_=0.5, A=A, y=np.dot(A, xstar))
+    >>> fd = functions.dummy()
+    >>> accel = acceleration.regularized_nonlinear(k=5)
+    >>> solver = solvers.gradient_descent(step=step, accel=accel)
+    >>> params = {'rtol':0, 'maxit':200, 'verbosity':'NONE'}
+    >>> ret = solvers.solve([f, fd], x0, solver, **params)
+    >>> pctdiff = 100*np.sum((xstar - ret['sol'])**2)/np.sum(xstar**2)
+    >>> print('Difference: {0:.2f}%'.format(pctdiff))
+    Difference: 1.32%
+
+    """
+
+    def __init__(self, k=10, lambda_=1e-6, adaptive=True, dolinesearch=True,
+                 forcedecrease=True, **kwargs):
+        self.k = k
+        self.lambda_ = lambda_
+        self.adaptive = adaptive
+        self.dolinesearch = dolinesearch
+        self.forcedecrease = forcedecrease
+
+    @property
+    def lambda_(self):
+        return self._lambda_
+
+    @lambda_.setter
+    def lambda_(self, lambda_):
+        try:
+            self._lambda_ = [float(elem) for elem in lambda_]
+        except TypeError:
+            try:
+                self._lambda_ = [float(lambda_)]
+            except ValueError as err:
+                print('User must provide a number: {}'.format(err))
+        except ValueError as err:
+            print('User must provide a list of numbers: {}'.format(err))
+
+    def _pre(self, functions, x0):
+        self.buffer = []
+        self.functions = functions
+
+    def _update_sol(self, solver, objective, niter):
+
+        if (niter % (self.k + 1)) == 0:  # Extrapolate at each k iterations
+
+            self.buffer.append(solver.sol)
+            logging.debug('buffer = {}'.format(self.buffer))
+
+            # (Normalized) matrix of differences
+            U = np.diff(self.buffer, axis=0)
+            UU = np.dot(U, U.T)
+            UU /= np.linalg.norm(UU)
+
+            logging.debug('UU = {}'.format(UU))
+
+            # If no parameter grid was provided, assemble one.
+            if self.adaptive and (len(self.lambda_) <= 1):
+                svals = np.sort(np.abs(np.linalg.eigvals(UU)))
+                svals = np.log(svals)
+                svals = 0.5 * (svals[:-1] + svals[1:])
+                self.lambda_ = np.concatenate(([0.], np.exp(svals)))
+
+            # Grid search for the best lambda_ for the extrapolation
+            fvals = []
+            c = np.zeros((self.k,))
+            extrap = np.zeros(np.shape(solver.sol))
+
+            for lambda_ in self.lambda_:
+                # Coefficients of the extrapolation
+                c[:] = np.linalg.solve(UU + lambda_ * np.eye(self.k),
+                                       np.ones(self.k))
+                c[:] /= np.sum(c)
+
+                extrap[:] = np.dot(np.asarray(self.buffer[:-1]).T, c)
+
+                fvals.append(np.sum([f.eval(extrap) for f in self.functions]))
+
+            if self.forcedecrease and (min(fvals) > np.sum(objective[-1])):
+                # If we have bad extrapolations, keep solution as is
+                extrap[:] = solver.sol
+            else:
+                # Return the best extrapolation from the grid search
+                lambda_ = self.lambda_[fvals.index(min(fvals))]
+
+                # We can afford to solve the linear system here again because
+                # self.k is normally very small. Alternatively, we could have
+                # kept track of the best extrapolations during the grid search,
+                # but that would require at least double the memory, as we'd
+                # have to store both the current extrapolation and the best
+                # extrapolation.
+                c[:] = np.linalg.solve(UU + lambda_ * np.eye(self.k),
+                                       np.ones(self.k))
+                c[:] /= np.sum(c)
+                extrap[:] = np.dot(np.asarray(self.buffer[:-1]).T, c)
+
+            # Improve proposal with line search
+            if self.dolinesearch:
+                # Objective evaluation functional
+                def f(x):
+                    return np.sum([f.eval(x) for f in self.functions])
+                # Solution at previous extrapolation
+                xk = self.buffer[0]
+                # Search direction
+                pk = extrap - xk
+                # Objective value during the previous extrapolation
+                old_fval = np.sum(objective[-self.k])
+
+                a, fc, fa = line_search_armijo(f=f,
+                                               xk=xk,
+                                               pk=pk,
+                                               gfk=pk,
+                                               old_fval=old_fval,
+                                               c1=1e-4,
+                                               alpha0=1.)
+
+                # New point proposal
+                if a is None:
+                    warnings.warn('Line search failed to find good step size')
+                else:
+                    extrap[:] = xk + a * pk
+
+                logging.debug('extrap = {}'.format(extrap))
+
+            # Clear buffer and parameter grid for next extrapolation process
+            self.buffer = []
+            self.lambda_ = [] if self.adaptive else self.lambda_
+
+            return extrap
+
+        else:  # Gather points for future extrapolation
+            self.buffer.append(copy.copy(solver.sol))
+            return solver.sol
+
+    def _post(self):
+        del self.buffer, self.functions
+
+# -----------------------------------------------------------------------------
+# Mixed optimizers
+# -----------------------------------------------------------------------------
+
+
 class fista_backtracking(backtracking, fista):
     r"""
     Acceleration scheme with backtracking for forward-backward solvers.
@@ -290,164 +500,3 @@ class fista_backtracking(backtracking, fista):
         """
         backtracking.__init__(self, **kwargs)
         fista.__init__(self, **kwargs)
-
-
-class regularized_nonlinear(dummy):
-    r"""
-    Regularized nonlinear acceleration for gradient descent.
-
-    Parameters
-    ----------
-    k : int, optional
-        Number of points to keep in the buffer for computing the extrapolation.
-        Default is 10
-
-    Notes
-    -----
-    This is the acceleration scheme proposed in :cite:`scieur2016`
-
-    Examples
-    --------
-    >>> from pyunlocbox import functions, solvers, acceleration
-    >>> import numpy as np
-    >>> y = [4., 5., 6., 7.]
-    >>> A = np.ones((4,4))
-    >>> A[(1,2), 0] = 0
-    >>> A[3, 1] = 0
-    >>> A[(2,3), 2] = 0
-    >>> A[(0,2), 3] = 0
-    >>> x0 = np.zeros(len(y))
-    >>> f1 = functions.norm_l2(y=y)
-    >>> f2 = functions.norm_l2(A=A)
-    >>> accel = acceleration.regularized_nonlinear()
-    >>> solver = solvers.gradient_descent(step=0.5/(np.linalg.norm(A) + 1.))
-    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-32)
-    Solution found after 58 iterations:
-        objective function f(sol) = 1.043654e+02
-        stopping criterion: RTOL
-    >>> ret['sol']
-    array([ 0.28846153, 0.1153846, 1.23076922, 1.78846153])
-
-    """
-
-    def __init__(self, k=10, _lambda=1e-6, adaptive=True, line_search=True,
-                 **kwargs):
-        self.k = k
-        self.adaptive = adaptive
-        if self.adaptive:
-            self._lambda = 1.
-            self._lambda_min = 2.**(-self.k)
-        else:
-            self._lambda = _lambda
-        self.line_search = True
-        self.buffer = []
-
-    def _pre(self, functions, x0):
-        self.buffer.append(x0)
-        self.functions = functions
-
-    def _update_sol(self, solver, objective, niter):
-
-        if (niter % self.k) == 0:  # Extrapolate at each k iterations
-
-            logging.debug('Entering extrapolation snippet')
-
-            self.buffer.append(solver.sol)
-            logging.debug('buffer = {}'.format(self.buffer))
-
-            # (Normalized) matrix of differences
-            U = np.diff(self.buffer, axis=0)
-            UU = np.dot(U, U.T)
-            normUU = np.linalg.norm(UU)
-            UU /= normUU
-
-            logging.debug('U = {}'.format(U))
-            logging.debug('UU = {}'.format(UU))
-
-            # Coefficients of the extrapolation
-            c = np.linalg.solve(UU + self._lambda * np.eye(self.k),
-                                np.ones(self.k))
-            c /= np.linalg.norm(c)
-
-            logging.debug('c = {}'.format(c))
-
-            extrap = np.dot(np.asarray(self.buffer[:-1]).T, c)
-
-            logging.debug('extrap = {}'.format(extrap))
-
-            if self.adaptive:  # Find the best regularization parameter
-
-                logging.debug('Entering adaptative snippet')
-
-                f_pre = -np.inf
-                f_pos = np.sum([f.eval(extrap) for f in self.functions])
-
-                logging.debug('f_pre = {}'.format(f_pre))
-                logging.debug('f_pos = {}'.format(f_pos))
-
-                while (f_pos > f_pre) and self._lambda >= self._lambda_min:
-                    f_pre = f_pos
-
-                    self._lambda /= 2.
-
-                    logging.debug('_lambda = {}'.format(self._lambda))
-
-                    c = np.linalg.solve(UU + self._lambda * np.eye(self.k),
-                                        np.ones(self.k))
-                    c /= np.linalg.norm(c)
-
-                    logging.debug('c = {}'.format(c))
-
-                    extrap = np.dot(np.asarray(self.buffer[:-1]).T, c)
-
-                    logging.debug('extrap = {}'.format(extrap))
-
-                    f_pos = np.sum([f.eval(extrap) for f in self.functions])
-
-                    logging.debug('f_pre = {}'.format(f_pre))
-                    logging.debug('f_pos = {}'.format(f_pos))
-
-            if self.line_search:  # Improve proposal with line search
-
-                logging.debug('Entering line search snippet')
-
-                direct = extrap - solver.sol  # Direction of the line
-                stepsize = 1.
-
-                f_pre = np.sum([f.eval(solver.sol + stepsize * direct)
-                                for f in self.functions])
-
-                while True:
-                    stepsize *= 2.
-
-                    logging.debug('stepsize = {}'.format(stepsize))
-
-                    f_pos = np.sum([f.eval(solver.sol + stepsize * direct)
-                                    for f in self.functions])
-
-                    logging.debug('f_pre = {}'.format(f_pre))
-                    logging.debug('f_pos = {}'.format(f_pos))
-
-                    if (f_pre > f_pos):
-                        f_pre = f_pos
-                    else:
-                        stepsize /= 2.
-                        break
-
-                # New point proposal
-                logging.debug('stepsize = {}'.format(stepsize))
-
-                extrap = solver.sol + stepsize * direct
-
-                logging.debug('extrap = {}'.format(extrap))
-
-            # Clear buffer for the next extrapolation process
-            self.buffer = []
-            self.buffer.append(extrap)
-
-            return extrap
-
-        else:  # Gather points for future extrapolation
-            logging.debug('Filling up buffer')
-            self.buffer.append(solver.sol)
-            return solver.sol

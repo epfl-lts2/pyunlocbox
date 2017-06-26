@@ -7,6 +7,7 @@ solver and functions objects. The :class:`solver` base class defines the
 interface of all solver objects. The specialized solver objects inherit from
 it and implement the class methods. The following solvers are included :
 
+* :class:`gradient_descent`: Gradient descent algorithm.
 * :class:`forward_backward`: Forward-backward proximal splitting algorithm.
 * :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
 * :class:`generalized_forward_backward`: Generalized Forward-Backward.
@@ -408,26 +409,28 @@ class gradient_descent(solver):
     This algorithm requires each function implement the
     :meth:`pyunlocbox.functions.func.grad` method.
 
+    See :class:`pyunlocbox.acceleration.regularized_nonlinear` for a very
+    efficient acceleration scheme for this method.
+
     Examples
     --------
-    >>> from pyunlocbox import functions, solvers
+    >>> from pyunlocbox import functions, solvers, acceleration
     >>> import numpy as np
-    >>> y = [4., 5., 6., 7.]
-    >>> A = np.ones((4,4))
-    >>> A[(1,2), 0] = 0
-    >>> A[3, 1] = 0
-    >>> A[(2,3), 2] = 0
-    >>> A[(0,2), 3] = 0
-    >>> x0 = np.zeros(len(y))
-    >>> f1 = functions.norm_l2(y=y)
-    >>> f2 = functions.norm_l2(A=A)
-    >>> solver = solvers.gradient_descent(step=0.5/(np.linalg.norm(A) + 1.))
-    >>> ret = solvers.solve([f1, f2], x0, solver, rtol=1e-32)
-    Solution found after 58 iterations:
-        objective function f(sol) = 1.043654e+02
-        stopping criterion: RTOL
-    >>> ret['sol']
-    array([ 0.28846153, 0.1153846, 1.23076922, 1.78846153])
+    >>> dim = 25;
+    >>> np.random.seed(0)
+    >>> xstar = np.random.rand(dim) # True solution
+    >>> x0 = np.random.rand(dim)
+    >>> x0 = xstar + 5.*(x0 - xstar) / np.linalg.norm(x0 - xstar)
+    >>> A = np.random.rand(dim, dim)
+    >>> step = 1/np.linalg.norm(np.dot(A.T, A))
+    >>> f = functions.norm_l2(lambda_=0.5, A=A, y=np.dot(A, xstar))
+    >>> fd = functions.dummy()
+    >>> solver = solvers.gradient_descent(step=step)
+    >>> params = {'rtol':0, 'maxit':14000, 'verbosity':'NONE'}
+    >>> ret = solvers.solve([f, fd], x0, solver, **params)
+    >>> pctdiff = 100*np.sum((xstar - ret['sol'])**2)/np.sum(xstar**2)
+    >>> print('Difference: {0:.2f}%'.format(pctdiff))
+    Difference: 1.32%
 
     """
 

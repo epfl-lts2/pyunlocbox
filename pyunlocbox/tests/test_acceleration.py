@@ -132,8 +132,8 @@ class FunctionsTestCase(unittest.TestCase):
         functions.
         """
         y = [4., 5., 6., 7.]
-        solver = solvers.forward_backward(
-            accel=acceleration.fista_backtracking())
+        accel = acceleration.fista_backtracking()
+        solver = solvers.forward_backward(accel=accel)
         param = {'solver': solver, 'rtol': 1e-6, 'verbosity': 'NONE'}
 
         # L2-norm prox and dummy gradient.
@@ -151,6 +151,32 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
         self.assertEqual(ret['niter'], 6)
+
+    def test_regularized_nonlinear(self):
+        """
+        Test gradient descent solver with regularized non-linear acceleration,
+        solving problems with L2-norm functions.
+        """
+        dim = 25
+        np.random.seed(0)
+        x0 = np.random.rand(dim)
+        xstar = np.random.rand(dim)
+        x0 = xstar + 5. * (x0 - xstar) / np.linalg.norm(x0 - xstar)
+
+        A = np.random.rand(dim, dim)
+        step = 1 / np.linalg.norm(np.dot(A.T, A))
+
+        accel = acceleration.regularized_nonlinear(k=5)
+        solver = solvers.gradient_descent(step=step, accel=accel)
+        param = {'solver': solver, 'rtol': 0,
+                 'maxit': 200, 'verbosity': 'NONE'}
+
+        # L2-norm prox and dummy gradient.
+        f1 = functions.norm_l2(lambda_=0.5, A=A, y=np.dot(A, xstar))
+        f2 = functions.dummy()
+        ret = solvers.solve([f1, f2], x0, **param)
+        pctdiff = 100 * np.sum((xstar - ret['sol'])**2) / np.sum(xstar**2)
+        nptest.assert_array_less(pctdiff, 1.91)
 
     def test_acceleration_comparison(self):
         """

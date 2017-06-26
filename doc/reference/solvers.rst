@@ -10,6 +10,14 @@ Solver object interface
     :undoc-members:
     :show-inheritance:
 
+Gradient descent algorithm
+--------------------------
+
+.. autoclass:: pyunlocbox.solvers.gradient_descent
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Forward-backward proximal splitting algorithm
 ---------------------------------------------
 

@@ -41,3 +41,11 @@ FISTA acceleration scheme with backtracking
     :members:
     :undoc-members:
     :show-inheritance:
+
+Regularized Nonlinear Acceleration (RNA)
+----------------------------------------
+
+.. autoclass:: pyunlocbox.acceleration.regularized_nonlinear
+    :members:
+    :undoc-members:
+    :show-inheritance:
