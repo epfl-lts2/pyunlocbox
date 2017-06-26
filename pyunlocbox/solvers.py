@@ -429,8 +429,8 @@ class gradient_descent(solver):
     >>> params = {'rtol':0, 'maxit':14000, 'verbosity':'NONE'}
     >>> ret = solvers.solve([f, fd], x0, solver, **params)
     >>> pctdiff = 100*np.sum((xstar - ret['sol'])**2)/np.sum(xstar**2)
-    >>> print('Difference: {0:.2f}%'.format(pctdiff))
-    Difference: 1.32%
+    >>> print('Difference: {0:.1f}%'.format(pctdiff))
+    Difference: 1.3%
 
     """
 
