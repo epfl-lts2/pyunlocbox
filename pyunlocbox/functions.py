@@ -79,6 +79,18 @@ def _soft_threshold(z, T, handle_complex=True):
     return sz
 
 
+def _prox_star(func, z, T):
+    r"""
+    Proximity operator of the convex conjugate of a function.
+
+    Notes
+    -----
+    Based on the Moreau decomposition of a vector w.r.t. a convex function.
+
+    """
+    return z - T * func.prox(z / T, 1 / T)
+
+
 class func(object):
     r"""
     This class defines the function object interface.
@@ -830,7 +842,10 @@ class proj_b2(proj):
         # Tight frame.
         if self.tight:
             tmp1 = self.A(x) - self.y()
-            scale = self.epsilon / np.sqrt(np.sum(tmp1 * tmp1, axis=0))
+            with np.errstate(divide='ignore', invalid='ignore'):
+                # Avoid 'division by zero' warning
+                scale = np.true_divide(self.epsilon,
+                                       np.sqrt(np.sum(tmp1 * tmp1, axis=0)))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'

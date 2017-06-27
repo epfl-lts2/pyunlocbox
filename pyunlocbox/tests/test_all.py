@@ -22,7 +22,7 @@ def test_docstrings(root, ext):
     files = list(gen_recursive_file(root, ext))
 
     """ The following snippet removes from the doctest list any files which
-    might be problematic, e.g., files that cause build timeout in TracisCI.
+    might be problematic, e.g., files that cause build timeout in TravisCI.
 
     keyword_filter = ['compressed_sensing_douglas_rachford']
     files = [elem for elem in files

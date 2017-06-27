@@ -21,7 +21,7 @@ it and implement the class methods. The following solvers are included :
 
 import numpy as np
 import time
-from pyunlocbox.functions import dummy
+from pyunlocbox.functions import dummy, _prox_star
 from . import acceleration
 
 
@@ -248,7 +248,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
             div = current  # Prevent division by 0.
             if div == 0:
                 if verbosity in ['LOW', 'HIGH', 'ALL']:
-                    print('WARNING: objective function is equal to 0 !')
+                    print('WARNING: (rtol) objective function is equal to 0 !')
                 if last != 0:
                     div = last
                 else:
@@ -297,18 +297,6 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     return result
 
 
-def _prox_star(func, z, T):
-    r"""
-    Proximity operator of the convex conjugate of a function.
-
-    Notes
-    -----
-    Based on the Moreau decomposition of a vector w.r.t. a convex function.
-
-    """
-    return z - T * func.prox(z / T, 1 / T)
-
-
 class solver(object):
     r"""
     Defines the solver object interface.
@@ -343,8 +331,20 @@ class solver(object):
         """
         Solver-specific pre-processing. See parameters documentation in
         :func:`pyunlocbox.solvers.solve` documentation.
+
+        Notes
+        -----
+        When preprocessing the functions, the solver should split them into
+        two lists:
+            * `self.smooth_funs`, for functions involved in gradient steps.
+            * `self.non_smooth_funs`, for functions involved proximal steps.
+        This way, any method that takes in the solver as argument, such as the
+        methods in :class:`pyunlocbox.acceleration.accel`, can have some
+        context as to how the solver is using the functions.
         """
         self.sol = np.asarray(x0)
+        self.smooth_funs = []
+        self.non_smooth_funs = []
         self._pre(functions, self.sol)
         self.accel.pre(functions, self.sol)
 
@@ -366,15 +366,16 @@ class solver(object):
         guarantee that the output of solver.algo is not corrupted by the
         acceleration scheme.
 
-        Similarly, the method :meth:`self.accel.update_step` is caled after
+        Similarly, the method :meth:`self.accel.update_step` is called after
         :meth:`self._algo` to allow the step update procedure to act directly
         on the solution output by the underlying algorithm, and not on the
         intermediate solution output by the acceleration scheme in
         :meth:`self.accel.update_sol`.
+
         """
         self.sol[:] = self.accel.update_sol(self, objective, niter)
-        self._algo()
         self.step = self.accel.update_step(self, objective, niter)
+        self._algo()
 
     def _algo(self):
         raise NotImplementedError("Class user should define this method.")
@@ -388,7 +389,7 @@ class solver(object):
         """
         self._post()
         self.accel.post()
-        del self.sol
+        del self.sol, self.smooth_funs, self.non_smooth_funs
 
     def _post(self):
         raise NotImplementedError("Class user should define this method.")
@@ -439,7 +440,6 @@ class gradient_descent(solver):
 
     def _pre(self, functions, x0):
 
-        self.smooth_funs = []  # Smooth functions.
         for f in functions:
             if 'GRAD' in f.cap(x0):
                 self.smooth_funs.append(f)
@@ -458,7 +458,7 @@ class gradient_descent(solver):
         self.sol[:] -= self.step * grad
 
     def _post(self):
-        del self.smooth_funs
+        pass
 
 
 class forward_backward(solver):
@@ -518,21 +518,23 @@ class forward_backward(solver):
             raise ValueError('Forward-backward requires two convex functions.')
 
         if 'PROX' in functions[0].cap(x0) and 'GRAD' in functions[1].cap(x0):
-            self.f1 = functions[0]
-            self.f2 = functions[1]
+            self.smooth_funs.append(functions[1])
+            self.non_smooth_funs.append(functions[0])
         elif 'PROX' in functions[1].cap(x0) and 'GRAD' in functions[0].cap(x0):
-            self.f1 = functions[1]
-            self.f2 = functions[0]
+            self.smooth_funs.append(functions[0])
+            self.non_smooth_funs.append(functions[1])
         else:
             raise ValueError('Forward-backward requires a function to '
                              'implement prox() and the other grad().')
 
     def _algo(self):
-        x = self.sol - self.step * self.f2.grad(self.sol)  # Forward step
-        self.sol[:] = self.f1.prox(x, self.step)  # Backward step
+        # Forward step
+        x = self.sol - self.step * self.smooth_funs[0].grad(self.sol)
+        # Backward step
+        self.sol[:] = self.non_smooth_funs[0].prox(x, self.step)
 
     def _post(self):
-        del self.f1, self.f2
+        pass
 
 
 class generalized_forward_backward(solver):
@@ -585,14 +587,12 @@ class generalized_forward_backward(solver):
         if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError('Lambda is bounded by 0 and 1.')
 
-        self.f = []  # Smooth functions.
-        self.g = []  # Non-smooth functions.
         self.z = []
         for f in functions:
             if 'GRAD' in f.cap(x0):
-                self.f.append(f)
+                self.smooth_funs.append(f)
             elif 'PROX' in f.cap(x0):
-                self.g.append(f)
+                self.non_smooth_funs.append(f)
                 self.z.append(np.array(x0, copy=True))
             else:
                 raise ValueError('Generalized forward-backward requires each '
@@ -607,23 +607,23 @@ class generalized_forward_backward(solver):
 
         # Smooth functions.
         grad = np.zeros(self.sol.shape)
-        for f in self.f:
+        for f in self.smooth_funs:
             grad += f.grad(self.sol)
 
         # Non-smooth functions.
-        if not self.g:
+        if not self.non_smooth_funs:
             self.sol[:] -= self.step * grad  # Reduces to gradient descent.
         else:
             sol = np.zeros(self.sol.shape)
-            for i, g in enumerate(self.g):
+            for i, g in enumerate(self.non_smooth_funs):
                 tmp = 2 * self.sol - self.z[i] - self.step * grad
-                tmp[:] = g.prox(tmp, self.step * len(self.g))
+                tmp[:] = g.prox(tmp, self.step * len(self.non_smooth_funs))
                 self.z[i] += self.lambda_ * (tmp - self.sol)
-                sol += 1. * self.z[i] / len(self.g)
+                sol += 1. * self.z[i] / len(self.non_smooth_funs)
             self.sol[:] = sol
 
     def _post(self):
-        del self.f, self.g, self.z
+        del self.z
 
 
 class douglas_rachford(solver):
@@ -678,18 +678,22 @@ class douglas_rachford(solver):
         if len(functions) != 2:
             raise ValueError('Douglas-Rachford requires two convex functions.')
 
-        self.f1 = functions[0]
-        self.f2 = functions[1]
+        for f in functions:
+            if 'PROX' in f.cap(x0):
+                self.non_smooth_funs.append(f)
+            else:
+                raise ValueError('Douglas-Rachford requires each '
+                                 'function to implement prox().')
 
         self.z = np.array(x0, copy=True)
 
     def _algo(self):
-        tmp = self.f1.prox(2 * self.sol - self.z, self.step)
+        tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
         self.z[:] = self.z + self.lambda_ * (tmp - self.sol)
-        self.sol[:] = self.f2.prox(self.z, self.step)
+        self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
 
     def _post(self):
-        del self.f1, self.f2, self.z
+        del self.z
 
 
 class primal_dual(solver):
@@ -809,31 +813,27 @@ class mlfbf(primal_dual):
         if len(functions) != 3:
             raise ValueError('MLFBF requires 3 convex functions.')
 
-        self.f = functions[0]
-        self.g = functions[1]
-        self.h = functions[2]
+        self.non_smooth_funs.append(functions[0])   # f
+        self.non_smooth_funs.append(functions[1])   # g
+        self.smooth_funs.append(functions[2])       # h
 
     def _algo(self):
         # Forward steps (in both primal and dual spaces)
-        y1 = self.sol - self.step * (self.h.grad(self.sol) +
+        y1 = self.sol - self.step * (self.smooth_funs[0].grad(self.sol) +
                                      self.Lt(self.dual_sol))
         y2 = self.dual_sol + self.step * self.L(self.sol)
 
         # Backward steps (in both primal and dual spaces)
-        p1 = self.f.prox(y1, self.step)
-        p2 = _prox_star(self.g, y2, self.step)
+        p1 = self.non_smooth_funs[0].prox(y1, self.step)
+        p2 = _prox_star(self.non_smooth_funs[1], y2, self.step)
 
         # Forward steps (in both primal and dual spaces)
-        q1 = p1 - self.step * (self.h.grad(p1) + self.Lt(p2))
+        q1 = p1 - self.step * (self.smooth_funs[0].grad(p1) + self.Lt(p2))
         q2 = p2 + self.step * self.L(p1)
 
         # Update solution (in both primal and dual spaces)
         self.sol[:] = self.sol - y1 + q1
         self.dual_sol[:] = self.dual_sol - y2 + q2
-
-    def _post(self):
-        super(mlfbf, self)._post()
-        del self.f, self.g, self.h
 
 
 class projection_based(primal_dual):
@@ -897,14 +897,15 @@ class projection_based(primal_dual):
         if len(functions) != 2:
             raise ValueError('projection_based requires 2 convex functions.')
 
-        self.f = functions[0]
-        self.g = functions[1]
+        self.non_smooth_funs.append(functions[0])   # f
+        self.non_smooth_funs.append(functions[1])   # g
 
     def _algo(self):
-        a = self.f.prox(self.sol - self.step *
-                        self.Lt(self.dual_sol), self.step)
+        a = self.non_smooth_funs[0].prox(self.sol - self.step *
+                                         self.Lt(self.dual_sol), self.step)
         ell = self.L(self.sol)
-        b = self.g.prox(ell + self.step * self.dual_sol, self.step)
+        b = self.non_smooth_funs[1].prox(ell + self.step * self.dual_sol,
+                                         self.step)
         s = (self.sol - a) / self.step + self.Lt(ell - b) / self.step
         t = b - self.L(a)
         tau = np.sum(s**2) + np.sum(t**2)
@@ -916,7 +917,3 @@ class projection_based(primal_dual):
                                     np.sum((ell - b)**2) / self.step) / tau
             self.sol[:] = self.sol - theta * s
             self.dual_sol[:] = self.dual_sol - theta * t
-
-    def _post(self):
-        super(projection_based, self)._post()
-        del self.f, self.g

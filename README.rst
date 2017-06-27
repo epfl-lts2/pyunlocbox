@@ -48,6 +48,7 @@ Features
 
   * FISTA acceleration scheme
   * Backtracking based on a quadratic approximation of the objective
+  * Regularized nonlinear acceleration (RNA)
 
 Following is a typical usage example who solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects

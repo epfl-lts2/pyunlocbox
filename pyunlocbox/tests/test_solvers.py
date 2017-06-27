@@ -18,14 +18,13 @@ class FunctionsTestCase(unittest.TestCase):
         Test some features of the solving function.
         """
 
-        """
-        We have to set a seed here for the random draw if we are required
-        below to assert that the number of iterations of the solvers are equal
-        to some specific values. Otherwise, we get trivial errors when x0 is a
-        little farther away from y in a given draw.
-        """
-        np.random.seed(0)
-        y = 5 - 10 * np.random.uniform(size=(15, 4))
+        # We have to set a seed here for the random draw if we are required
+        # below to assert that the number of iterations of the solvers are
+        # equal to some specific values. Otherwise, we get trivial errors when
+        # x0 is a little farther away from y in a given draw.
+        rs = np.random.RandomState(42)
+
+        y = 5 - 10 * rs.uniform(size=(15, 4))
 
         def x0(): return np.zeros(y.shape)
         nverb = {'verbosity': 'NONE'}

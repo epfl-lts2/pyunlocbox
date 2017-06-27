@@ -6,7 +6,7 @@ classes. Pass a given acceleration object as an argument to your chosen solver
 during its initialization so that the solver can use it. The base class
 :class:`acceleration` defines the interface of all acceleration objects. The
 specialized acceleration objects inherit from it and implement the class
-methods. The following acceleration schemes are included :
+methods. The following acceleration schemes are included:
 
 * :class:`dummy`: Dummy acceleration scheme. It does nothing.
 * :class:`backtracking`: Backtracking line search.
@@ -166,16 +166,16 @@ class backtracking(dummy):
     >>> import numpy as np
     >>> y = [4, 5, 6, 7]
     >>> x0 = np.zeros(len(y))
-    >>> f1 = functions.norm_l2(y=y)
-    >>> f2 = functions.dummy()
+    >>> f1 = functions.norm_l1(y=y, lambda_=1.0)
+    >>> f2 = functions.norm_l2(y=y, lambda_=0.8)
     >>> accel = acceleration.backtracking()
-    >>> solver = solvers.forward_backward(accel=accel, step=0.5)
-    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 12 iterations:
-        objective function f(sol) = 7.510185e-06
+    >>> solver = solvers.forward_backward(accel=accel, step=10)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-32, rtol=None)
+    Solution found after 4 iterations:
+        objective function f(sol) = 0.000000e+00
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99902344,  4.9987793 ,  5.99853516,  6.99829102])
+    array([ 4.,  5.,  6.,  7.])
 
     """
 
@@ -185,12 +185,6 @@ class backtracking(dummy):
         self.eta = eta
         super(backtracking, self).__init__(**kwargs)
 
-    def _pre(self, functions, x0):
-        self.smooth_funs = []  # Smooth functions.
-        for f in functions:
-            if 'GRAD' in f.cap(x0):
-                self.smooth_funs.append(f)
-
     def _update_step(self, solver, objective, niter):
         """
         Notes
@@ -199,25 +193,59 @@ class backtracking(dummy):
         backtracking criterion. In the future, it might be interesting to
         think of some design changes so that this function has access to the
         gradients directly.
+
+        Since the call to `solver._algo()` modifies the internal state of the
+        solver itself, we need to store the solver's property values before
+        doing backtracking, and then restore the solver's state after
+        backtracking is done. This takes more memory, but it's the only way to
+        guarantee that backtracking is performing on a fixed solver state.
         """
-        valn = np.sum(objective[-1])
-        valp = 0
-        grad = np.zeros(solver.sol.shape)
-        for f in self.smooth_funs:
-            valp += f.eval(solver.sol)
-            grad += f.grad(self.sol)
+        # Save current state of the solver
+        properties = copy.deepcopy(vars(solver))
+        logging.debug('(Begin) solver properties: {}'.format(properties))
 
-        while (2 * solver.step *
-               (valp - valn - np.dot(solver.sol - self.sol, grad)) >
-                np.sum((solver.sol - self.sol)**2)):
-            solver.step *= self.eta
+        # Initialize some useful variables
+        fn = 0
+        grad = np.zeros(properties['sol'].shape)
+        for f in solver.smooth_funs:
+            fn += f.eval(properties['sol'])
+            grad += f.grad(properties['sol'])
+        step = properties['step']
+
+        logging.debug('fn = {}'.format(fn))
+
+        while True:
+            # Run the solver with the current stepsize
+            solver.step = step
+            logging.debug('Current step: {}'.format(step))
             solver._algo()
-            valp = np.sum([f.eval(solver.sol) for f in self.smooth_funs])
+            logging.debug(
+                '(During) solver properties: {}'.format(vars(solver)))
 
-        return solver.step
+            # Record results
+            fp = np.sum([f.eval(solver.sol) for f in solver.smooth_funs])
+            logging.debug('fp = {}'.format(fp))
 
-    def _post(self):
-        del self.smooth_funs
+            dot_prod = np.dot(solver.sol - properties['sol'], grad)
+            logging.debug('dot_prod = {}'.format(dot_prod))
+
+            norm_diff = np.sum((solver.sol - properties['sol'])**2)
+            logging.debug('norm_diff = {}'.format(norm_diff))
+
+            # Restore the previous state of the solver
+            logging.debug('(Reset) solver attributes')
+            for key, val in properties.items():
+                setattr(solver, key, copy.copy(val))
+            logging.debug('(Reset) solver properties: {}'.format(vars(solver)))
+
+            if (2. * step * (fp - fn - dot_prod) <= norm_diff):
+                logging.debug('Break condition reached')
+                break
+            else:
+                logging.debug('Decreasing step')
+                step *= self.eta
+
+        return step
 
 
 # -----------------------------------------------------------------------------
@@ -482,15 +510,15 @@ class fista_backtracking(backtracking, fista):
     >>> accel=acceleration.fista_backtracking()
     >>> solver = solvers.forward_backward(accel=accel, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
-    Solution found after 13 iterations:
-        objective function f(sol) = 9.518528e-08
+    Solution found after 15 iterations:
+        objective function f(sol) = 4.957288e-07
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99989006,  4.99986257,  5.99983509,  6.9998076 ])
+    array([ 4.0002509 ,  5.00031362,  6.00037635,  7.00043907])
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, eta=0.5, **kwargs):
         """
         I can do multiple inheritance here and avoid the deadly diamond of
         death because the classes backtracking and fista modify different
@@ -498,5 +526,5 @@ class fista_backtracking(backtracking, fista):
         guess the best solution would be to inherit from accel and rewrite the
         _update_step() and _update_sol() methods.
         """
-        backtracking.__init__(self, **kwargs)
+        backtracking.__init__(self, eta=eta, **kwargs)
         fista.__init__(self, **kwargs)

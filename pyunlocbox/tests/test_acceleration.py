@@ -41,24 +41,24 @@ class FunctionsTestCase(unittest.TestCase):
 
         y = [4., 5., 6., 7.]
         accel = acceleration.backtracking()
-        step = 1e2  # Make sure backtracking is called
+        step = 10  # Make sure backtracking is called
         solver = solvers.forward_backward(accel=accel, step=step)
-        param = {'solver': solver, 'rtol': 1e-6, 'verbosity': 'NONE'}
+        param = {'solver': solver, 'atol': 1e-32, 'verbosity': 'NONE'}
 
         # L2-norm prox and dummy gradient.
         f1 = functions.norm_l2(y=y)
         f2 = functions.dummy()
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
-        self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 24)
+        self.assertEqual(ret['crit'], 'ATOL')
+        self.assertEqual(ret['niter'], 13)
 
         # L1-norm prox and L2-norm gradient.
         f1 = functions.norm_l1(y=y, lambda_=1.0)
         f2 = functions.norm_l2(y=y, lambda_=0.8)
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
-        self.assertEqual(ret['crit'], 'RTOL')
+        self.assertEqual(ret['crit'], 'ATOL')
         self.assertEqual(ret['niter'], 4)
 
     def test_forward_backward_fista(self):
@@ -142,7 +142,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 145)
+        self.assertEqual(ret['niter'], 60)
 
         # L1-norm prox and L2-norm gradient.
         f1 = functions.norm_l1(y=y, lambda_=1.0)
@@ -150,7 +150,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'RTOL')
-        self.assertEqual(ret['niter'], 6)
+        self.assertEqual(ret['niter'], 3)
 
     def test_regularized_nonlinear(self):
         """
@@ -199,17 +199,16 @@ class FunctionsTestCase(unittest.TestCase):
         slvs.append(solvers.forward_backward(accel=acceleration.fista(),
                                              step=step))
         slvs.append(solvers.forward_backward(
-            accel=acceleration.fista_backtracking(), step=step))
+            accel=acceleration.fista_backtracking(eta=.999), step=step))
 
         # Compare solutions.
         params = {'rtol': 1e-14, 'verbosity': 'NONE', 'maxit': 1e4}
-        niters = [2, 2, 2]
+        niters = [2, 2, 6]
         for solver, niter in zip(slvs, niters):
             x0 = np.zeros(len(y))
             ret = solvers.solve([f1, f2], x0, solver, **params)
             nptest.assert_allclose(ret['sol'], sol)
             self.assertEqual(ret['niter'], niter)
-            self.assertIs(ret['sol'], x0)  # The initial value was modified.
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
