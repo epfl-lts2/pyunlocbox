@@ -25,12 +25,14 @@ inherit from it implement the methods. These classes include :
     :meth:`_eval` and :meth:`_prox` methods.
 """
 
-from time import time
-import numpy as np
-from copy import deepcopy
-from scipy.optimize import minimize
+from __future__ import division
 
+import numpy as np
+
+from copy import deepcopy
 from pyunlocbox import operators as op
+from scipy.optimize import minimize
+from time import time
 
 
 def _soft_threshold(z, T, handle_complex=True):
@@ -844,8 +846,7 @@ class proj_b2(proj):
             tmp1 = self.A(x) - self.y()
             with np.errstate(divide='ignore', invalid='ignore'):
                 # Avoid 'division by zero' warning
-                scale = np.true_divide(self.epsilon,
-                                       np.sqrt(np.sum(tmp1 * tmp1, axis=0)))
+                scale = self.epsilon / np.sqrt(np.sum(tmp1 * tmp1, axis=0))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'
