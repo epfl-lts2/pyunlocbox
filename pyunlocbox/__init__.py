@@ -14,17 +14,22 @@ The :mod:`pyunlocbox` package is divided into the following modules :
   hierarchy and the solving function
 * :mod:`pyunlocbox.functions`: functions to be passed to the solvers, implement
   the functions class hierarchy
+* :mod:`pyunlocbox.operators`: useful operators to be passed to the functions
+* :mod:`pyunlocbox.acceleration`: acceleration schemes to be passed to the
+  solvers, implement the acceleration class hierarchy
 """
 
 # When importing the toolbox, you surely want these modules.
 from pyunlocbox import functions
 from pyunlocbox import solvers
 from pyunlocbox import operators
+from pyunlocbox import acceleration
 
 # Silence the code checker warning about unused symbols.
 assert functions
 assert solvers
 assert operators
+assert acceleration
 
-__version__ = '0.2.1'
-__release_date__ = '2014-08-20'
+__version__ = '0.3.0'
+__release_date__ = '2017-07-01'

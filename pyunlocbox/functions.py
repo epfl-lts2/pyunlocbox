@@ -25,12 +25,14 @@ inherit from it implement the methods. These classes include :
     :meth:`_eval` and :meth:`_prox` methods.
 """
 
-from time import time
-import numpy as np
-from copy import deepcopy
-from scipy.optimize import minimize
+from __future__ import division
 
+import numpy as np
+
+from copy import deepcopy
 from pyunlocbox import operators as op
+from scipy.optimize import minimize
+from time import time
 
 
 def _soft_threshold(z, T, handle_complex=True):
@@ -79,6 +81,18 @@ def _soft_threshold(z, T, handle_complex=True):
     return sz
 
 
+def _prox_star(func, z, T):
+    r"""
+    Proximity operator of the convex conjugate of a function.
+
+    Notes
+    -----
+    Based on the Moreau decomposition of a vector w.r.t. a convex function.
+
+    """
+    return z - T * func.prox(z / T, 1 / T)
+
+
 class func(object):
     r"""
     This class defines the function object interface.
@@ -102,8 +116,8 @@ class func(object):
         transpose of `A`.  If `A` is a function, default is `A`,
         :math:`At(x)=A(x)`.
     tight : bool, optional
-        ``True`` if `A` is a tight frame, ``False`` otherwise. Default is
-        ``True``.
+        ``True`` if `A` is a tight frame (semi-orthogonal linear transform),
+        ``False`` otherwise. Default is ``True``.
     nu : float, optional
         Bound on the norm of the operator `A`, i.e. :math:`\|A(x)\|^2 \leq \nu
         \|x\|^2`. Default is 1.
@@ -226,11 +240,19 @@ class func(object):
 
         Notes
         -----
-        This method is required by some solvers.
-
         The proximal operator is defined by
         :math:`\operatorname{prox}_{\gamma f}(x) = \operatorname{arg\,min}
         \limits_z \frac{1}{2} \|x-z\|_2^2 + \gamma f(z)`
+
+        This method is required by some solvers.
+
+        When the map A in the function construction is a tight frame
+        (semi-orthogonal linear transformation), we can use property (x) of
+        Table 10.1 in :cite:`combettes:2011iq` to compute the proximal
+        operator of the composition of A with the base function. Whenever
+        this is not the case, we have to resort to some iterative procedure,
+        which may be very inefficient.
+
         """
         return self._prox(np.asarray(x), T)
 
@@ -400,7 +422,7 @@ class norm_l1(norm):
             sol[:] = _soft_threshold(sol, gamma * self.nu * self.w) - sol
             sol[:] = x + self.At(sol) / self.nu
         else:
-            raise NotImplementedError('Not implemented for non tight frame.')
+            raise NotImplementedError('Not implemented for non-tight frame.')
         return sol
 
 
@@ -822,7 +844,9 @@ class proj_b2(proj):
         # Tight frame.
         if self.tight:
             tmp1 = self.A(x) - self.y()
-            scale = self.epsilon / np.sqrt(np.sum(tmp1 * tmp1, axis=0))
+            with np.errstate(divide='ignore', invalid='ignore'):
+                # Avoid 'division by zero' warning
+                scale = self.epsilon / np.sqrt(np.sum(tmp1 * tmp1, axis=0))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
             crit = 'TOL'

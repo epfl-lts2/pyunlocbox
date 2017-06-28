@@ -115,22 +115,6 @@ def grad(x, dim=2, **kwargs):
         return dx, dy, dz, dt
 
 
-def grad1d(x, **kwargs):
-    return grad(x, dim=1, **kwargs)
-
-
-def grad2d(x, **kwargs):
-    return grad(x, dim=2, **kwargs)
-
-
-def grad3d(x, **kwargs):
-    return grad(x, dim=3, **kwargs)
-
-
-def grad4d(x, **kwargs):
-    return grad(x, dim=4)
-
-
 def div(*args, **kwargs):
     r"""
     Returns the divergence of the array

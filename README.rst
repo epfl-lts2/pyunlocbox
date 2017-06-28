@@ -6,18 +6,20 @@ PyUNLocBoX is a convex optimization toolbox using proximal splitting methods
 implemented in Python. It is a free software distributed under the BSD license
 and is a port of the Matlab UNLocBoX toolbox.
 
-.. image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
-   :target: https://travis-ci.org/epfl-lts2/pyunlocbox
+.. only:: html
 
-.. image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
-   :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
+  .. image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
+     :target: https://travis-ci.org/epfl-lts2/pyunlocbox
 
-.. image:: https://img.shields.io/pypi/v/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
+  .. image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
+     :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 
-.. image:: https://img.shields.io/pypi/l/pyunlocbox.svg
+  .. image:: https://img.shields.io/pypi/v/pyunlocbox.svg
+     :target: https://pypi.python.org/pypi/pyunlocbox
 
-.. image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
+  .. image:: https://img.shields.io/pypi/l/pyunlocbox.svg
+
+  .. image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
 
 * Development : https://github.com/epfl-lts2/pyunlocbox
 * Documentation : https://pyunlocbox.readthedocs.io
@@ -42,6 +44,12 @@ Features
   * TV-norm
   * Projection on the L2-ball
 
+* Acceleration schemes
+
+  * FISTA acceleration scheme
+  * Backtracking based on a quadratic approximation of the objective
+  * Regularized nonlinear acceleration (RNA)
+
 Following is a typical usage example who solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects
 are first instantiated with the desired parameters. The problem is then solved
@@ -52,16 +60,16 @@ by a call to the solving function.
 >>> f2 = pyunlocbox.functions.dummy()
 >>> solver = pyunlocbox.solvers.forward_backward()
 >>> ret = pyunlocbox.solvers.solve([f1, f2], [0., 0, 0, 0], solver, atol=1e-5)
-Solution found after 10 iterations:
-    objective function f(sol) = 7.460428e-09
+Solution found after 9 iterations:
+    objective function f(sol) = 6.714385e-08
     stopping criterion: ATOL
 >>> ret['sol']
-array([ 3.99996922,  4.99996153,  5.99995383,  6.99994614])
+array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 
 Installation
 ------------
 
-PyUnLocBox is continuously tested on Python 2.7, 3.3, 3.4 and 3.5.
+PyUnLocBox is continuously tested on Python 2.7, 3.4, 3.5, and 3.6.
 
 System-wide installation::
 

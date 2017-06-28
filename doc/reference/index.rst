@@ -36,6 +36,20 @@ Solvers module
 .. inheritance-diagram:: pyunlocbox.solvers
     :parts: 2
 
+Acceleration module
+-------------------
+
+.. toctree::
+    :hidden:
+
+    acceleration
+
+.. automodule:: pyunlocbox.acceleration
+
+.. inheritance-diagram:: pyunlocbox.acceleration
+    :parts: 2
+
+
 Operators module
 ----------------
 

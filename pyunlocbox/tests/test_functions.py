@@ -26,9 +26,11 @@ class FunctionsTestCase(unittest.TestCase):
         self.assertRaises(NotImplementedError, f.eval, x)
         self.assertRaises(NotImplementedError, f.prox, x, T)
         self.assertRaises(NotImplementedError, f.grad, x)
-        f.eval = lambda x: x**2 - 5
-        f.grad = lambda x: 2 * x
-        f.prox = lambda x, T: x + T
+        self.assertEqual(len(f.cap(x)), 0)
+        # Set up but never used:
+        # f.eval = lambda x: x**2 - 5
+        # f.grad = lambda x: 2 * x
+        # f.prox = lambda x, T: x + T
 
         def assert_equivalent(param1, param2):
             x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
@@ -149,6 +151,11 @@ class FunctionsTestCase(unittest.TestCase):
         nptest.assert_array_equal(f.prox(np.array([[1, -4], [5, -2]]), 1),
                                   [[0, -1], [2, 0]])
 
+        f = functions.norm_l1(tight=False)
+        x = np.ones((4,))
+        T = 0.5
+        self.assertRaises(NotImplementedError, f.prox, x, T)
+
     def test_norm_nuclear(self):
         """
         Test the norm_nuclear derived class.
@@ -169,15 +176,17 @@ class FunctionsTestCase(unittest.TestCase):
         """
         # Test Matrices initialization
         # test for a 1dim matrice (testing with a 5)
-        mat1d = np.arange(5) + 1
+        # mat1d = np.arange(5) + 1
         # test for a 2dim matrice (testing with a 2x4)
         mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         # test for a 3 dim matrice (testing with a 2x3x2)
         mat3d = np.arange(1, stop=13).reshape(2, 2, 3).transpose((1, 2, 0))
         # test for a 4dim matrice (2x3x2x2)
-        mat4d = np.arange(1, stop=25).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
+        # mat4d = np.arange(1, stop=25).reshape(2, 2, 2, 3)
+        # mat4d = mat4d.transpose((2, 3, 1, 0))
         # test for a 5dim matrice (2x2x3x2x2)
-        mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
+        # mat5d = np.arange(1, stop=49).reshape(2, 2, 3, 2, 2)
+        # mat5d = mat5d.transpose((3, 4, 2, 1, 0))
 
         # Test for evals
         def test_eval():
@@ -197,7 +206,8 @@ class FunctionsTestCase(unittest.TestCase):
             nptest.assert_array_equal(xeval, f.eval(mat2d))
             f = functions.norm_tv(dim=2, wx=0.5, wy=2)
             xeval = np.array([71.1092])
-            nptest.assert_array_equal(xeval, np.around(f.eval(mat2d), decimals=4))
+            nptest.assert_array_equal(
+                xeval, np.around(f.eval(mat2d), decimals=4))
 
             # test with 3d matrices (2x3x2)
             # test without weight
@@ -211,11 +221,13 @@ class FunctionsTestCase(unittest.TestCase):
             # test with weights
             f = functions.norm_tv(dim=2, wx=2, wy=3)
             sol = np.sum(np.array([25.4164, 25.4164]))
-            nptest.assert_array_equal(sol, np.around(f.eval(mat3d), decimals=4))
+            nptest.assert_array_equal(
+                sol, np.around(f.eval(mat3d), decimals=4))
 
             f = functions.norm_tv(dim=3, wx=2, wy=3, wz=.5)
             xeval = np.array([58.3068])
-            nptest.assert_array_equal(xeval, np.around(f.eval(mat3d), decimals=4))
+            nptest.assert_array_equal(
+                xeval, np.around(f.eval(mat3d), decimals=4))
 
         # Test for prox
         def test_prox():
@@ -355,6 +367,9 @@ class FunctionsTestCase(unittest.TestCase):
         f.method = 'ISTA'
         sol_ista = f.prox(x, 0)
         assert np.allclose(sol_fista, sol_ista, rtol=1e-3)
+
+        f.method = 'NOT_A_VALID_METHOD'
+        self.assertRaises(ValueError, f.prox, x, 0)
 
     def test_independent_problems(self):
 

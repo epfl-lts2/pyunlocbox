@@ -5,7 +5,7 @@
 Test suite for the pyunlocbox package.
 """
 
-from . import test_functions, test_operators, test_solvers
+from . import test_functions, test_operators, test_solvers, test_acceleration
 import unittest
 import doctest
 import os
@@ -20,6 +20,15 @@ def gen_recursive_file(root, ext):
 
 def test_docstrings(root, ext):
     files = list(gen_recursive_file(root, ext))
+
+    """ The following snippet removes from the doctest list any files which
+    might be problematic, e.g., files that cause build timeout in TravisCI.
+
+    keyword_filter = ['compressed_sensing_douglas_rachford']
+    files = [elem for elem in files
+             if not any(word in elem for word in keyword_filter)]
+    """
+
     return doctest.DocFileSuite(*files, module_relative=False)
 
 
@@ -27,6 +36,7 @@ suites = []
 suites.append(test_functions.suite)
 suites.append(test_operators.suite)
 suites.append(test_solvers.suite)
+suites.append(test_acceleration.suite)
 suites.append(test_docstrings('pyunlocbox', '.py'))
 suites.append(test_docstrings('.', '.rst'))
 suite = unittest.TestSuite(suites)

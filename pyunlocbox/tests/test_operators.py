@@ -20,7 +20,8 @@ class OperatorsTestCase(unittest.TestCase):
         mat2d = np.array([[2, 3, 0, 1], [22, 1, 4, 5]])
         mat3d = np.arange(1, 13).reshape(2, 2, 3).transpose((1, 2, 0))
         mat4d = np.arange(1, 25).reshape(2, 2, 2, 3).transpose((2, 3, 1, 0))
-        mat5d = np.arange(1, 49).reshape(2, 2, 3, 2, 2).transpose((3, 4, 2, 1, 0))
+        mat5d = np.arange(1, 49).reshape(2, 2, 3, 2, 2)
+        mat5d = mat5d.transpose((3, 4, 2, 1, 0))
 
         # 1D without weights.
         dx = operators.grad(mat1d, dim=1)
@@ -34,7 +35,7 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dy, dy)
 
         # 2D with weights.
-        dx, dy = operators.grad(mat2d, dim=2, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy = operators.grad(mat2d, wx=2, wy=0.5, wz=3, wt=2, dim=2)
         mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
         nptest.assert_array_equal(mat_dx_w, dx)
@@ -58,7 +59,7 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dz, dz)
 
         # 3D with weights.
-        dx, dy, dz = operators.grad(mat3d, dim=3, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy, dz = operators.grad(mat3d, wx=2, wy=0.5, wz=3, wt=2, dim=3)
         mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
         mat_dz_w = mat_dz * 3
@@ -107,7 +108,7 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dt, dt)
 
         # 4D with weights.
-        dx, dy, dz, dt = operators.grad(mat4d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy, dz, dt = operators.grad(mat4d, wx=2, wy=0.5, wz=3, wt=2, dim=4)
         mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
         mat_dz_w = mat_dz * 3
@@ -182,7 +183,7 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dt, dt)
 
         # 5D with weights.
-        dx, dy, dz, dt = operators.grad(mat5d, dim=4, wx=2, wy=0.5, wz=3, wt=2)
+        dx, dy, dz, dt = operators.grad(mat5d, wx=2, wy=0.5, wz=3, wt=2, dim=4)
         mat_dx_w = mat_dx * 2
         mat_dy_w = mat_dy * 0.5
         mat_dz_w = mat_dz * 3
@@ -193,16 +194,21 @@ class OperatorsTestCase(unittest.TestCase):
         nptest.assert_array_equal(mat_dt_w, dt)
 
     def test_div(self):
+        # Sanity check
+        self.assertRaises(ValueError, operators.div)
+
         # Divergence tests
         # test with 1dim matrices
         dx = np.array([1, 2, 3, 4, 5])
 
         # test without weights
-        nptest.assert_array_equal(np.array([1, 1, 1, 1, -4]), operators.div(dx))
+        nptest.assert_array_equal(np.array([1, 1, 1, 1, -4]),
+                                  operators.div(dx))
 
         # test with weights
         weights = {'wx': 2, 'wy': 3, 'wz': 4, 'wt': 2}
-        nptest.assert_array_equal(np.array([2, 2, 2, 2, -8]), operators.div(dx, **weights))
+        nptest.assert_array_equal(np.array([2, 2, 2, 2, -8]),
+                                  operators.div(dx, **weights))
 
         # test with 2dim matrices
         dx = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
@@ -254,7 +260,8 @@ class OperatorsTestCase(unittest.TestCase):
         xyz_mat_w = np.array([[[9, 86, 55], [15, 61, -1], [12, 27, -66]],
                               [[34, 81, 20], [29, 45, -47], [15, 0, -123]],
                               [[41, 58, -33], [25, 11, -111], [0, -45, -198]]])
-        nptest.assert_array_equal(xyz_mat_w, operators.div(dx, dy, dz, **weights))
+        nptest.assert_array_equal(xyz_mat_w, operators.div(dx, dy, dz,
+                                                           **weights))
 
         # test with 4d matrices (3x3x3x3)
         dx = np.array([[[[1, 28, 55], [10, 37, 64], [19, 46, 73]],
@@ -344,7 +351,8 @@ class OperatorsTestCase(unittest.TestCase):
                                [[[55, 230, 243], [90, 139, 26], [17, -60, -299]],
                                 [[41, 133, 63], [45, 11, -185], [-59, -219, -541]],
                                 [[18, 27, -126], [-9, -126, -405], [-144, -387, -792]]]])
-        nptest.assert_array_equal(xyzt_mat_w, operators.div(dx, dy, dz, dt, **weights))
+        nptest.assert_array_equal(xyzt_mat_w, operators.div(dx, dy, dz, dt,
+                                                            **weights))
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(OperatorsTestCase)
