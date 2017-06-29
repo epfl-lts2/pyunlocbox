@@ -46,8 +46,7 @@ class accel(object):
 
         Gets called when :func:`pyunlocbox.solvers.solve` starts running.
         """
-        self.sol = np.array(x0, copy=True)
-        self._pre(functions, self.sol)
+        self._pre(functions, x0)
 
     def _pre(self, functions, x0):
         raise NotImplementedError("Class user should define this method.")
@@ -109,7 +108,6 @@ class accel(object):
         :func:`pyunlocbox.solvers.solve` finishes running.
         """
         self._post()
-        del self.sol
 
     def _post(self):
         raise NotImplementedError("Class user should define this method.")
@@ -130,8 +128,6 @@ class dummy(accel):
         return solver.step
 
     def _update_sol(self, solver, objective, niter):
-        # Track the solution, but otherwise do nothing
-        self.sol[:] = solver.sol
         return solver.sol
 
     def _post(self):
@@ -145,7 +141,8 @@ class dummy(accel):
 
 class backtracking(dummy):
     r"""
-    Backtracking based on a local quadratic approximation of the objective.
+    Backtracking based on a local quadratic approximation of the the smooth
+    part of the objective.
 
     Parameters
     ----------
@@ -153,11 +150,11 @@ class backtracking(dummy):
         A number between 0 and 1 representing the ratio of the geometric
         sequence formed by successive step sizes. In other words, it
         establishes the relation `step_new = eta * step_old`.
-        Default is 0.5.
+        (Default is 0.5)
 
     Notes
     -----
-    This is the backtracking strategy proposed in the original FISTA paper,
+    This is the backtracking strategy used in the original FISTA paper,
     :cite:`beck2009FISTA`.
 
     Examples
@@ -233,7 +230,6 @@ class backtracking(dummy):
             logging.debug('norm_diff = {}'.format(norm_diff))
 
             # Restore the previous state of the solver
-            logging.debug('(Reset) solver attributes')
             for key, val in properties.items():
                 setattr(solver, key, copy.copy(val))
             logging.debug('(Reset) solver properties: {}'.format(vars(solver)))
@@ -285,6 +281,9 @@ class fista(dummy):
         self.t = 1.
         super(fista, self).__init__(**kwargs)
 
+    def _pre(self, functions, x0):
+        self.sol = np.array(x0, copy=True)
+
     def _update_sol(self, solver, objective, niter):
         self.t = 1. if (niter == 1) else self.t  # Restart variable t if needed
         t = (1. + np.sqrt(1. + 4. * self.t**2.)) / 2.
@@ -292,6 +291,9 @@ class fista(dummy):
         self.t = t
         self.sol[:] = solver.sol
         return y
+
+    def _pos(self):
+        del self.sol
 
 
 class regularized_nonlinear(dummy):
@@ -459,7 +461,7 @@ class regularized_nonlinear(dummy):
                 a, fc, fa = line_search_armijo(f=f,
                                                xk=xk,
                                                pk=pk,
-                                               gfk=pk,
+                                               gfk=-pk,
                                                old_fval=old_fval,
                                                c1=1e-4,
                                                alpha0=1.)
@@ -484,6 +486,110 @@ class regularized_nonlinear(dummy):
 
     def _post(self):
         del self.buffer, self.functions
+
+
+class line_search(dummy):
+    r"""
+    Improve solution by searching the line segment it makes with the previous
+    solution.
+
+    Notes
+    -----
+    This is backtracking strategy assumes that the solver outputs iterates in
+    the direction of steepest descent, and then uses the Armijo rule to
+    determine a good step size in this direction.
+
+    If the descent directions in your problem are given by the gradients of
+    the smooth part of the objective, it might be more accurate to use
+    :class:`pyunlocbox.acceleration.backtracking` instead which uses this
+    gradient information.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions, solvers, acceleration
+    >>> import numpy as np
+    >>> y = [4, 5, 6, 7]
+    >>> x0 = np.zeros(len(y))
+    >>> f1 = functions.norm_l1(y=y, lambda_=1.0)
+    >>> f2 = functions.norm_l2(y=y, lambda_=0.8)
+    >>> accel = acceleration.line_search()
+    >>> solver = solvers.forward_backward(accel=accel, step=10)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-32, rtol=None)
+    Solution found after 3 iterations:
+        objective function f(sol) = 0.000000e+00
+        stopping criterion: ATOL
+    >>> ret['sol']
+    array([ 4.,  5.,  6.,  7.])
+
+    """
+
+    def __init__(self, **kwargs):
+        super(line_search, self).__init__(**kwargs)
+
+    def _pre(self, functions, x0):
+        # In order to allow this acceleration scheme to work on primal-dual
+        # solvers, we take advantage of the fact that in such solvers
+        # the dual function is always the second on the list.
+        # TODO: Think of a more elegant design strategy allowing for a robust
+        # identification of the dual functions.
+        self.functions = functions.copy()
+        self.dual_functions = [self.functions.pop(1)]
+        self.sol = np.array(x0, copy=True)
+
+    def _update_sol(self, solver, objective, niter):
+        # TODO: This seems to work fine for regular solvers, but not so much
+        # for primal-dual ones. I think the problem here is that the line
+        # search is being done in the primal variable, while the dual variable
+        # gets ignored.
+        logging.debug('ENTER line search')
+
+        # Line search on primal variable
+        def f(x):
+            try:  # Differentiate between primal-dual and regular solvers.
+                val = np.sum([f.eval(x) for f in self.functions]) + \
+                    np.sum([g.eval(solver.L(x)) for g in self.dual_functions])
+            except AttributeError:
+                val = np.sum([f.eval(x) for f in self.functions]) + \
+                    np.sum([g.eval(x) for g in self.dual_functions])
+            return val
+
+        # Solution before new point proposal
+        xk = self.sol
+        logging.debug('self.sol = {}'.format(xk))
+        logging.debug('solver.sol = {}'.format(solver.sol))
+
+        # Objective value before new point proposal
+        old_fval = f(xk)
+
+        # Search direction
+        pk = solver.sol - xk
+
+        a, fc, fa = line_search_armijo(f=f,
+                                       xk=xk,
+                                       pk=pk,
+                                       gfk=-pk,
+                                       old_fval=old_fval,
+                                       c1=1e-4,
+                                       alpha0=1.)
+        logging.debug('alpha = {}'.format(a))
+
+        if a is None:
+            warnings.warn('Line search failed to find a good step size. ')
+            sol = xk
+        else:
+            sol = xk + a * pk
+            if a > 0:  # Step is still large for this objective's landscape
+                solver.step = solver.step / (solver.step + 1)
+
+        logging.debug('new sol = {}'.format(sol))
+
+        self.sol[:] = sol
+
+        logging.debug('EXIT line search')
+        return sol
+
+    def _pos(self):
+        del self.sol
 
 # -----------------------------------------------------------------------------
 # Mixed optimizers
