@@ -46,8 +46,7 @@ class accel(object):
 
         Gets called when :func:`pyunlocbox.solvers.solve` starts running.
         """
-        self.sol = np.array(x0, copy=True)
-        self._pre(functions, self.sol)
+        self._pre(functions, x0)
 
     def _pre(self, functions, x0):
         raise NotImplementedError("Class user should define this method.")
@@ -109,7 +108,6 @@ class accel(object):
         :func:`pyunlocbox.solvers.solve` finishes running.
         """
         self._post()
-        del self.sol
 
     def _post(self):
         raise NotImplementedError("Class user should define this method.")
@@ -130,8 +128,6 @@ class dummy(accel):
         return solver.step
 
     def _update_sol(self, solver, objective, niter):
-        # Track the solution, but otherwise do nothing
-        self.sol[:] = solver.sol
         return solver.sol
 
     def _post(self):
@@ -145,7 +141,8 @@ class dummy(accel):
 
 class backtracking(dummy):
     r"""
-    Backtracking based on a local quadratic approximation of the objective.
+    Backtracking based on a local quadratic approximation of the the smooth
+    part of the objective.
 
     Parameters
     ----------
@@ -157,7 +154,7 @@ class backtracking(dummy):
 
     Notes
     -----
-    This is the backtracking strategy proposed in the original FISTA paper,
+    This is the backtracking strategy used in the original FISTA paper,
     :cite:`beck2009FISTA`.
 
     Examples
@@ -233,7 +230,6 @@ class backtracking(dummy):
             logging.debug('norm_diff = {}'.format(norm_diff))
 
             # Restore the previous state of the solver
-            logging.debug('(Reset) solver attributes')
             for key, val in properties.items():
                 setattr(solver, key, copy.copy(val))
             logging.debug('(Reset) solver properties: {}'.format(vars(solver)))
@@ -285,6 +281,9 @@ class fista(dummy):
         self.t = 1.
         super(fista, self).__init__(**kwargs)
 
+    def _pre(self, functions, x0):
+        self.sol = np.array(x0, copy=True)
+
     def _update_sol(self, solver, objective, niter):
         self.t = 1. if (niter == 1) else self.t  # Restart variable t if needed
         t = (1. + np.sqrt(1. + 4. * self.t**2.)) / 2.
@@ -292,6 +291,9 @@ class fista(dummy):
         self.t = t
         self.sol[:] = solver.sol
         return y
+
+    def _post(self):
+        del self.sol
 
 
 class regularized_nonlinear(dummy):
@@ -395,14 +397,11 @@ class regularized_nonlinear(dummy):
         if (niter % (self.k + 1)) == 0:  # Extrapolate at each k iterations
 
             self.buffer.append(solver.sol)
-            logging.debug('buffer = {}'.format(self.buffer))
 
             # (Normalized) matrix of differences
             U = np.diff(self.buffer, axis=0)
             UU = np.dot(U, U.T)
             UU /= np.linalg.norm(UU)
-
-            logging.debug('UU = {}'.format(UU))
 
             # If no parameter grid was provided, assemble one.
             if self.adaptive and (len(self.lambda_) <= 1):
@@ -459,7 +458,7 @@ class regularized_nonlinear(dummy):
                 a, fc, fa = line_search_armijo(f=f,
                                                xk=xk,
                                                pk=pk,
-                                               gfk=pk,
+                                               gfk=-pk,
                                                old_fval=old_fval,
                                                c1=1e-4,
                                                alpha0=1.)
@@ -469,8 +468,6 @@ class regularized_nonlinear(dummy):
                     warnings.warn('Line search failed to find good step size')
                 else:
                     extrap[:] = xk + a * pk
-
-                logging.debug('extrap = {}'.format(extrap))
 
             # Clear buffer and parameter grid for next extrapolation process
             self.buffer = []
