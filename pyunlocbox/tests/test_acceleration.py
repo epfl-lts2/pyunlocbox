@@ -3,6 +3,7 @@
 
 """
 Test suite for the acceleration module of the pyunlocbox package.
+
 """
 
 import unittest
@@ -16,6 +17,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_accel(self):
         """
         Test base acceleration scheme class
+
         """
         funs = [functions.dummy(), functions.dummy()]
         x0 = np.zeros((4,))
@@ -33,6 +35,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test forward-backward splitting solver with backtracking, solving
         problems with L1-norm, L2-norm, and dummy functions.
+
         """
         # Test constructor sanity
         a = acceleration.backtracking()
@@ -65,6 +68,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test forward-backward splitting solver with fista acceleration,
         solving problems with L1-norm, L2-norm, and dummy functions.
+
         """
         y = [4., 5., 6., 7.]
         solver = solvers.forward_backward(accel=acceleration.fista())
@@ -130,6 +134,7 @@ class FunctionsTestCase(unittest.TestCase):
         Test forward-backward splitting solver with fista acceleration and
         backtracking, solving problems with L1-norm, L2-norm, and dummy
         functions.
+
         """
         y = [4., 5., 6., 7.]
         accel = acceleration.fista_backtracking()
@@ -156,6 +161,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test gradient descent solver with regularized non-linear acceleration,
         solving problems with L2-norm functions.
+
         """
         dim = 25
         np.random.seed(0)
@@ -178,9 +184,15 @@ class FunctionsTestCase(unittest.TestCase):
         pctdiff = 100 * np.sum((xstar - ret['sol'])**2) / np.sum(xstar**2)
         nptest.assert_array_less(pctdiff, 1.91)
 
+        # Sanity checks
+        accel = acceleration.regularized_nonlinear()
+        self.assertRaises(ValueError, accel.__init__, 10, ['not', 'good'])
+        self.assertRaises(ValueError, accel.__init__, 10, 'nope')
+
     def test_acceleration_comparison(self):
         """
         Test that all solvers return the same and correct solution.
+
         """
 
         # Convex functions.

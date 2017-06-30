@@ -17,6 +17,7 @@ it and implement the class methods. The following solvers are included :
   * :class:`mlfbf`: Monotone+Lipschitz Forward-Backward-Forward primal-dual
     algorithm.
   * :class:`projection_based`: Projection-based primal-dual algorithm.
+
 """
 
 import numpy as np
@@ -319,6 +320,7 @@ class solver(object):
         User-defined object used to adaptively change the current step size
         and solution while the algorithm is running. Default is a dummy
         object that returns unchanged values.
+
     """
 
     def __init__(self, step=1., accel=None):
@@ -336,11 +338,12 @@ class solver(object):
         -----
         When preprocessing the functions, the solver should split them into
         two lists:
-            * `self.smooth_funs`, for functions involved in gradient steps.
-            * `self.non_smooth_funs`, for functions involved proximal steps.
+        * `self.smooth_funs`, for functions involved in gradient steps.
+        * `self.non_smooth_funs`, for functions involved proximal steps.
         This way, any method that takes in the solver as argument, such as the
         methods in :class:`pyunlocbox.acceleration.accel`, can have some
         context as to how the solver is using the functions.
+
         """
         self.sol = np.asarray(x0)
         self.smooth_funs = []
@@ -386,6 +389,7 @@ class solver(object):
         during initialization so that the garbage collector can free the
         memory. See parameters documentation in
         :func:`pyunlocbox.solvers.solve`.
+
         """
         self._post()
         self.accel.post()
@@ -415,7 +419,7 @@ class gradient_descent(solver):
 
     Examples
     --------
-    >>> from pyunlocbox import functions, solvers, acceleration
+    >>> from pyunlocbox import functions, solvers
     >>> import numpy as np
     >>> dim = 25;
     >>> np.random.seed(0)

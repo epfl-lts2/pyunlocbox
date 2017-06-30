@@ -17,6 +17,7 @@ The :mod:`pyunlocbox` package is divided into the following modules :
 * :mod:`pyunlocbox.operators`: useful operators to be passed to the functions
 * :mod:`pyunlocbox.acceleration`: acceleration schemes to be passed to the
   solvers, implement the acceleration class hierarchy
+
 """
 
 # When importing the toolbox, you surely want these modules.

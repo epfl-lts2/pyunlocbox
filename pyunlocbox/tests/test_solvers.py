@@ -3,6 +3,7 @@
 
 """
 Test suite for the solvers module of the pyunlocbox package.
+
 """
 
 import unittest
@@ -16,6 +17,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_solve(self):
         """
         Test some features of the solving function.
+
         """
 
         # We have to set a seed here for the random draw if we are required
@@ -115,6 +117,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_solver(self):
         """
         Base solver class.
+
         """
         funs = [functions.dummy(), functions.dummy()]
         x0 = np.zeros((4,))
@@ -128,6 +131,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_gradient_descent(self):
         """
         Test gradient descent solver with l2-norms in the objective.
+
         """
         y = [4., 5., 6., 7.]
         A = np.array([[1., 1., 1., 0.], [0., 1., 1., 1.], [0., 1., 0., 0.],
@@ -148,6 +152,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test forward-backward splitting algorithm without acceleration, and
         with L1-norm, L2-norm, and dummy functions.
+
         """
         y = [4., 5., 6., 7.]
         solver = solvers.forward_backward(accel=acceleration.dummy())
@@ -177,6 +182,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_douglas_rachford(self):
         """
         Test douglas-rachford solver with L1-norm, L2-norm and dummy functions.
+
         """
         y = [4, 5, 6, 7]
         solver = solvers.douglas_rachford()
@@ -209,6 +215,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_generalized_forward_backward(self):
         """
         Test the generalized forward-backward algorithm.
+
         """
         y = [4, 5, 6, 7]
         L = 4  # Gradient of the smooth function is Lipschitz continuous.
@@ -259,6 +266,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_mlfbf(self):
         """
         Test the MLFBF solver with arbitrarily selected functions.
+
         """
         x = [1., 1., 1.]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
@@ -290,6 +298,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_projection_based(self):
         """
         Test the projection-based solver with arbitrarily selected functions.
+
         """
         x = [0, 0, 0]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
@@ -314,6 +323,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_solver_comparison(self):
         """
         Test that all solvers return the same and correct solution.
+
         """
 
         # Convex functions.
@@ -350,6 +360,7 @@ class FunctionsTestCase(unittest.TestCase):
 
         I had to create this separate function because the primal-dual solvers
         were too slow for the problem above.
+
         """
 
         # Convex functions.

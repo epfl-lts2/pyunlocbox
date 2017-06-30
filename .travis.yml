@@ -16,11 +16,11 @@ addons:
       - gfortran  # scipy
       - libatlas-base-dev  # scipy
       - graphviz  # sphinx inheritance diagrams
-      - texlive-latex-base  # pdf from sphinx latex
-      - texlive-latex-recommended
-      - texlive-latex-extra
-      - texlive-fonts-recommended
-      - latexmk
+      # - texlive-latex-base  # pdf from sphinx latex
+      # - texlive-latex-recommended
+      # - texlive-latex-extra
+      # - texlive-fonts-recommended
+      # - latexmk
 
 install:
   - pip install --upgrade pip
@@ -33,7 +33,7 @@ install:
 script:
   - make test
   - make docall
-#  - make lint
+  - make lint
 
 after_success:
   - coveralls

@@ -23,6 +23,7 @@ inherit from it implement the methods. These classes include :
 
   * :class:`proj_b2`: Projection on the L2-ball who implements the
     :meth:`_eval` and :meth:`_prox` methods.
+
 """
 
 from __future__ import division
@@ -209,6 +210,7 @@ class func(object):
         This method is required by the :func:`pyunlocbox.solvers.solve` solving
         function to evaluate the objective function. Each function class
         should therefore define it.
+
         """
         sol = self._eval(np.asarray(x))
         if self.verbosity in ['LOW', 'HIGH']:
@@ -279,6 +281,7 @@ class func(object):
         Notes
         -----
         This method is required by some solvers.
+
         """
         return self._grad(np.asarray(x))
 
@@ -301,6 +304,7 @@ class func(object):
         -------
         cap : list of string
             A list of capabilities ('EVAL', 'GRAD', 'PROX').
+
         """
         tmp = self.verbosity
         self.verbosity = 'NONE'
@@ -369,6 +373,7 @@ class norm(func):
         Regularization parameter :math:`\lambda`. Default is 1.
     w : array_like, optional
         Weights for a weighted norm. Default is 1.
+
     """
 
     def __init__(self, lambda_=1, w=1, **kwargs):
@@ -778,6 +783,7 @@ class proj(func):
     Notes
     -----
     * All indicator functions (projections) evaluate to zero by definition.
+
     """
 
     def __init__(self, epsilon=1, method='FISTA', **kwargs):

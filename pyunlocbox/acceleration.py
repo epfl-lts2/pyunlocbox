@@ -69,6 +69,7 @@ class accel(object):
         -------
         float
             Updated step size.
+
         """
         return self._update_step(solver, objective, niter)
 
@@ -93,6 +94,7 @@ class accel(object):
         -------
         array_like
             Updated solution point.
+
         """
         return self._update_sol(solver, objective, niter)
 
@@ -106,6 +108,7 @@ class accel(object):
         Mainly used to delete references added during initialization so that
         the garbage collector can free the memory. Gets called when
         :func:`pyunlocbox.solvers.solve` finishes running.
+
         """
         self._post()
 
@@ -119,6 +122,7 @@ class dummy(accel):
 
     Used by default in most of the solvers. It simply returns unaltered the
     step size and solution point it receives.
+
     """
 
     def _pre(self, functions, x0):
@@ -316,7 +320,7 @@ class regularized_nonlinear(dummy):
         grid of possible regularization parameters based on the SVD of the
         Gram matrix of vectors of differences in the extrapolation buffer.
         If adaptive = False, the algorithm will simply try to use the value(s)
-        given in lambda_.
+        given in `lambda_`.
         (Default is True.)
     dolinesearch : boolean, optional
         If dolinesearch = True, the acceleration scheme will try to return a
@@ -384,9 +388,11 @@ class regularized_nonlinear(dummy):
             try:
                 self._lambda_ = [float(lambda_)]
             except ValueError as err:
-                print('User must provide a number: {}'.format(err))
+                print('lambda_ is not a number')
+                raise err
         except ValueError as err:
-            print('User must provide a list of numbers: {}'.format(err))
+            print('lambda_ is not a list of numbers')
+            raise err
 
     def _pre(self, functions, x0):
         self.buffer = []
@@ -410,7 +416,7 @@ class regularized_nonlinear(dummy):
                 svals = 0.5 * (svals[:-1] + svals[1:])
                 self.lambda_ = np.concatenate(([0.], np.exp(svals)))
 
-            # Grid search for the best lambda_ for the extrapolation
+            # Grid search for the best parameter for the extrapolation
             fvals = []
             c = np.zeros((self.k,))
             extrap = np.zeros(np.shape(solver.sol))
@@ -516,12 +522,11 @@ class fista_backtracking(backtracking, fista):
     """
 
     def __init__(self, eta=0.5, **kwargs):
-        """
-        I can do multiple inheritance here and avoid the deadly diamond of
-        death because the classes backtracking and fista modify different
-        methods of their parent class dummy. If that would not be the case, I
-        guess the best solution would be to inherit from accel and rewrite the
-        _update_step() and _update_sol() methods.
-        """
+        # I can do multiple inheritance here and avoid the deadly diamond of
+        # death because the classes backtracking and fista modify different
+        # methods of their parent class dummy. If that would not be the case, I
+        # guess the best solution would be to inherit from accel and rewrite
+        # the `_update_step()` and `_update_sol()` methods.
+
         backtracking.__init__(self, eta=eta, **kwargs)
         fista.__init__(self, **kwargs)

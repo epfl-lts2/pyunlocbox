@@ -4,7 +4,31 @@
 History
 =======
 
-x.x.x (xxxx-xx-xx)
+0.3.0 (2017-07-01)
+------------------
+
+New Features:
+
+* Acceleration module, decoupling acceleration strategies from the solvers
+
+  * Backtracking scheme
+  * FISTA acceleration
+  * FISTA with backtracking
+  * Regularized non-linear acceleration (RNA)
+
+* Gradient descent algorithm
+
+Bug fixes :
+
+* Ignore .svg images when building pdf from latex with sphinx
+* Decrease dimensionality of variables in Douglas Rachford tutorial
+
+Infrastructure :
+
+* Continuous integration testing on Python 2.7, 3.4, 3.5 and 3.6
+* Drop support to Python 3.3 because of matplotlib
+
+x.x.x (2016-07-xx)
 ------------------
 
 New Features:

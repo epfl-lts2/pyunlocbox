@@ -3,7 +3,7 @@
 help:
 	@echo "clean    remove non-source files"
 	@echo "doc      generate Sphinx HTML documentation, including API doc"
-	@echo "docall   generate HTML & PDF documentation, check links"
+	@echo "docall   generate HTML documentation, check links"
 	@echo "lint     check style with flake8"
 	@echo "test     run tests and check code coverage"
 	@echo "release  package and upload a release"
@@ -26,12 +26,12 @@ doc:
 	sphinx-build -b html -d doc/_build/doctrees doc doc/_build/html
 
 docall: doc
-	sphinx-build -b latex -d doc/_build/doctrees doc doc/_build/latex
-	$(MAKE) -C doc/_build/latex all-pdf > doc/_build/latex/pdflatex.log
+	# sphinx-build -b latex -d doc/_build/doctrees doc doc/_build/latex
+	# $(MAKE) -C doc/_build/latex all-pdf > doc/_build/latex/pdflatex.log
 	sphinx-build -b linkcheck -d doc/_build/doctrees doc doc/_build/linkcheck
 
 lint:
-	flake8
+	flake8 --doctests --exclude=doc
 
 test:
 	coverage run --branch --source pyunlocbox setup.py test

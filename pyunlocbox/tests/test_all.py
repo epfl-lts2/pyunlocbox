@@ -3,6 +3,7 @@
 
 """
 Test suite for the pyunlocbox package.
+
 """
 
 from . import test_functions, test_operators, test_solvers, test_acceleration
@@ -27,6 +28,7 @@ def test_docstrings(root, ext):
     keyword_filter = ['compressed_sensing_douglas_rachford']
     files = [elem for elem in files
              if not any(word in elem for word in keyword_filter)]
+
     """
 
     return doctest.DocFileSuite(*files, module_relative=False)

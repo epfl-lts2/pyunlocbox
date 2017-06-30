@@ -3,6 +3,7 @@
 
 """
 Test suite for the functions module of the pyunlocbox package.
+
 """
 
 import unittest
@@ -19,6 +20,7 @@ class FunctionsTestCase(unittest.TestCase):
         Test the func base class.
         First test that all the methods raise a NotImplemented exception.
         Then assign valid methods and test return values.
+
         """
         x = 10
         T = 1
@@ -58,6 +60,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test the dummy derived class.
         All the methods should return 0.
+
         """
         f = functions.dummy()
         self.assertEqual(f.eval(34), 0)
@@ -73,6 +76,7 @@ class FunctionsTestCase(unittest.TestCase):
         Test the norm_l2 derived class.
         We test the three methods : eval, grad and prox.
         First with default class properties, then custom ones.
+
         """
         f = functions.norm_l2(lambda_=3)
         self.assertEqual(f.eval([10, 0]), 300)
@@ -125,6 +129,7 @@ class FunctionsTestCase(unittest.TestCase):
     def test_soft_thresholding(self):
         """
         Test the soft thresholding helper function.
+
         """
         x = np.arange(-4, 5, 1)
         # Test integer division for complex method.
@@ -143,6 +148,7 @@ class FunctionsTestCase(unittest.TestCase):
         Test the norm_l1 derived class.
         We test the two methods : eval and prox.
         First with default class properties, then custom ones.
+
         """
         f = functions.norm_l1(lambda_=3)
         self.assertEqual(f.eval([10, 0]), 30)
@@ -161,6 +167,7 @@ class FunctionsTestCase(unittest.TestCase):
         Test the norm_nuclear derived class.
         We test the two methods : eval and prox.
         First with default class properties, then custom ones.
+
         """
         f = functions.norm_nuclear(lambda_=3)
         self.assertEqual(f.eval(np.diag([10, 0])), 30)
@@ -173,6 +180,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test the norm_tv derived class.
         We test the grad, div, eval and prox.
+
         """
         # Test Matrices initialization
         # test for a 1dim matrice (testing with a 5)
@@ -221,8 +229,8 @@ class FunctionsTestCase(unittest.TestCase):
             # test with weights
             f = functions.norm_tv(dim=2, wx=2, wy=3)
             sol = np.sum(np.array([25.4164, 25.4164]))
-            nptest.assert_array_equal(
-                sol, np.around(f.eval(mat3d), decimals=4))
+            nptest.assert_array_equal(sol, np.around(f.eval(mat3d),
+                                                     decimals=4))
 
             f = functions.norm_tv(dim=3, wx=2, wy=3, wz=.5)
             xeval = np.array([58.3068])
@@ -281,15 +289,9 @@ class FunctionsTestCase(unittest.TestCase):
             x3d = np.array([[[1, 10, 19], [2, 11, 20], [3, 12, 21]],
                             [[4, 13, 22], [5, 14, 23], [6, 15, 24]],
                             [[7, 16, 25], [8, 17, 26], [9, 18, 27]]])
-            sol = np.array([[[5, 14, 23],
-                             [5, 14, 23],
-                             [5, 14, 23]],
-                            [[5, 14, 23],
-                             [5, 14, 23],
-                             [5, 14, 23]],
-                            [[5, 14, 23],
-                             [5, 14, 23],
-                             [5, 14, 23]]])
+            sol = np.array([[[5, 14, 23], [5, 14, 23], [5, 14, 23]],
+                            [[5, 14, 23], [5, 14, 23], [5, 14, 23]],
+                            [[5, 14, 23], [5, 14, 23], [5, 14, 23]]])
             nptest.assert_array_equal(sol, np.around(f.prox(x3d, gamma)))
 
             # Test with 4d matrices
@@ -305,28 +307,30 @@ class FunctionsTestCase(unittest.TestCase):
                             [[[7, 34, 61], [16, 43, 70], [25, 52, 79]],
                              [[8, 35, 62], [17, 44, 71], [26, 53, 80]],
                              [[9, 36, 63], [18, 45, 72], [27, 54, 81]]]])
-            sol = np.around(np.array([[[[14, 41, 68], [14, 41, 68], [14, 41, 68]],
-                                       [[14, 41, 68], [14, 41, 68], [14, 41, 68]],
-                                       [[14, 41, 68], [14, 41, 68], [14, 41, 68]]],
-                                      [[[14, 41, 68], [14, 41, 68], [14, 41, 68]],
-                                       [[14, 41, 68], [14, 41, 68], [14, 41, 68]],
-                                       [[14, 41, 68], [14, 41, 68], [14, 41, 68]]],
-                                      [[[14, 41, 68], [14, 41, 68], [14, 41, 68]],
-                                       [[14, 41, 68], [14, 41, 68], [14, 41, 68]],
-                                       [[14, 41, 68], [14, 41, 68], [14, 41, 68]]]]))
+            sol = np.array([[[[14, 41, 68], [14, 41, 68], [14, 41, 68]],
+                             [[14, 41, 68], [14, 41, 68], [14, 41, 68]],
+                             [[14, 41, 68], [14, 41, 68], [14, 41, 68]]],
+                            [[[14, 41, 68], [14, 41, 68], [14, 41, 68]],
+                             [[14, 41, 68], [14, 41, 68], [14, 41, 68]],
+                             [[14, 41, 68], [14, 41, 68], [14, 41, 68]]],
+                            [[[14, 41, 68], [14, 41, 68], [14, 41, 68]],
+                             [[14, 41, 68], [14, 41, 68], [14, 41, 68]],
+                             [[14, 41, 68], [14, 41, 68], [14, 41, 68]]]])
+            sol = np.around(sol)
             nptest.assert_array_equal(sol, np.around(f.prox(x4d, gamma)))
 
             f = functions.norm_tv(tol=10e-4, dim=4)
             gamma = 15
-            sol = np.around(np.array([[[[22, 34, 54], [26, 40, 54], [31, 44, 53]],
-                                       [[23, 35, 54], [27, 40, 54], [32, 44, 53]],
-                                       [[23, 35, 54], [27, 41, 54], [32, 45, 53]]],
-                                      [[[24, 36, 54], [28, 41, 54], [32, 45, 53]],
-                                       [[24, 36, 54], [28, 42, 53], [33, 45, 53]],
-                                       [[24, 37, 54], [29, 42, 53], [33, 46, 53]]],
-                                      [[[25, 38, 54], [29, 43, 53], [34, 46, 53]],
-                                       [[25, 38, 54], [30, 43, 53], [34, 46, 53]],
-                                       [[26, 39, 54], [30, 43, 53], [35, 47, 53]]]]))
+            sol = np.array([[[[22, 34, 54], [26, 40, 54], [31, 44, 53]],
+                             [[23, 35, 54], [27, 40, 54], [32, 44, 53]],
+                             [[23, 35, 54], [27, 41, 54], [32, 45, 53]]],
+                            [[[24, 36, 54], [28, 41, 54], [32, 45, 53]],
+                             [[24, 36, 54], [28, 42, 53], [33, 45, 53]],
+                             [[24, 37, 54], [29, 42, 53], [33, 46, 53]]],
+                            [[[25, 38, 54], [29, 43, 53], [34, 46, 53]],
+                             [[25, 38, 54], [30, 43, 53], [34, 46, 53]],
+                             [[26, 39, 54], [30, 43, 53], [35, 47, 53]]]])
+            sol = np.around(sol)
             nptest.assert_array_equal(sol, np.around(f.prox(x4d, gamma)))
 
         # Test with weights
@@ -337,6 +341,7 @@ class FunctionsTestCase(unittest.TestCase):
         """
         Test the projection on the L2-ball.
         ISTA and FISTA algorithms for tight and non-tight frames.
+
         """
         tol = 1e-7
 
