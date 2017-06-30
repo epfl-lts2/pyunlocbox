@@ -1,4 +1,4 @@
-.PHONY: clean doc docall lint test release dist
+.PHONY: help clean doc docall lint test dist release
 
 help:
 	@echo "clean    remove non-source files"
@@ -6,8 +6,8 @@ help:
 	@echo "docall   generate HTML documentation, check links"
 	@echo "lint     check style with flake8"
 	@echo "test     run tests and check code coverage"
-	@echo "release  package and upload a release"
 	@echo "dist     package"
+	@echo "release  package and upload a release"
 
 clean:
 	# Python files.
@@ -38,12 +38,12 @@ test:
 	coverage report
 	coverage html
 
-release: clean
-	python setup.py register
-	python setup.py sdist upload
-#	python setup.py bdist_wheel upload
-
 dist: clean
 	python setup.py sdist
 #	python setup.py bdist_wheel
 	ls -l dist
+
+release: clean
+	python setup.py register
+	python setup.py sdist upload
+#	python setup.py bdist_wheel upload
