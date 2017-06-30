@@ -7,8 +7,10 @@ Test suite for the acceleration module of the pyunlocbox package.
 """
 
 import unittest
+
 import numpy as np
 import numpy.testing as nptest
+
 from pyunlocbox import functions, solvers, acceleration
 
 

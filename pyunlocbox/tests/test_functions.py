@@ -7,9 +7,11 @@ Test suite for the functions module of the pyunlocbox package.
 """
 
 import unittest
+import inspect
+
 import numpy as np
 import numpy.testing as nptest
-import inspect
+
 from pyunlocbox import functions
 
 

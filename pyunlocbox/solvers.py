@@ -20,10 +20,12 @@ it and implement the class methods. The following solvers are included :
 
 """
 
-import numpy as np
 import time
+
+import numpy as np
+
 from pyunlocbox.functions import dummy, _prox_star
-from . import acceleration
+from pyunlocbox import acceleration
 
 
 def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,

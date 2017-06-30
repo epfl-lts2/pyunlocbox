@@ -6,10 +6,11 @@ Test suite for the pyunlocbox package.
 
 """
 
-from . import test_functions, test_operators, test_solvers, test_acceleration
+import os
 import unittest
 import doctest
-import os
+
+from . import test_functions, test_operators, test_solvers, test_acceleration
 
 
 def gen_recursive_file(root, ext):

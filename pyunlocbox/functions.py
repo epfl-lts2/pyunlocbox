@@ -28,12 +28,13 @@ inherit from it implement the methods. These classes include :
 
 from __future__ import division
 
-import numpy as np
-
-from copy import deepcopy
-from pyunlocbox import operators as op
-from scipy.optimize import minimize
 from time import time
+from copy import deepcopy
+
+import numpy as np
+from scipy.optimize import minimize
+
+from pyunlocbox import operators as op
 
 
 def _soft_threshold(z, T, handle_complex=True):

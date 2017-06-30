@@ -19,6 +19,7 @@ methods. The following acceleration schemes are included:
 import copy
 import logging
 import warnings
+
 import numpy as np
 from scipy.optimize.linesearch import line_search_armijo
 
