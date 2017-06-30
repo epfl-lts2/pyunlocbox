@@ -31,9 +31,9 @@ install:
   - "echo backend : agg > ~/.config/matplotlib/matplotlibrc"
 
 script:
+  - make lint
   - make test
   - make docall
-  - make lint
 
 after_success:
   - coveralls
