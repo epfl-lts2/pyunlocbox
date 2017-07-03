@@ -2,7 +2,7 @@
 Reference guide
 ===============
 
-Toolbox overview
+Package overview
 ----------------
 
 .. automodule:: pyunlocbox
