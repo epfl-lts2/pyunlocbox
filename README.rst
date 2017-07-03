@@ -78,36 +78,15 @@ array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 Installation
 ------------
 
-PyUnLocBox is continuously tested on Python 2.7, 3.4, 3.5, and 3.6.
-
-System-wide installation::
+The PyUnLocBox is available on PyPI::
 
     $ pip install pyunlocbox
-
-Installation in an isolated virtual environment::
-
-    $ mkvirtualenv --system-site-packages pyunlocbox
-    $ pip install pyunlocbox
-
-You need virtualenvwrapper to run this command. The ``--system-site-packages``
-option could be useful if you want to use a shared system installation of numpy
-and matplotlib. Their building and installation require quite some
-dependencies.
-
-Another way is to manually download from PyPI, unpack the package and install
-with::
-
-    $ python setup.py install
-
-Execute the project test suite once to make sure you have a working install::
-
-    $ python setup.py test
 
 Authors
 -------
 
 PyUNLocBoX was started in 2014 as an academic project for research purpose at
-the LTS2 laboratory from EPFL (https://lts2.epfl.ch).
+the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
 
 Development lead :
 
