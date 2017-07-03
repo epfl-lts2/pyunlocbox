@@ -90,20 +90,20 @@ The development of this package takes place on `GitHub
 welcome.
 
 You can improve or add solvers, functions, and acceleration schemes in
-:file:`pyunlocbox/solvers.py`, :file:`pyunlocbox/functions.py`, and
-:file:`pyunlocbox/acceleration.py`, along with their corresponding unit tests
-in :file:`pyunlocbox/tests/test_*.py` (with reasonable coverage) and
-documentation in :file:`doc/reference/*.rst`. If you have a nice example to
-demonstrate the use of the introduced functionality, please consider adding
-a tutorial in :file:`doc/tutorials`.
+``pyunlocbox/solvers.py``, ``pyunlocbox/functions.py``, and
+``pyunlocbox/acceleration.py``, along with their corresponding unit tests in
+``pyunlocbox/tests/test_*.py`` (with reasonable coverage) and documentation in
+``doc/reference/*.rst``. If you have a nice example to demonstrate the use of
+the introduced functionality, please consider adding a tutorial in
+``doc/tutorials``.
 
-Do not forget to update :file:`README.rst` and :file:`doc/history.rst` with
-e.g. new features or contributors. The version number needs to be updated in
-:file:`setup.py` and :file:`pyunlocbox/__init__.py`.
+Do not forget to update ``README.rst`` and ``doc/history.rst`` with e.g. new
+features or contributors. The version number needs to be updated in
+``setup.py`` and ``pyunlocbox/__init__.py``.
 
 Please make sure that your changes pass the tests (enforced by CI) and check
-the generated coverage report at :file:`htmlcov/index.html` to make sure the
-tests reasonably cover the changes you've introduced::
+the generated coverage report at ``htmlcov/index.html`` to make sure the tests
+reasonably cover the changes you've introduced::
 
 $ make lint
 $ make test
