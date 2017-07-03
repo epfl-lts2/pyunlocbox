@@ -20,6 +20,9 @@ PyUNLocBoX: convex optimization in Python
 .. image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
    :target: https://pypi.python.org/pypi/pyunlocbox
 
+.. image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
+   :target: https://github.com/epfl-lts2/pyunlocbox
+
 The PyUNLocBoX is a convex optimization package based on `proximal splitting
 methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_ and
 implemented in Python (a `Matlab counterpart <https://lts2.epfl.ch/unlocbox>`_
