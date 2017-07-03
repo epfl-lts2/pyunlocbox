@@ -4,6 +4,7 @@
    :maxdepth: 2
    :hidden:
 
+   Home <self>
    tutorials/index
    reference/index
    history
