@@ -1,52 +1,63 @@
-=====
-About
-=====
+=========================================
+PyUNLocBoX: convex optimization in Python
+=========================================
 
-PyUNLocBoX is a convex optimization toolbox using proximal splitting methods
-implemented in Python. It is a free software distributed under the BSD license
-and is a port of the Matlab UNLocBoX toolbox.
+.. image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
+   :target: https://pyunlocbox.readthedocs.io/en/latest/
 
 .. image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
    :target: https://travis-ci.org/epfl-lts2/pyunlocbox
 
 .. image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
-	 :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
+   :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 
 .. image:: https://img.shields.io/pypi/v/pyunlocbox.svg
-	 :target: https://pypi.python.org/pypi/pyunlocbox
+   :target: https://pypi.python.org/pypi/pyunlocbox
 
 .. image:: https://img.shields.io/pypi/l/pyunlocbox.svg
+   :target: https://pypi.python.org/pypi/pyunlocbox
 
 .. image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
+   :target: https://pypi.python.org/pypi/pyunlocbox
 
-* Development : https://github.com/epfl-lts2/pyunlocbox
-* Documentation : https://pyunlocbox.readthedocs.io
-* PyPI package : https://pypi.python.org/pypi/pyunlocbox
-* Travis continuous integration : https://travis-ci.org/epfl-lts2/pyunlocbox
-* UNLocBoX matlab toolbox : https://lts2.epfl.ch/unlocbox
+The PyUNLocBoX is a convex optimization package based on `proximal splitting
+methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_ and
+implemented in Python (a `Matlab counterpart <https://lts2.epfl.ch/unlocbox>`_
+exists). It is a free software, distributed under the BSD license, and
+available on `PyPI <https://pypi.python.org/pypi/pyunlocbox>`_. The
+documentation is available `online <https://pyunlocbox.readthedocs.io>`_ and
+development takes place on `GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
 
-Features
---------
+The package is designed to be easy to use while allowing any advanced tasks. It
+is not meant to be a black-box optimization tool. You'll have to carefully
+design your solver. In exchange you'll get full control of what the package
+does for you, without the pain of rewriting the proximity operators and the
+solvers and with the added benefit of tested algorithms. With this package, you
+can focus on your problem and the best way to solve it rather that the details
+of the algorithms. It comes with the following solvers:
 
-* Solvers
+* Gradient descent
+* Forward-backward splitting algorithm (FISTA, ISTA)
+* Douglas-Rachford splitting algorithm
+* Generalized forward-backward
+* Monotone+Lipschitz forward-backward-forward primal-dual algorithm
+* Projection-based primal-dual algorithm
 
-  * Forward-backward splitting algorithm
-  * Douglas-Rachford splitting algorithm
-  * Monotone+Lipschitz Forward-Backward-Forward primal-dual algorithm
-  * Projection-based primal-dual algorithm
+Moreover, the following acceleration schemes are included:
 
-* Proximal operators
+* FISTA acceleration scheme
+* Backtracking based on a quadratic approximation of the objective
+* Regularized nonlinear acceleration (RNA)
 
-  * L1-norm
-  * L2-norm
-  * TV-norm
-  * Projection on the L2-ball
+To compose your objective, you can either define your custom functions (which
+should implement an evaluation method and a gradient or proximity method) or
+use one of the followings:
 
-* Acceleration schemes
-
-  * FISTA acceleration scheme
-  * Backtracking based on a quadratic approximation of the objective
-  * Regularized nonlinear acceleration (RNA)
+* L1-norm
+* L2-norm
+* TV-norm
+* Nuclear-norm
+* Projection on the L2-ball
 
 Following is a typical usage example who solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects
