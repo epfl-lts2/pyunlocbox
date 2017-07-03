@@ -4,10 +4,12 @@
 History
 =======
 
-0.3.0 (2017-07-01)
+0.5.0 (2017-07-03)
 ------------------
 
-New Features:
+Development status updated from Alpha to Beta.
+
+New features:
 
 * Acceleration module, decoupling acceleration strategies from the solvers
 
@@ -16,57 +18,62 @@ New Features:
   * FISTA with backtracking
   * Regularized non-linear acceleration (RNA)
 
-* Gradient descent algorithm
+* Solvers: gradient descent algorithm
 
-Bug fixes :
+Bug fix:
 
-* Ignore .svg images when building pdf from latex with sphinx
-* Decrease dimensionality of variables in Douglas Rachford tutorial
+* Decrease dimensionality of variables in Douglas Rachford tutorial to reduce
+  test time and timeout on Travis CI.
 
-Infrastructure :
+Infrastructure:
 
-* Continuous integration testing on Python 2.7, 3.4, 3.5 and 3.6
-* Drop support to Python 3.3 because of matplotlib
+* Continuous integration: dropped 3.3 (matplotlib dropped it), added 3.6
+* We don't build PDF documentation anymore. Less burden, HTML can be downloaded
+  from readthedocs.
 
-x.x.x (2016-07-xx)
+0.4.0 (2016-08-01)
 ------------------
 
-New Features:
+New feature:
 
-* Monotone+Lipschitz Forward-Backward-Forward primal-dual algorithm
-* Projection-based primal-dual algorithm
-* L2-norm proximal operator supports non-tight frames
+* Monotone+Lipschitz forward-backward-forward primal-dual algorithm (MLFBF)
 
-Bug fixes :
+Bug fix:
 
-* prox_tv_2d has been fixed
+* Plots generated when building documentation (not stored in the repository)
 
-Infrastructure :
+Infrastructure:
 
-* Continuous integration testing on Python 2.7, 3.3, 3.4 and 3.5
+* Continuous integration: dropped 2.6 and 3.2, added 3.5
 * Travis-ci: check style and build doc
 * Removed tox config (too cumbersome to use on dev box)
 * Monitor code coverage and report to coveralls.io
 
-
-0.2.2 (2015-01-16)
+0.3.0 (2015-05-29)
 ------------------
 
-New feature version. Still experimental.
+New features:
 
-New Features:
+* Generalized forward-backward splitting algorithm
+* Projection-based primal-dual algorithm
+* TV-norm function (eval, prox)
+* Nuclear-norm function (eval, prox)
+* L2-norm proximal operator supports non-tight frames
+* Two new tutorials using the TV-norm with Forward-Backward and
+  Douglas-Rachford for image reconstruction and denoising
+* New stopping criterion XTOL allows to stop when the variable is stable
 
-* norm_tv has been added with gradient, div, evaluation and prox.
-* Module signals has been added.
-* A demo for douglas rachford is also now present.
+Bug fix:
 
+* Much more memory efficient. Note that the array which contains the initial
+  solution is now modified in place.
 
 0.2.1 (2014-08-20)
 ------------------
 
 Bug fix version. Still experimental.
 
-Bug fixes :
+Bug fixes:
 
 * Avoid complex casting to real
 * Do not stop iterating if the objective function stays at zero
@@ -77,14 +84,14 @@ Bug fixes :
 Second usable version, available on GitHub and released on PyPI.
 Still experimental.
 
-New features :
+New features:
 
 * Douglas-Rachford splitting algorithm
 * Projection on the L2-ball for tight and non tight frames
 * Compressed sensing tutorial using L2-ball, L2-norm and Douglas-Rachford
 * Automatic solver selection
 
-Infrastructure :
+Infrastructure:
 
 * Unit tests for all functions and solvers
 * Continuous integration testing on Python 2.6, 2.7, 3.2, 3.3 and 3.4
@@ -95,16 +102,15 @@ Infrastructure :
 First usable version, available on GitHub and released on PyPI.
 Still experimental.
 
-Features :
+Features:
 
 * Forward-backward splitting algorithm
 * L1-norm function (eval and prox)
 * L2-norm function (eval, grad and prox)
-* TV-norm function (eval, grad, div and prox)
 * Least square problem tutorial using L2-norm and forward-backward
 * Compressed sensing tutorial using L1-norm, L2-norm and forward-backward
 
-Infrastructure :
+Infrastructure:
 
 * Sphinx generated documentation using Numpy style docstrings
 * Documentation hosted on Read the Docs
