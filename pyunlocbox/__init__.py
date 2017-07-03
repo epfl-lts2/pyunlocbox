@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-The toolbox is organized around two classes hierarchies: the functions and the
+The toolbox is organized around two class hierarchies: the functions and the
 solvers. Instantiated functions represent convex functions to optimize.
 Instantiated solvers represent solving algorithms. The
 :func:`pyunlocbox.solvers.solve` solving function takes as parameters a solver
 object and some function objects to actually solve the optimization problem.
 See this function's documentation for a typical usage example.
 
-The :mod:`pyunlocbox` package is divided into the following modules :
+The :mod:`pyunlocbox` package is divided into the following modules:
 
 * :mod:`pyunlocbox.solvers`: problem solvers, implement the solvers class
   hierarchy and the solving function

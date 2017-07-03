@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 r"""
-This module implements acceleration schemes for use with the :class:`solver`
-classes. Pass a given acceleration object as an argument to your chosen solver
-during its initialization so that the solver can use it. The base class
-:class:`acceleration` defines the interface of all acceleration objects. The
-specialized acceleration objects inherit from it and implement the class
+This module implements acceleration schemes for use with the
+:mod:`pyunlocbox.solvers`. Pass a given acceleration object as an argument to
+your chosen solver during its initialization so that the solver can use it. The
+base class :class:`accel` defines the interface of all acceleration objects.
+The specialized acceleration objects inherit from it and implement the class
 methods. The following acceleration schemes are included:
 
 * :class:`dummy`: Dummy acceleration scheme. It does nothing.
