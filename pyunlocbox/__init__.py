@@ -32,5 +32,5 @@ assert solvers
 assert operators
 assert acceleration
 
-__version__ = '0.3.0'
-__release_date__ = '2017-07-01'
+__version__ = '0.5.1'
+__release_date__ = '2017-07-04'

@@ -4,7 +4,7 @@
 History
 =======
 
-0.5.0 (2017-07-03)
+0.5.1 (2017-07-04)
 ------------------
 
 Development status updated from Alpha to Beta.
