@@ -13,8 +13,6 @@ python:
 addons:
   apt:
     packages:
-      - gfortran  # scipy
-      - libatlas-base-dev  # scipy
       - graphviz  # sphinx inheritance diagrams
       # - texlive-latex-base  # pdf from sphinx latex
       # - texlive-latex-recommended
