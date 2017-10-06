@@ -165,7 +165,7 @@ class func(object):
                 self.A = A
             else:
                 # Transform matrix form to operator form.
-                self.A = lambda x: np.dot(A, x)
+                self.A = lambda x: A.dot(x)
 
         if At is None:
             if A is None:
@@ -173,12 +173,12 @@ class func(object):
             elif callable(A):
                 self.At = A
             else:
-                self.At = lambda x: np.dot(np.transpose(A), x)
+                self.At = lambda x: A.T.dot(x)
         else:
             if callable(At):
                 self.At = At
             else:
-                self.At = lambda x: np.dot(At, x)
+                self.At = lambda x: At.dot(x)
 
         self.tight = tight
         self.nu = nu

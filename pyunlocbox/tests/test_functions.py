@@ -49,11 +49,8 @@ class FunctionsTestCase(unittest.TestCase):
                         nptest.assert_array_equal(f1.grad(x), f2.grad(x))
 
         # Default parameters. Callable or matrices.
-        assert_equivalent({}, {'A': None, 'y': 0, 'At': 1})
         assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
         assert_equivalent({'A': None}, {'A': np.identity(3)})
-        assert_equivalent({'A': None}, {'A': 1})
-        assert_equivalent({'A': 6.4}, {'A': lambda x: 6.4 * x})
         A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
         assert_equivalent({'A': A}, {'A': A, 'At': A.T})
         assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A})

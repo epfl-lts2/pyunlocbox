@@ -735,7 +735,7 @@ class primal_dual(solver):
                 self.L = L
             else:
                 # Transform matrix form to operator form.
-                self.L = lambda x: np.dot(L, x)
+                self.L = lambda x: L.dot(x)
 
         if Lt is None:
             if L is None:
@@ -743,12 +743,12 @@ class primal_dual(solver):
             elif callable(L):
                 self.Lt = L
             else:
-                self.Lt = lambda x: np.dot(np.transpose(L), x)
+                self.Lt = lambda x: L.T.dot(x)
         else:
             if callable(Lt):
                 self.Lt = Lt
             else:
-                self.Lt = lambda x: np.dot(Lt, x)
+                self.Lt = lambda x: Lt.dot(x)
 
         self.d0 = d0
 
