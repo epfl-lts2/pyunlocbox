@@ -370,7 +370,7 @@ class TestCase(unittest.TestCase):
         sol_fista = f.prox(x, 0)
         f.method = 'ISTA'
         sol_ista = f.prox(x, 0)
-        assert np.allclose(sol_fista, sol_ista, rtol=1e-3)
+        nptest.assert_allclose(sol_fista, sol_ista, rtol=1e-3)
 
         f.method = 'NOT_A_VALID_METHOD'
         self.assertRaises(ValueError, f.prox, x, 0)
