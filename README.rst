@@ -1,35 +1,38 @@
-=========================================
-PyUNLocBoX: convex optimization in Python
-=========================================
+==============================================
+PyUNLocBoX: Optimization by Proximal Splitting
+==============================================
 
-.. image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
-   :target: https://pyunlocbox.readthedocs.io/en/latest/
++----------------------------------------+
+| |doc|  |pypi|  |license|  |pyversions| |
++----------------------------------------+
+| |travis|  |coveralls|  |github|        |
++----------------------------------------+
 
-.. image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
+.. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
+   :target: https://pyunlocbox.readthedocs.io
+.. |pypi| image:: https://img.shields.io/pypi/v/pyunlocbox.svg
+   :target: https://pypi.python.org/pypi/pyunlocbox
+.. |license| image:: https://img.shields.io/pypi/l/pyunlocbox.svg
+   :target: https://github.com/epfl-lts2/pyunlocbox/blob/master/LICENSE.txt
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
+   :target: https://pypi.python.org/pypi/pyunlocbox
+.. |travis| image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
    :target: https://travis-ci.org/epfl-lts2/pyunlocbox
-
-.. image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
+.. |coveralls| image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
-
-.. image:: https://img.shields.io/pypi/v/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
-
-.. image:: https://img.shields.io/pypi/l/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
-
-.. image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
-
-.. image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
+.. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
 
-The PyUNLocBoX is a convex optimization package based on `proximal splitting
-methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_ and
-implemented in Python (a `Matlab counterpart <https://lts2.epfl.ch/unlocbox>`_
-exists). It is a free software, distributed under the BSD license, and
-available on `PyPI <https://pypi.python.org/pypi/pyunlocbox>`_. The
-documentation is available `online <https://pyunlocbox.readthedocs.io>`_ and
-development takes place on `GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
+The PyUNLocBoX is a Python package which uses
+`proximal splitting methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_
+to solve non-differentiable convex optimization problems.
+It is a free software, distributed under the BSD license, and
+available on `PyPI <https://pypi.python.org/pypi/pyunlocbox>`_.
+The documentation is available on
+`Read the Docs <https://pyunlocbox.readthedocs.io>`_
+and development takes place on
+`GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
+(A `Matlab counterpart <https://lts2.epfl.ch/unlocbox>`_ exists.)
 
 The package is designed to be easy to use while allowing any advanced tasks. It
 is not meant to be a black-box optimization tool. You'll have to carefully
@@ -81,7 +84,7 @@ array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 Installation
 ------------
 
-The PyUnLocBox is available on PyPI::
+The PyUNLocBox is available on PyPI::
 
     $ pip install pyunlocbox
 
