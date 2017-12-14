@@ -18,7 +18,6 @@ numpydoc_show_class_members = False
 exclude_patterns = ['_build']
 source_suffix = '.rst'
 master_doc = 'index'
-suppress_warnings = ['image.nonlocal_uri']
 
 project = 'PyUNLocBoX'
 version = pyunlocbox.__version__
