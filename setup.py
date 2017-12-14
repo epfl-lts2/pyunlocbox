@@ -7,8 +7,7 @@ from setuptools import setup
 setup(
     name='pyunlocbox',
     version='0.5.1',
-    description='A convex optimization toolbox using proximal '
-                'splitting methods.',
+    description='Convex Optimization in Python using Proximal Splitting',
     long_description=open('README.rst').read(),
     author='EPFL LTS2',
     url='https://github.com/epfl-lts2/pyunlocbox',
@@ -28,10 +27,7 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
