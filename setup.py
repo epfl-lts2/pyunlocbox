@@ -11,9 +11,36 @@ setup(
     long_description=open('README.rst').read(),
     author='EPFL LTS2',
     url='https://github.com/epfl-lts2/pyunlocbox',
-    packages=['pyunlocbox', 'pyunlocbox.tests'],
+    packages=[
+        'pyunlocbox',
+        'pyunlocbox.tests'
+    ],
     test_suite='pyunlocbox.tests.test_all.suite',
-    install_requires=['numpy', 'scipy'],
+    install_requires=[
+        'numpy',
+        'scipy'
+    ],
+    extras_require={
+        # Testing dependencies.
+        'test': [
+            'flake8',
+            'coverage',
+            'coveralls',
+        ],
+        # Dependencies to build the documentation.
+        'doc': [
+            'sphinx',
+            'numpydoc',
+            'sphinxcontrib-bibtex',
+            'sphinx-rtd-theme',
+            'matplotlib',
+        ],
+        # Dependencies to build and upload packages.
+        'pkg': [
+            'wheel',
+            'twine',
+        ],
+    },
     license="BSD",
     keywords='convex optimization',
     platforms='any',
