@@ -129,8 +129,6 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
 
     Define a problem:
 
@@ -446,8 +444,6 @@ class gradient_descent(solver):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
     >>> dim = 25;
     >>> np.random.seed(0)
     >>> xstar = np.random.rand(dim) # True solution
@@ -521,8 +517,6 @@ class forward_backward(solver):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
     >>> y = [4, 5, 6, 7]
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
@@ -593,8 +587,6 @@ class generalized_forward_backward(solver):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
     >>> y = [0.01, 0.2, 8, 0.3, 0 , 0.03, 7]
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
@@ -681,8 +673,6 @@ class douglas_rachford(solver):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
     >>> y = [4, 5, 6, 7]
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
@@ -818,8 +808,6 @@ class mlfbf(primal_dual):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
     >>> y = np.array([294, 390, 361])
     >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
     >>> x0 = np.zeros(len(y))
@@ -898,8 +886,6 @@ class projection_based(primal_dual):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers
     >>> y = np.array([294, 390, 361])
     >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
     >>> x0 = np.array([500, 1000, -400])

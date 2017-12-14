@@ -182,8 +182,6 @@ class backtracking(dummy):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers, acceleration
     >>> y = [4, 5, 6, 7]
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l1(y=y, lambda_=1.0)
@@ -283,8 +281,6 @@ class fista(dummy):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers, acceleration
     >>> y = [4, 5, 6, 7]
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
@@ -366,8 +362,6 @@ class regularized_nonlinear(dummy):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers, acceleration
     >>> dim = 25;
     >>> np.random.seed(0)
     >>> xstar = np.random.rand(dim) # True solution
@@ -523,8 +517,6 @@ class fista_backtracking(backtracking, fista):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions, solvers, acceleration
     >>> y = [4, 5, 6, 7]
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)

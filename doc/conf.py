@@ -20,6 +20,10 @@ plot_include_source = True
 plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_working_directory = '.'
+plot_pre_code = """
+import numpy as np
+from pyunlocbox import functions, solvers, acceleration, operators
+"""
 
 exclude_patterns = ['_build']
 source_suffix = '.rst'

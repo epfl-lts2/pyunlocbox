@@ -14,15 +14,27 @@ from . import test_functions, test_operators, test_solvers, test_acceleration
 
 
 def gen_recursive_file(root, ext):
-    for root, dirnames, filenames in os.walk(root):
+    for root, _, filenames in os.walk(root):
         for name in filenames:
             if name.lower().endswith(ext):
                 yield os.path.join(root, name)
 
 
-def test_docstrings(root, ext):
+def test_docstrings(root, ext, setup=None):
     files = list(gen_recursive_file(root, ext))
-    return doctest.DocFileSuite(*files, module_relative=False)
+    return doctest.DocFileSuite(*files, setUp=setup, module_relative=False)
+
+
+def setup(doctest):
+    import numpy
+    import pyunlocbox
+    doctest.globs = {
+        'functions': pyunlocbox.functions,
+        'solvers': pyunlocbox.solvers,
+        'acceleration': pyunlocbox.acceleration,
+        'operators': pyunlocbox.operators,
+        'np': numpy,
+    }
 
 
 suites = []
@@ -30,8 +42,8 @@ suites.append(test_functions.suite)
 suites.append(test_operators.suite)
 suites.append(test_solvers.suite)
 suites.append(test_acceleration.suite)
-suites.append(test_docstrings('pyunlocbox', '.py'))
-suites.append(test_docstrings('.', '.rst'))
+suites.append(test_docstrings('pyunlocbox', '.py', setup))
+suites.append(test_docstrings('.', '.rst'))  # No setup to not forget imports.
 suite = unittest.TestSuite(suites)
 
 
