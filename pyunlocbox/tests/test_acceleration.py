@@ -14,7 +14,7 @@ import numpy.testing as nptest
 from pyunlocbox import functions, solvers, acceleration
 
 
-class FunctionsTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
 
     def test_accel(self):
         """
@@ -225,4 +225,4 @@ class FunctionsTestCase(unittest.TestCase):
             self.assertEqual(ret['niter'], niter)
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

@@ -14,7 +14,7 @@ import numpy.testing as nptest
 from pyunlocbox import operators
 
 
-class OperatorsTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
 
     def test_grad(self):
 
@@ -403,4 +403,4 @@ class OperatorsTestCase(unittest.TestCase):
                                                             **weights))
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(OperatorsTestCase)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

@@ -14,7 +14,7 @@ import numpy.testing as nptest
 from pyunlocbox import functions, solvers, acceleration
 
 
-class FunctionsTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
 
     def test_solve(self):
         """
@@ -395,4 +395,4 @@ class FunctionsTestCase(unittest.TestCase):
             self.assertIs(ret['sol'], x0)  # The initial value was modified.
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

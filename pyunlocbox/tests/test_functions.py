@@ -15,7 +15,7 @@ import numpy.testing as nptest
 from pyunlocbox import functions
 
 
-class FunctionsTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
 
     def test_func(self):
         """
@@ -421,4 +421,4 @@ class FunctionsTestCase(unittest.TestCase):
                 nptest.assert_array_almost_equal(res, f.grad(X))
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(FunctionsTestCase)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
