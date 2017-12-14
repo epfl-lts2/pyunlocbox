@@ -22,7 +22,7 @@ master_doc = 'index'
 project = 'PyUNLocBoX'
 version = pyunlocbox.__version__
 release = pyunlocbox.__version__
-copyright = u'Michaël Defferrard, EPFL LTS2'
+copyright = 'EPFL LTS2'
 
 pygments_style = 'sphinx'
 html_theme = 'sphinx_rtd_theme'
@@ -35,5 +35,5 @@ latex_elements = {
 }
 latex_documents = [
     ('index', 'pyunlocbox.tex', 'PyUNLocBoX documentation',
-     u'Michaël Defferrard, EPFL LTS2', 'manual'),
+     'EPFL LTS2', 'manual'),
 ]

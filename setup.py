@@ -10,9 +10,7 @@ setup(
     description='A convex optimization toolbox using proximal '
                 'splitting methods.',
     long_description=open('README.rst').read(),
-    author='Rodrigo Pena (EPFL LTS2) and '
-           'Michaël Defferrard (EPFL LTS2)',
-    author_email='rodrigo.pena@epfl.ch, michael.defferrard@epfl.ch',
+    author='EPFL LTS2',
     url='https://github.com/epfl-lts2/pyunlocbox',
     packages=['pyunlocbox', 'pyunlocbox.tests'],
     test_suite='pyunlocbox.tests.test_all.suite',

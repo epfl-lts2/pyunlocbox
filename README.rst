@@ -90,21 +90,8 @@ Contributing
 
 See the guidelines for contributing in ``CONTRIBUTING.rst``.
 
+Acknowledgments
+---------------
 
-Authors
--------
-
-PyUNLocBoX was started in 2014 as an academic project for research purpose at
-the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
-
-Development lead :
-
-* Rodrigo Pena from EPFL LTS2 <rodrigo.pena@epfl.ch>
-* Michaël Defferrard from EPFL LTS2 <michael.defferrard@epfl.ch>
-
-Contributors :
-
-* Alexandre Lafaye from EPFL LTS2 <alexandre.lafaye@epfl.ch>
-* Basile Châtillon from EPFL LTS2 <basile.chatillon@epfl.ch>
-* Nicolas Rod from EPFL LTS2 <nicolas.rod@epfl.ch>
-* Nathanaël Perraudin from EPFL LTS2 <nathanael.perraudin@epfl.ch>
+The PyUNLocBoX was started in 2014 as an academic open-source project for
+research purpose at the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
