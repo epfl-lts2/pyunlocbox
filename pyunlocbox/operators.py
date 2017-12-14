@@ -1,12 +1,12 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 r"""
-This module implements operators functions :
+The :mod:`pyunlocbox.operators` module implements the following operators:
 
-* :meth:`grad` Gradient function for up to 4 dimensions
+.. autosummary::
 
-* :meth:`div` Divergence function for up to 4 dimensions
+    grad
+    div
 
 """
 
@@ -15,7 +15,7 @@ import numpy as np
 
 def grad(x, dim=2, **kwargs):
     r"""
-    Returns the gradient of the array
+    Returns the gradient of an array.
 
     Parameters
     ----------
@@ -117,7 +117,7 @@ def grad(x, dim=2, **kwargs):
 
 def div(*args, **kwargs):
     r"""
-    Returns the divergence of the array
+    Returns the divergence of an array.
 
     Parameters
     ----------

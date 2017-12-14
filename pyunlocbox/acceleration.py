@@ -1,18 +1,36 @@
 # -*- coding: utf-8 -*-
 
 r"""
-This module implements acceleration schemes for use with the
-:mod:`pyunlocbox.solvers`. Pass a given acceleration object as an argument to
-your chosen solver during its initialization so that the solver can use it. The
-base class :class:`accel` defines the interface of all acceleration objects.
-The specialized acceleration objects inherit from it and implement the class
-methods. The following acceleration schemes are included:
+The :mod:`pyunlocbox.acceleration` module implements acceleration schemes for
+use with the :mod:`pyunlocbox.solvers`. Pass a given acceleration object as an
+argument to your chosen solver during its initialization so that the solver can
+use it.
 
-* :class:`dummy`: Dummy acceleration scheme. It does nothing.
-* :class:`backtracking`: Backtracking line search.
-* :class:`fista`: FISTA acceleration scheme.
-* :class:`fista_backtracking`: FISTA with backtracking.
-* :class:`regularized_nonlinear`: Regularized nonlinear acceleration.
+Interface
+---------
+
+The :class:`accel` base class defines a common interface to all acceleration
+schemes:
+
+.. autosummary::
+
+    accel.pre
+    accel.update_step
+    accel.update_sol
+    accel.post
+
+Acceleration schemes
+--------------------
+
+Then, derived classes implement various common acceleration schemes.
+
+.. autosummary::
+
+    dummy
+    backtracking
+    fista
+    fista_backtracking
+    regularized_nonlinear
 
 """
 
@@ -119,7 +137,7 @@ class accel(object):
 
 class dummy(accel):
     r"""
-    Dummy acceleration scheme.
+    Dummy acceleration scheme which does nothing.
 
     Used by default in most of the solvers. It simply returns unaltered the
     step size and solution point it receives.
@@ -146,7 +164,7 @@ class dummy(accel):
 
 class backtracking(dummy):
     r"""
-    Backtracking based on a local quadratic approximation of the the smooth
+    Backtracking based on a local quadratic approximation of the smooth
     part of the objective.
 
     Parameters

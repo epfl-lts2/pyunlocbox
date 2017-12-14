@@ -1,22 +1,47 @@
 # -*- coding: utf-8 -*-
 
 r"""
-This module implements solver objects who minimize an objective function. Call
-:func:`solve` to solve your convex optimization problem using your instantiated
-solver and functions objects. The :class:`solver` base class defines the
-interface of all solver objects. The specialized solver objects inherit from
-it and implement the class methods. The following solvers are included :
+The :mod:`pyunlocbox.solvers` module implements a solving function (which will
+minimize your objective function) as well as common solvers.
 
-* :class:`gradient_descent`: Gradient descent algorithm.
-* :class:`forward_backward`: Forward-backward proximal splitting algorithm.
-* :class:`douglas_rachford`: Douglas-Rachford proximal splitting algorithm.
-* :class:`generalized_forward_backward`: Generalized Forward-Backward.
+Solving
+-------
 
-* :class:`primal_dual`: Primal-dual algorithms.
+Call :func:`solve` to solve your convex optimization problem using your
+instantiated solver and functions objects.
 
-  * :class:`mlfbf`: Monotone+Lipschitz Forward-Backward-Forward primal-dual
-    algorithm.
-  * :class:`projection_based`: Projection-based primal-dual algorithm.
+Interface
+---------
+
+The :class:`solver` base class defines a common interface to all solvers:
+
+.. autosummary::
+
+    solver.pre
+    solver.algo
+    solver.post
+
+Solvers
+-------
+
+Then, derived classes implement various common solvers.
+
+.. autosummary::
+
+    gradient_descent
+    forward_backward
+    douglas_rachford
+    generalized_forward_backward
+
+**Primal-dual solvers** (based on :class:`primal_dual`)
+
+.. autosummary::
+
+    mlfbf
+    projection_based
+
+.. inheritance-diagram:: pyunlocbox.solvers
+    :parts: 2
 
 """
 
@@ -766,7 +791,7 @@ class primal_dual(solver):
 
 class mlfbf(primal_dual):
     r"""
-    Monotone + Lipschitz Forward-Backward-Forward primal-dual algorithm.
+    Monotone+Lipschitz Forward-Backward-Forward primal-dual algorithm.
 
     This algorithm solves convex optimization problems with objective of the
     form :math:`f(x) + g(Lx) + h(x)`, where :math:`f` and :math:`g` are proper,

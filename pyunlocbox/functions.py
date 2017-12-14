@@ -1,28 +1,49 @@
 # -*- coding: utf-8 -*-
 
 r"""
-This module implements function objects which are then passed to solvers.  The
-:class:`func` base class defines the interface whereas specialised classes who
-inherit from it implement the methods. These classes include :
+The :mod:`pyunlocbox.functions` module implements an interface for solvers to
+access the functions to be optimized as well as common objective functions.
 
-* :class:`dummy`: A dummy function object which returns 0 for the
-  :meth:`_eval`, :meth:`_prox` and :meth:`_grad` methods.
+Interface
+---------
 
-* :class:`norm`: Norm operators base class.
+The :class:`func` base class defines a common interface to all functions:
 
-  * :class:`norm_l1`: L1-norm who implements the :meth:`_eval` and
-    :meth:`_prox` methods.
-  * :class:`norm_l2`: L2-norm who implements the :meth:`_eval`, :meth:`_prox`
-    and :meth:`_grad` methods.
-  * :class:`norm_nuclear`: nuclear-norm who implements the :meth:`_eval` and
-    :meth:`_prox` methods.
-  * :class:`norm_tv`: TV-norm who implements the :meth:`_eval` and
-    :meth:`_prox` methods.
+.. autosummary::
 
-* :class:`proj`: Projection operators base class.
+    func.cap
+    func.eval
+    func.prox
+    func.grad
 
-  * :class:`proj_b2`: Projection on the L2-ball who implements the
-    :meth:`_eval` and :meth:`_prox` methods.
+Functions
+---------
+
+Then, derived classes implement various common objective functions.
+
+**Norm operators** (based on :class:`norm`)
+
+.. autosummary::
+
+    norm_l1
+    norm_l2
+    norm_nuclear
+    norm_tv
+
+**Projection operators** (based on :class:`proj`)
+
+.. autosummary::
+
+    proj_b2
+
+**Miscellaneous**
+
+.. autosummary::
+
+    dummy
+
+.. inheritance-diagram:: pyunlocbox.functions
+    :parts: 2
 
 """
 
@@ -328,7 +349,7 @@ class func(object):
 
 class dummy(func):
     r"""
-    Dummy function object.
+    Dummy function which returns 0 (eval, prox, grad).
 
     This can be used as a second function object when there is only one
     function to minimize. It always evaluates as 0.
@@ -385,7 +406,7 @@ class norm(func):
 
 class norm_l1(norm):
     r"""
-    L1-norm function object.
+    L1-norm (eval, prox).
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.norm` base class. Note that the constructor
@@ -434,7 +455,7 @@ class norm_l1(norm):
 
 class norm_l2(norm):
     r"""
-    L2-norm function object.
+    L2-norm (eval, prox, grad).
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.norm` base class. Note that the constructor
@@ -498,7 +519,7 @@ class norm_l2(norm):
 
 class norm_nuclear(norm):
     r"""
-    Nuclear-norm function object.
+    Nuclear-norm (eval, prox).
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.norm` base class. Note that the constructor
@@ -547,7 +568,7 @@ class norm_nuclear(norm):
 
 class norm_tv(norm):
     r"""
-    TV Norm function object.
+    TV-norm (eval, prox).
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.norm` base class. Note that the constructor
@@ -803,7 +824,7 @@ class proj(func):
 
 class proj_b2(proj):
     r"""
-    L2-ball function object.
+    Projection on the L2-ball (eval, prox).
 
     This function is the indicator function :math:`i_S(z)` of the set S which
     is zero if `z` is in the set and infinite otherwise. The set S is defined

@@ -2,18 +2,24 @@
 
 import pyunlocbox
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',
-              'sphinx.ext.autosummary', 'sphinx.ext.mathjax',
-              'sphinx.ext.inheritance_diagram', 'sphinxcontrib.bibtex']
+extensions = ['sphinx.ext.viewcode',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.inheritance_diagram',
+              'sphinxcontrib.bibtex']
+
+extensions.append('sphinx.ext.autodoc')
+autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
+autodoc_member_order = 'bysource'  # alphabetical, groupwise, bysource
+
+extensions.append('numpydoc')
+numpydoc_show_class_members = False
 
 extensions.append('matplotlib.sphinxext.plot_directive')
 plot_include_source = True
 plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_working_directory = '.'
-
-extensions.append('numpydoc')
-numpydoc_show_class_members = False
 
 exclude_patterns = ['_build']
 source_suffix = '.rst'
