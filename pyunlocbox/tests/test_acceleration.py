@@ -64,7 +64,7 @@ class FunctionsTestCase(unittest.TestCase):
         ret = solvers.solve([f1, f2], np.zeros(len(y)), **param)
         nptest.assert_allclose(ret['sol'], y)
         self.assertEqual(ret['crit'], 'ATOL')
-        self.assertEqual(ret['niter'], 4)
+        self.assertLessEqual(ret['niter'], 4)  # win64 takes one iteration
 
     def test_forward_backward_fista(self):
         """
