@@ -1,14 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-
-# Import package from source directory (without installation).
-cwd = os.getcwd()
-project_root = os.path.dirname(cwd)
-sys.path.insert(0, project_root)
-import pyunlocbox  # noqa: E402
+import pyunlocbox
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',
               'sphinx.ext.autosummary', 'sphinx.ext.mathjax',
