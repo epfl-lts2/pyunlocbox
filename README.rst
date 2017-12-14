@@ -88,29 +88,8 @@ The PyUnLocBox is available on PyPI::
 Contributing
 ------------
 
-The development of this package takes place on `GitHub
-<https://github.com/epfl-lts2/pyunlocbox>`_. Issues and pull requests are
-welcome.
+See the guidelines for contributing in ``CONTRIBUTING.rst``.
 
-You can improve or add solvers, functions, and acceleration schemes in
-``pyunlocbox/solvers.py``, ``pyunlocbox/functions.py``, and
-``pyunlocbox/acceleration.py``, along with their corresponding unit tests in
-``pyunlocbox/tests/test_*.py`` (with reasonable coverage) and documentation in
-``doc/reference/*.rst``. If you have a nice example to demonstrate the use of
-the introduced functionality, please consider adding a tutorial in
-``doc/tutorials``.
-
-Do not forget to update ``README.rst`` and ``doc/history.rst`` with e.g. new
-features or contributors. The version number needs to be updated in
-``setup.py`` and ``pyunlocbox/__init__.py``.
-
-Please make sure that your changes pass the tests (enforced by CI) and check
-the generated coverage report at ``htmlcov/index.html`` to make sure the tests
-reasonably cover the changes you've introduced::
-
-$ make lint
-$ make test
-$ make docall
 
 Authors
 -------

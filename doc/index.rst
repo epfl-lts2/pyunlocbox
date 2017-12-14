@@ -6,5 +6,6 @@
    Home <self>
    tutorials/index
    reference/index
+   contributing
    history
    references
