@@ -35,10 +35,10 @@ def grad(x, dim=2, **kwargs):
 
     Examples
     --------
-    >>> import pyunlocbox
     >>> import numpy as np
+    >>> from pyunlocbox import operators
     >>> x = np.arange(16).reshape(4, 4)
-    >>> dx, dy = pyunlocbox.operators.grad(x)
+    >>> dx, dy = operators.grad(x)
 
     """
 
@@ -134,11 +134,11 @@ def div(*args, **kwargs):
 
     Examples
     --------
-    >>> import pyunlocbox
     >>> import numpy as np
+    >>> from pyunlocbox import operators
     >>> x = np.arange(16).reshape(4, 4)
-    >>> dx, dy = pyunlocbox.operators.grad(x)
-    >>> divx = pyunlocbox.operators.div(dx, dy)
+    >>> dx, dy = operators.grad(x)
+    >>> divx = operators.div(dx, dy)
 
     """
 

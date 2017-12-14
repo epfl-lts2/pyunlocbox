@@ -70,11 +70,11 @@ composed by the sum of two convex functions. The functions and solver objects
 are first instantiated with the desired parameters. The problem is then solved
 by a call to the solving function.
 
->>> import pyunlocbox
->>> f1 = pyunlocbox.functions.norm_l2(y=[4, 5, 6, 7])
->>> f2 = pyunlocbox.functions.dummy()
->>> solver = pyunlocbox.solvers.forward_backward()
->>> ret = pyunlocbox.solvers.solve([f1, f2], [0., 0, 0, 0], solver, atol=1e-5)
+>>> from pyunlocbox import functions, solvers
+>>> f1 = functions.norm_l2(y=[4, 5, 6, 7])
+>>> f2 = functions.dummy()
+>>> solver = solvers.forward_backward()
+>>> ret = solvers.solve([f1, f2], [0., 0, 0, 0], solver, atol=1e-5)
 Solution found after 9 iterations:
     objective function f(sol) = 6.714385e-08
     stopping criterion: ATOL

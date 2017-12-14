@@ -81,8 +81,8 @@ def _soft_threshold(z, T, handle_complex=True):
 
     Examples
     --------
-    >>> import pyunlocbox
-    >>> pyunlocbox.functions._soft_threshold([-2, -1, 0, 1, 2], 1)
+    >>> from pyunlocbox import functions
+    >>> functions._soft_threshold([-2, -1, 0, 1, 2], 1)
     array([-1,  0,  0,  0,  1])
 
     """
@@ -157,8 +157,8 @@ class func(object):
     Let's define a parabola as an example of the manual implementation of a
     function object :
 
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.func()
+    >>> from pyunlocbox import functions
+    >>> f = functions.func()
     >>> f._eval = lambda x: x**2
     >>> f._grad = lambda x: 2*x
     >>> x = [1, 2, 3, 4]
@@ -356,8 +356,8 @@ class dummy(func):
 
     Examples
     --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.dummy()
+    >>> from pyunlocbox import functions
+    >>> f = functions.dummy()
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
     0
@@ -423,8 +423,8 @@ class norm_l1(norm):
 
     Examples
     --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l1()
+    >>> from pyunlocbox import functions
+    >>> f = functions.norm_l1()
     >>> f.eval([1, 2, 3, 4])
     10
     >>> f.prox([1, 2, 3, 4], 1)
@@ -473,8 +473,8 @@ class norm_l2(norm):
 
     Examples
     --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_l2()
+    >>> from pyunlocbox import functions
+    >>> f = functions.norm_l2()
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
     30
@@ -537,8 +537,8 @@ class norm_nuclear(norm):
 
     Examples
     --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.norm_nuclear()
+    >>> from pyunlocbox import functions
+    >>> f = functions.norm_nuclear()
     >>> f.eval([[1, 2],[2, 3]])  # doctest:+ELLIPSIS
     4.47213595...
     >>> f.prox([[1, 2],[2, 3]], 1)
@@ -582,9 +582,9 @@ class norm_tv(norm):
 
     Examples
     --------
-    >>> import pyunlocbox
     >>> import numpy as np
-    >>> f = pyunlocbox.functions.norm_tv()
+    >>> from pyunlocbox import functions
+    >>> f = functions.norm_tv()
     >>> x = np.arange(0, 16)
     >>> x = x.reshape(4, 4)
     >>> f.eval(x)  # doctest:+ELLIPSIS
@@ -850,8 +850,8 @@ class proj_b2(proj):
 
     Examples
     --------
-    >>> import pyunlocbox
-    >>> f = pyunlocbox.functions.proj_b2(y=[1, 1])
+    >>> from pyunlocbox import functions
+    >>> f = functions.proj_b2(y=[1, 1])
     >>> x = [3, 3]
     >>> f.eval(x)
     0
