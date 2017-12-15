@@ -2,11 +2,11 @@
 PyUNLocBoX: Optimization by Proximal Splitting
 ==============================================
 
-+----------------------------------------+
-| |doc|  |pypi|  |license|  |pyversions| |
-+----------------------------------------+
-| |travis|  |coveralls|  |github|        |
-+----------------------------------------+
++-------------------------------------------+
+| |doc|  |pypi|  |license|  |pyversions|    |
++-------------------------------------------+
+| |binder|  |travis|  |coveralls|  |github| |
++-------------------------------------------+
 
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
@@ -22,6 +22,8 @@ PyUNLocBoX: Optimization by Proximal Splitting
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
+.. |binder| image:: https://mybinder.org/badge.svg
+   :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb
 
 The PyUNLocBoX is a Python package which uses
 `proximal splitting methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_
@@ -81,10 +83,18 @@ Solution found after 9 iterations:
 >>> ret['sol']
 array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
 
+You can
+`try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb>`_,
+look at the
+`tutorials <https://pyunlocbox.readthedocs.io/en/stable/tutorials/index.html>`_
+to learn how to use it, or look at the
+`reference guide <https://pyunlocbox.readthedocs.io/en/stable/reference/index.html>`_
+for an exhaustive documentation of the API. Enjoy the package!
+
 Installation
 ------------
 
-The PyUNLocBox is available on PyPI::
+The PyUNLocBoX is available on PyPI::
 
     $ pip install pyunlocbox
 
