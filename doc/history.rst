@@ -2,6 +2,13 @@
 History
 =======
 
+0.5.2 (2017-12-15)
+------------------
+
+Mostly a maintenance release. Much cleaning happened and a conda package is now
+available in conda-forge. Moreover, the package can now be tried online thanks
+to binder.
+
 0.5.1 (2017-07-04)
 ------------------
 

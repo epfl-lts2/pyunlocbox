@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name='pyunlocbox',
-    version='0.5.1',
+    version='0.5.2',
     description='Convex Optimization in Python using Proximal Splitting',
     long_description=open('README.rst').read(),
     author='EPFL LTS2',
