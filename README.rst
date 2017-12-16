@@ -2,11 +2,13 @@
 PyUNLocBoX: Optimization by Proximal Splitting
 ==============================================
 
-+-------------------------------------------+
-| |doc|  |pypi|  |license|  |pyversions|    |
-+-------------------------------------------+
-| |binder|  |travis|  |coveralls|  |github| |
-+-------------------------------------------+
++----------------------------------+
+| |doc|  |pypi|  |conda|  |binder| |
++----------------------------------+
+| |license|  |pyversions|          |
++----------------------------------+
+| |travis|  |coveralls|  |github|  |
++----------------------------------+
 
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
@@ -24,6 +26,8 @@ PyUNLocBoX: Optimization by Proximal Splitting
    :target: https://github.com/epfl-lts2/pyunlocbox
 .. |binder| image:: https://mybinder.org/badge.svg
    :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb
+.. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
+   :target: https://anaconda.org/conda-forge/pyunlocbox
 
 The PyUNLocBoX is a Python package which uses
 `proximal splitting methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_
@@ -97,6 +101,10 @@ Installation
 The PyUNLocBoX is available on PyPI::
 
     $ pip install pyunlocbox
+
+The PyUNLocBoX is available on `conda-forge <https://github.com/conda-forge/pyunlocbox-feedstock>`_::
+
+    $ conda install -c conda-forge pyunlocbox
 
 Contributing
 ------------
