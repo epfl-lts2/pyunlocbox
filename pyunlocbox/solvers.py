@@ -178,7 +178,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     Show the solution (should be close to y w.r.t. the L2-norm measure):
 
     >>> ret['sol']
-    array([ 4.02555301,  5.03194126,  6.03832952,  7.04471777])
+    array([4.02555301, 5.03194126, 6.03832952, 7.04471777])
 
     Show the used solver:
 
@@ -533,7 +533,7 @@ class forward_backward(solver):
         objective function f(sol) = 4.957288e-07
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 4.0002509 ,  5.00031362,  6.00037635,  7.00043907])
+    array([4.0002509 , 5.00031362, 6.00037635, 7.00043907])
 
     """
 
@@ -605,7 +605,7 @@ class generalized_forward_backward(solver):
         objective function f(sol) = 1.463100e+01
         stopping criterion: RTOL
     >>> ret['sol']
-    array([ 0. ,  0. ,  7.5,  0. ,  0. ,  0. ,  6.5])
+    array([0. , 0. , 7.5, 0. , 0. , 0. , 6.5])
 
     """
 
@@ -693,7 +693,7 @@ class douglas_rachford(solver):
         objective function f(sol) = 2.927052e-06
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 3.99939034,  4.99923792,  5.99908551,  6.99893309])
+    array([3.99939034, 4.99923792, 5.99908551, 6.99893309])
 
     """
 
@@ -834,7 +834,7 @@ class mlfbf(primal_dual):
         objective function f(sol) = 1.833865e+05
         stopping criterion: MAXIT
     >>> ret['sol']
-    array([ 1.,  1.,  1.])
+    array([1., 1., 1.])
 
     """
 

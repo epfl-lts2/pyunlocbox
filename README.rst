@@ -85,7 +85,7 @@ Solution found after 9 iterations:
     objective function f(sol) = 6.714385e-08
     stopping criterion: ATOL
 >>> ret['sol']
-array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
+array([3.99990766, 4.99988458, 5.99986149, 6.99983841])
 
 You can
 `try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb>`_,

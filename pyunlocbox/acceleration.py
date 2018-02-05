@@ -195,7 +195,7 @@ class backtracking(dummy):
         objective function f(sol) = 0.000000e+00
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 4.,  5.,  6.,  7.])
+    array([4., 5., 6., 7.])
 
     """
 
@@ -296,7 +296,7 @@ class fista(dummy):
         objective function f(sol) = 4.957288e-07
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 4.0002509 ,  5.00031362,  6.00037635,  7.00043907])
+    array([4.0002509 , 5.00031362, 6.00037635, 7.00043907])
 
     """
 
@@ -536,7 +536,7 @@ class fista_backtracking(backtracking, fista):
         objective function f(sol) = 4.957288e-07
         stopping criterion: ATOL
     >>> ret['sol']
-    array([ 4.0002509 ,  5.00031362,  6.00037635,  7.00043907])
+    array([4.0002509 , 5.00031362, 6.00037635, 7.00043907])
 
     """
 

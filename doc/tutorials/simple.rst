@@ -34,7 +34,7 @@ any given point :
    >>> f1.grad([0, 0, 0, 0])
    array([ -8, -10, -12, -14])
    >>> f1.prox([0, 0, 0, 0], 1)
-   array([ 2.66666667,  3.33333333,  4.        ,  4.66666667])
+   array([2.66666667, 3.33333333, 4.        , 4.66666667])
 
 We need a second function to minimize, which usually describes a constraint. As
 we have no constraint, we just define a dummy function object by hand. We have
@@ -115,7 +115,7 @@ The solving function returns several values, one is the found solution :
    :context:
 
    >>> ret['sol']
-   array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
+   array([3.99990766, 4.99988458, 5.99986149, 6.99983841])
 
 Another one is the value returned by each function objects at each iteration.
 As we passed two function objects (L2-norm and dummy), the `objective` is a 2
