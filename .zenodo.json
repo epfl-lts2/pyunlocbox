@@ -1,0 +1,35 @@
+{
+	"title": "PyUNLocBoX: Optimization by Proximal Splitting",
+	"description": "The PyUNLocBoX is a Python package which uses proximal splitting methods to solve non-differentiable convex optimization problems.",
+	"upload_type": "software",
+	"license": "BSD-3-Clause",
+	"access_right": "open",
+	"creators": [
+		{
+			"name": "Micha\u00ebl Defferrard",
+			"affiliation": "EPFL",
+			"orcid": "0000-0002-6028-9024"
+		},
+		{
+			"name": "Rodrigo Pena",
+			"affiliation": "EPFL"
+		},
+		{
+			"name": "Nathana\u00ebl Perraudin",
+			"affiliation": "EPFL",
+			"orcid": "0000-0001-8285-1308"
+		}
+	],
+	"related_identifiers": [
+		{
+			"scheme": "url",
+			"identifier": "https://github.com/epfl-lts2/pyunlocbox",
+			"relation": "isSupplementTo"
+        },
+        {
+            "scheme": "doi",
+            "identifier": "10.5281/zenodo.1199081",
+            "relation": "isPartOf"
+        }
+	]
+}

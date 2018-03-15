@@ -2,18 +2,20 @@
 PyUNLocBoX: Optimization by Proximal Splitting
 ==============================================
 
-+----------------------------------+
-| |doc|  |pypi|  |conda|  |binder| |
-+----------------------------------+
-| |license|  |pyversions|          |
-+----------------------------------+
-| |travis|  |coveralls|  |github|  |
-+----------------------------------+
++-----------------------------------+
+| |doc|  |pypi|  |conda|  |binder|  |
++-----------------------------------+
+| |zenodo|  |license|  |pyversions| |
++-----------------------------------+
+| |travis|  |coveralls|  |github|   |
++-----------------------------------+
 
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
 .. |pypi| image:: https://img.shields.io/pypi/v/pyunlocbox.svg
    :target: https://pypi.python.org/pypi/pyunlocbox
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1199081.svg
+   :target: https://doi.org/10.5281/zenodo.1199081
 .. |license| image:: https://img.shields.io/pypi/l/pyunlocbox.svg
    :target: https://github.com/epfl-lts2/pyunlocbox/blob/master/LICENSE.txt
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
@@ -114,3 +116,17 @@ Acknowledgments
 
 The PyUNLocBoX was started in 2014 as an academic open-source project for
 research purpose at the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
+
+If you are using the library for your research, for the sake of
+reproducibility, please cite the version you used as indexed by
+`Zenodo <https://doi.org/10.5281/zenodo.1199081>`_.
+Or cite the generic concept as::
+
+    @misc{pyunlocbox,
+      author = {Michaël Defferrard and
+                Rodrigo Pena and
+                Nathanaël Perraudin},
+      title  = {PyUNLocBoX: Optimization by Proximal Splitting},
+      doi    = {10.5281/zenodo.1199081},
+      url    = {https://doi.org/10.5281/zenodo.1199081}
+    }
