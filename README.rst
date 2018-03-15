@@ -117,16 +117,16 @@ Acknowledgments
 The PyUNLocBoX was started in 2014 as an academic open-source project for
 research purpose at the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
 
+The code in this repository is released under the terms of the `BSD 3-Clause license <LICENSE.txt>`_.
+
 If you are using the library for your research, for the sake of
 reproducibility, please cite the version you used as indexed by
 `Zenodo <https://doi.org/10.5281/zenodo.1199081>`_.
 Or cite the generic concept as::
 
     @misc{pyunlocbox,
-      author = {Michaël Defferrard and
-                Rodrigo Pena and
-                Nathanaël Perraudin},
-      title  = {PyUNLocBoX: Optimization by Proximal Splitting},
-      doi    = {10.5281/zenodo.1199081},
-      url    = {https://doi.org/10.5281/zenodo.1199081}
+      title = {PyUNLocBoX: Optimization by Proximal Splitting},
+      author = {Defferrard, Micha\"el and Pena, Rodrigo and Perraudin, Nathana\"el},
+      doi = {10.5281/zenodo.1199081},
+      url = {https://github.com/epfl-lts2/pyunlocbox/},
     }
