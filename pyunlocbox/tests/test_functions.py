@@ -375,6 +375,25 @@ class TestCase(unittest.TestCase):
         f.method = 'NOT_A_VALID_METHOD'
         self.assertRaises(ValueError, f.prox, x, 0)
 
+
+    # def test_proj_positive(self):
+    #     """
+    #     Test the proj positive function
+
+    #     """
+
+
+    #     # Tight frame, radius 0 --> x == y.
+    #     x = np.random.randn(shape=[10,10])
+    #     sol = 
+
+    #     f = functions.proj_positive()
+    #     nptest.assert_almost_equal(np.linalg.norm(f.prox(x, 0) - y), sol)
+
+    #     # Always evaluate to zero.
+    #     self.assertEqual(f.eval(x), 0)
+
+
     def test_independent_problems(self):
 
         # Parameters.
