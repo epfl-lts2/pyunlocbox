@@ -376,22 +376,28 @@ class TestCase(unittest.TestCase):
         self.assertRaises(ValueError, f.prox, x, 0)
 
 
-    # def test_proj_positive(self):
-    #     """
-    #     Test the proj positive function
+    def test_proj_positive(self):
+        """
+        Test the proj positive function
 
-    #     """
+        """
 
 
-    #     # Tight frame, radius 0 --> x == y.
-    #     x = np.random.randn(shape=[10,10])
-    #     sol = 
+        fpos = functions.proj_positive()
+        x = np.random.randn(10,12)
 
-    #     f = functions.proj_positive()
-    #     nptest.assert_almost_equal(np.linalg.norm(f.prox(x, 0) - y), sol)
+        res = fpos.prox(x,T=1)
+        # Assert that the value after the prox are all elements are positive
+        nptest.assert_((res>=0).all())
 
-    #     # Always evaluate to zero.
-    #     self.assertEqual(f.eval(x), 0)
+        # Assert that the he negative values are set to 0
+        nptest.assert_((res[x<0]==0).all())
+
+        # Assert that the the positive values are unchanged
+        nptest.assert_equal(res[x>0],x[x>0])
+
+        # Always evaluate to zero.
+        self.assertEqual(f.eval(x), 0)
 
 
     def test_independent_problems(self):

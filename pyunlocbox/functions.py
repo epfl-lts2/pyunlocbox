@@ -854,7 +854,7 @@ class proj_positive(proj):
         super(proj_positive, self).__init__(**kwargs)
 
     def _prox(self, x, T):
-        return np.clip(x, 0, np.infinite)
+        return np.clip(x, 0, np.inf)
 
 class proj_b2(proj):
     r"""
