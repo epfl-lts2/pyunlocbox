@@ -841,11 +841,11 @@ class proj_positive(proj):
     --------
     >>> from pyunlocbox import functions
     >>> f = functions.proj_positive()
-    >>> x = [-3, 3]
+    >>> x = [-2.5, 1.5]
     >>> f.eval(x)
     0
     >>> f.prox(x, 0)
-    array([0., 3.])
+    array([0., 1.5])
 
     """
 
