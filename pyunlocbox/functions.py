@@ -845,7 +845,7 @@ class proj_positive(proj):
     >>> f.eval(x)
     0
     >>> f.prox(x, 0)
-    array([0, 3])
+    array([0., 3.])
 
     """
 
