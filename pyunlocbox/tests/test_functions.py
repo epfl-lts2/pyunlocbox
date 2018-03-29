@@ -397,7 +397,7 @@ class TestCase(unittest.TestCase):
         nptest.assert_equal(res[x>0],x[x>0])
 
         # Always evaluate to zero.
-        self.assertEqual(f.eval(x), 0)
+        self.assertEqual(fpos.eval(x), 0)
 
 
     def test_independent_problems(self):
