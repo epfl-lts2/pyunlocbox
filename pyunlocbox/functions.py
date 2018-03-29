@@ -87,7 +87,9 @@ def _soft_threshold(z, T):
 
     """
 
-    if not z.dtype == np.complex:
+    input_dtype = np.asarray(z).dtype
+
+    if not input_dtype == np.complex:
         # This soft thresholding method only supports real signal.
         sz = np.sign(z) * np.maximum(np.abs(z) - T, 0)
 
@@ -96,7 +98,7 @@ def _soft_threshold(z, T):
         # Transform to float to avoid integer division.
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
-        sz = np.maximum(np.abs(z) - T, 0, dtype = z.dtype)
+        sz = np.maximum(np.abs(z) - T, 0, dtype = input_dtype)
         old_err_state = np.seterr(invalid='ignore')
         sz[:] = np.nan_to_num(1. * sz / (sz + T) * z)
         np.seterr(**old_err_state)
