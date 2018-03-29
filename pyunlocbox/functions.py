@@ -58,7 +58,7 @@ from scipy.optimize import minimize
 from pyunlocbox import operators as op
 
 
-def _soft_threshold(z, T, handle_complex=True):
+def _soft_threshold(z, T):
     r"""
     Return the soft thresholded signal.
 
@@ -86,17 +86,17 @@ def _soft_threshold(z, T, handle_complex=True):
     array([-1,  0,  0,  0,  1])
 
     """
-    sz = np.maximum(np.abs(z) - T, 0)
 
-    if not handle_complex:
+    if not z.dtype == np.complex:
         # This soft thresholding method only supports real signal.
-        sz[:] = np.sign(z) * sz
+        sz = np.sign(z) * np.maximum(np.abs(z) - T, 0)
 
     else:
         # This soft thresholding method supports complex complex signal.
         # Transform to float to avoid integer division.
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
+        sz = np.maximum(np.abs(z) - T, 0, dtype = z.dtype)
         old_err_state = np.seterr(invalid='ignore')
         sz[:] = np.nan_to_num(1. * sz / (sz + T) * z)
         np.seterr(**old_err_state)

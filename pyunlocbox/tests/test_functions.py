@@ -131,16 +131,33 @@ class TestCase(unittest.TestCase):
 
         """
         x = np.arange(-4, 5, 1)
-        # Test integer division for complex method.
+        # Test with integers
         Ts = [2]
         y_gold = [[-2, -1, 0, 0, 0, 0, 0, 1, 2]]
-        # Test division by 0 for complex method.
+        # Test with floats
         Ts.append([.4, .3, .2, .1, 0, .1, .2, .3, .4])
         y_gold.append([-3.6, -2.7, -1.8, -.9, 0, .9, 1.8, 2.7, 3.6])
         for k, T in enumerate(Ts):
-            for cmplx in [False, True]:
-                y_test = functions._soft_threshold(x, T, cmplx)
-                nptest.assert_array_equal(y_test, y_gold[k])
+            y_test = functions._soft_threshold(x, T)
+            nptest.assert_array_equal(y_test, y_gold[k])
+        # Test division by 0 for complex method.
+        x = np.arange(-4, 5, 1) + 0j
+        y_gold = [-3.6 + 0j, -2.7 + 0j, -1.8 + 0j, -.9 + 0j,
+                  0 + 0j, .9 + 0j, 1.8 + 0j, 2.7 + 0j, 3.6 + 0j]
+        y_test = functions._soft_threshold(x, Ts[-1])
+        nptest.assert_array_equal(y_test, y_gold)
+
+        x = 1j * np.arange(-4, 5, 1)
+        y_gold = [-3.6j, -2.7j, -1.8j, -.9j, 0j, .9j, 1.8j, 2.7j, 3.6j]
+        y_test = functions._soft_threshold(x, Ts[-1])
+        nptest.assert_array_equal(y_test, y_gold)
+
+        x = (1 + 1j) * np.array([-1, 1])
+        T = .1
+        y_gold = x - T * x / np.abs(x)
+        y_test = functions._soft_threshold(x, T)
+        nptest.assert_array_almost_equal(y_test, y_gold)
+
 
     def test_norm_l1(self):
         """
