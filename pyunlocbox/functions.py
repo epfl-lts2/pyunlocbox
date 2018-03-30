@@ -98,7 +98,7 @@ def _soft_threshold(z, T):
         # Transform to float to avoid integer division.
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
-        sz = np.maximum(np.abs(z) - T, 0, dtype = input_dtype)
+        sz = np.maximum(np.abs(z) - T, 0, dtype=input_dtype)
         old_err_state = np.seterr(invalid='ignore')
         sz[:] = np.nan_to_num(1. * sz / (sz + T) * z)
         np.seterr(**old_err_state)

@@ -158,7 +158,6 @@ class TestCase(unittest.TestCase):
         y_test = functions._soft_threshold(x, T)
         nptest.assert_array_almost_equal(y_test, y_gold)
 
-
     def test_norm_l1(self):
         """
         Test the norm_l1 derived class.
