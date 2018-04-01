@@ -306,7 +306,16 @@ class fista(dummy):
         super(fista, self).__init__(**kwargs)
 
     def _pre(self, functions, x0):
-        self.sol = np.array(x0, copy=True)
+        enable_complex = False
+        for current_func in functions:
+            if (current_func.y().dtype == np.complex
+               or current_func.A(np.asarray(x0)).dtype == np.complex
+               or current_func.At(current_func.y()).dtype == np.complex):
+                enable_complex = True
+        if enable_complex:
+            self.sol = np.array(x0, copy=True, dtype=np.complex)
+        else:
+            self.sol = np.array(x0, copy=True)
 
     def _update_sol(self, solver, objective, niter):
         self.t = 1. if (niter == 1) else self.t  # Restart variable t if needed

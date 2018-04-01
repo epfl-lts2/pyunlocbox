@@ -372,11 +372,20 @@ class solver(object):
         context as to how the solver is using the functions.
 
         """
-        self.sol = np.asarray(x0)
         self.smooth_funs = []
         self.non_smooth_funs = []
-        self._pre(functions, self.sol)
-        self.accel.pre(functions, self.sol)
+        self._pre(functions, np.asarray(x0))
+        self.accel.pre(functions, np.asarray(x0))
+        enable_complex = False
+        for current_func in self.smooth_funs + self.non_smooth_funs:
+            if (current_func.y().dtype == np.complex
+               or current_func.A(np.asarray(x0)).dtype == np.complex
+               or current_func.At(current_func.y()).dtype == np.complex):
+                enable_complex = True
+        if enable_complex:
+            self.sol = np.asarray(x0, dtype=np.complex)
+        else:
+            self.sol = np.asarray(x0)
 
     def _pre(self, functions, x0):
         raise NotImplementedError("Class user should define this method.")
