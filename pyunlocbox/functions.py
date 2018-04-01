@@ -196,7 +196,7 @@ class func(object):
             elif callable(A):
                 self.At = A
             else:
-                self.At = lambda x: A.T.dot(x)
+                self.At = lambda x: A.T.conj().dot(x)
         else:
             if callable(At):
                 self.At = At
@@ -493,7 +493,7 @@ class norm_l2(norm):
 
     def _eval(self, x):
         sol = self.A(x) - self.y()
-        return self.lambda_ * np.sum((self.w * sol)**2)
+        return self.lambda_ * np.sum(np.abs(self.w * sol)**2)
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
@@ -502,8 +502,9 @@ class norm_l2(norm):
             sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
-            res = minimize(fun=lambda z: 0.5 * np.sum((z - x)**2) + gamma *
-                           np.sum((self.w * (self.A(z) - self.y()))**2),
+            res = minimize(fun=lambda z: 0.5 * np.sum(np.abs(z - x)**2)
+                           + gamma * np.sum((self.w * np.abs(self.A(z)
+                                             - self.y()))**2),
                            x0=x,
                            method='BFGS',
                            jac=lambda z: z - x + 2. * gamma *
