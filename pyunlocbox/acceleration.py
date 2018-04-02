@@ -191,7 +191,8 @@ class backtracking(dummy):
     >>> accel = acceleration.backtracking()
     >>> solver = solvers.forward_backward(accel=accel, step=10)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-32, rtol=None)
-    Solution found after 4 iterations:
+    ... # doctest: +ELLIPSIS
+    Solution found after ... iterations:
         objective function f(sol) = 0.000000e+00
         stopping criterion: ATOL
     >>> ret['sol']
