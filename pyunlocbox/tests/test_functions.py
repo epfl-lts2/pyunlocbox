@@ -375,35 +375,32 @@ class TestCase(unittest.TestCase):
         f.method = 'NOT_A_VALID_METHOD'
         self.assertRaises(ValueError, f.prox, x, 0)
 
-
     def test_proj_positive(self):
         """
         Test the proj positive function
 
         """
 
-
         fpos = functions.proj_positive()
-        x = np.random.randn(10,12)
+        x = np.random.randn(10, 12)
 
-        res = fpos.prox(x,T=1)
+        res = fpos.prox(x, T=1)
         # Assert that the value after the prox are all elements are positive
-        nptest.assert_((res>=0).all())
+        nptest.assert_((res >= 0).all())
 
         # Assert that the he negative values are set to 0
-        nptest.assert_((res[x<0]==0).all())
+        nptest.assert_((res[x < 0] == 0).all())
 
         # Assert that the the positive values are unchanged
-        nptest.assert_equal(res[x>0],x[x>0])
+        nptest.assert_equal(res[x > 0], x[x > 0])
 
         # Always evaluate to zero.
         self.assertEqual(fpos.eval(x), 0)
 
-
     def test_independent_problems(self):
 
         # Parameters.
-        N = 3   # independent problems.
+        N = 3  # independent problems.
         n = 25  # dimensions.
 
         # Generate some data.
@@ -413,16 +410,28 @@ class TestCase(unittest.TestCase):
         # Test all available functions.
         funcs = inspect.getmembers(functions, inspect.isclass)
         for func in funcs:
+            print('Testing ' + func[0])
 
             # Instanciate the class.
             if func[0] in ['norm_tv']:
-                f = func[1](dim=1)  # Each column is one-dimensional.
+                f = func[1](
+                   dim=1, maxit=20, tol=0)  # Each column is one-dimensional.
             else:
                 f = func[1]()
 
+            # TODO make this test two dimensional for the norm nuclear?
+            exlude = ['func', 'norm_nuclear']
+
+            has_eval = ('_eval' in func[1].__dict__.keys() and
+                        not (func[0] in exlude))
+            has_prox = ('_prox' in func[1].__dict__.keys() and
+                        not (func[0] in exlude))
+            has_grad = ('_grad' in func[1].__dict__.keys() and
+                        not (func[0] in exlude))
+
             # The combined objective function of the N problems is the sum of
             # each objective.
-            if func[0] not in ['func', 'norm', 'norm_nuclear', 'proj']:
+            if has_eval:
                 res = 0
                 for iN in range(N):
                     res += f.eval(X[:, iN])
@@ -430,20 +439,30 @@ class TestCase(unittest.TestCase):
 
             # Each column is the prox of one of the N problems.
             # TODO: norm_tv shoud pass this test. Why is there a difference ?
-            if func[0] not in ['func', 'norm', 'norm_nuclear', 'norm_tv',
-                               'proj']:
+            if has_prox:
                 res = np.zeros((n, N))
                 for iN in range(N):
                     res[:, iN] = f.prox(X[:, iN], step)
                 nptest.assert_array_almost_equal(res, f.prox(X, step))
 
             # Each column is the gradient of one of the N problems.
-            if func[0] not in ['func', 'norm', 'norm_l1', 'norm_nuclear',
-                               'norm_tv', 'proj', 'proj_b2']:
+            if has_grad:
                 res = np.zeros((n, N))
                 for iN in range(N):
                     res[:, iN] = f.grad(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.grad(X))
 
+            # TODO: this test should probably be done in a more clever way
+            if func[0] not in ['norm', 'proj', 'proj_b2', 'proj_positive'
+                               ] + exlude:
+                # Assert if the function can be evaluated
+                assert (has_eval)
+                # Assert if the function has a gradient or a proximal op.
+                assert (has_grad or has_prox)
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -821,6 +821,7 @@ class proj(func):
         # return np.spacing(1.0)
         return 0
 
+
 class proj_positive(proj):
     r"""
     Projection on the positive orthant.
@@ -855,6 +856,7 @@ class proj_positive(proj):
 
     def _prox(self, x, T):
         return np.clip(x, 0, np.inf)
+
 
 class proj_b2(proj):
     r"""
