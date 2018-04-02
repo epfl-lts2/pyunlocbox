@@ -13,9 +13,8 @@ tests for any new code.
 The package can be set up (ideally in a virtual environment) for local
 development with the following::
 
-    $ git clone https://github.com/epfl-lts2/pygsp.git
-    $ pip install -U -r pyunlocbox/requirements.txt
-    $ pip install -e pyunlocbox
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ pip install -U -e pyunlocbox[test,doc,pkg]
 
 You can improve or add solvers, functions, and acceleration schemes in
 ``pyunlocbox/solvers.py``, ``pyunlocbox/functions.py``, and
