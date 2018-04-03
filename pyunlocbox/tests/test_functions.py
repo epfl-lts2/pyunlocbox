@@ -168,6 +168,8 @@ class TestCase(unittest.TestCase):
         First with default class properties, then custom ones.
 
         """
+
+        # TODO: this method should be tested more extensively.
         f = functions.norm_nuclear(lambda_=3)
         self.assertEqual(f.eval(np.diag([10, 0])), 30)
         self.assertEqual(f.eval(np.diag(np.array([-10, 0]))), 30)
@@ -410,59 +412,51 @@ class TestCase(unittest.TestCase):
         # Test all available functions.
         funcs = inspect.getmembers(functions, inspect.isclass)
         for func in funcs:
-            print('Testing ' + func[0])
+            with self.subTest(i=func[0]):
+                # Instanciate the class.
+                if func[0] in ['norm_tv']:
+                    # Each column is one-dimensional.
+                    f = func[1](dim=1, maxit=20, tol=0)
+                else:
+                    f = func[1]()
 
-            # Instanciate the class.
-            if func[0] in ['norm_tv']:
-                f = func[1](
-                   dim=1, maxit=20, tol=0)  # Each column is one-dimensional.
-            else:
-                f = func[1]()
+                # TODO make this test two dimensional for the norm nuclear?
+                exlude = ['norm_nuclear']
 
-            # TODO make this test two dimensional for the norm nuclear?
-            exlude = ['func', 'norm_nuclear']
+                if func[0] in exlude:
+                    break
+                cap = f.cap(X)
 
-            has_eval = ('_eval' in func[1].__dict__.keys() and
-                        not (func[0] in exlude))
-            has_prox = ('_prox' in func[1].__dict__.keys() and
-                        not (func[0] in exlude))
-            has_grad = ('_grad' in func[1].__dict__.keys() and
-                        not (func[0] in exlude))
+                # The combined objective function of the N problems is the sum
+                # of each objective.
+                if 'EVAL' in cap and func[0] not in exlude:
+                    res = 0
+                    for iN in range(N):
+                        res += f.eval(X[:, iN])
+                    nptest.assert_array_almost_equal(res, f.eval(X))
 
-            # The combined objective function of the N problems is the sum of
-            # each objective.
-            if has_eval:
-                res = 0
-                for iN in range(N):
-                    res += f.eval(X[:, iN])
-                nptest.assert_array_almost_equal(res, f.eval(X))
+                # Each column is the prox of one of the N problems.
+                if 'PROX' in cap and func[0] not in exlude:
+                    res = np.zeros((n, N))
+                    for iN in range(N):
+                        res[:, iN] = f.prox(X[:, iN], step)
+                    nptest.assert_array_almost_equal(res, f.prox(X, step))
 
-            # Each column is the prox of one of the N problems.
-            # TODO: norm_tv shoud pass this test. Why is there a difference ?
-            if has_prox:
-                res = np.zeros((n, N))
-                for iN in range(N):
-                    res[:, iN] = f.prox(X[:, iN], step)
-                nptest.assert_array_almost_equal(res, f.prox(X, step))
+                # Each column is the gradient of one of the N problems.
+                if 'GRAD' in cap and func[0] not in exlude:
+                    res = np.zeros((n, N))
+                    for iN in range(N):
+                        res[:, iN] = f.grad(X[:, iN])
+                    nptest.assert_array_almost_equal(res, f.grad(X))
 
-            # Each column is the gradient of one of the N problems.
-            if has_grad:
-                res = np.zeros((n, N))
-                for iN in range(N):
-                    res[:, iN] = f.grad(X[:, iN])
-                nptest.assert_array_almost_equal(res, f.grad(X))
-
-            # TODO: this test should probably be done in a more clever way
-            if func[0] not in ['norm', 'proj', 'proj_b2', 'proj_positive'
-                               ] + exlude:
-                # Assert if the function can be evaluated
-                assert (has_eval)
-                # Assert if the function has a gradient or a proximal op.
-                assert (has_grad or has_prox)
+                # Test if the function makes sense, i.e: the functin should
+                # contain the function _eval and one of the function _prox or
+                # _grad.
+                if func[0] not in ['func', 'proj', 'norm']:
+                    # Assert if the function can be evaluated
+                    assert('EVAL' in cap)
+                    # Assert if the function has a gradient or a proximal op.
+                    assert('GRAD' in cap or 'PROX' in cap)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
-
-
-if __name__ == '__main__':
-    unittest.main()
