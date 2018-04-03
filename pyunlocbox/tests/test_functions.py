@@ -412,51 +412,53 @@ class TestCase(unittest.TestCase):
         # Test all available functions.
         funcs = inspect.getmembers(functions, inspect.isclass)
         for func in funcs:
-            with self.subTest(i=func[0]):
-                # Instanciate the class.
-                if func[0] in ['norm_tv']:
-                    # Each column is one-dimensional.
-                    f = func[1](dim=1, maxit=20, tol=0)
-                else:
-                    f = func[1]()
+            # Unfortunately this subTest is not working with pyhton 2.7
+            # with self.subTest(i=func[0]):
 
-                # TODO make this test two dimensional for the norm nuclear?
-                exlude = ['norm_nuclear']
+            # Instanciate the class.
+            if func[0] in ['norm_tv']:
+                # Each column is one-dimensional.
+                f = func[1](dim=1, maxit=20, tol=0)
+            else:
+                f = func[1]()
 
-                if func[0] in exlude:
-                    break
-                cap = f.cap(X)
+            # TODO make this test two dimensional for the norm nuclear?
+            exlude = ['norm_nuclear']
 
-                # The combined objective function of the N problems is the sum
-                # of each objective.
-                if 'EVAL' in cap and func[0] not in exlude:
-                    res = 0
-                    for iN in range(N):
-                        res += f.eval(X[:, iN])
-                    nptest.assert_array_almost_equal(res, f.eval(X))
+            if func[0] in exlude:
+                break
+            cap = f.cap(X)
 
-                # Each column is the prox of one of the N problems.
-                if 'PROX' in cap and func[0] not in exlude:
-                    res = np.zeros((n, N))
-                    for iN in range(N):
-                        res[:, iN] = f.prox(X[:, iN], step)
-                    nptest.assert_array_almost_equal(res, f.prox(X, step))
+            # The combined objective function of the N problems is the sum
+            # of each objective.
+            if 'EVAL' in cap and func[0] not in exlude:
+                res = 0
+                for iN in range(N):
+                    res += f.eval(X[:, iN])
+                nptest.assert_array_almost_equal(res, f.eval(X))
 
-                # Each column is the gradient of one of the N problems.
-                if 'GRAD' in cap and func[0] not in exlude:
-                    res = np.zeros((n, N))
-                    for iN in range(N):
-                        res[:, iN] = f.grad(X[:, iN])
-                    nptest.assert_array_almost_equal(res, f.grad(X))
+            # Each column is the prox of one of the N problems.
+            if 'PROX' in cap and func[0] not in exlude:
+                res = np.zeros((n, N))
+                for iN in range(N):
+                    res[:, iN] = f.prox(X[:, iN], step)
+                nptest.assert_array_almost_equal(res, f.prox(X, step))
 
-                # Test if the function makes sense, i.e: the functin should
-                # contain the function _eval and one of the function _prox or
-                # _grad.
-                if func[0] not in ['func', 'proj', 'norm']:
-                    # Assert if the function can be evaluated
-                    assert('EVAL' in cap)
-                    # Assert if the function has a gradient or a proximal op.
-                    assert('GRAD' in cap or 'PROX' in cap)
+            # Each column is the gradient of one of the N problems.
+            if 'GRAD' in cap and func[0] not in exlude:
+                res = np.zeros((n, N))
+                for iN in range(N):
+                    res[:, iN] = f.grad(X[:, iN])
+                nptest.assert_array_almost_equal(res, f.grad(X))
+
+            # Test if the function makes sense, i.e: the functin should
+            # contain the function _eval and one of the function _prox or
+            # _grad.
+            if func[0] not in ['func', 'proj', 'norm']:
+                # Assert if the function can be evaluated
+                assert('EVAL' in cap)
+                # Assert if the function has a gradient or a proximal op.
+                assert('GRAD' in cap or 'PROX' in cap)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
