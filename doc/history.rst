@@ -2,6 +2,16 @@
 History
 =======
 
+
+Futur release
+-------------
+
+New features:
+
+* Addition of the proj_positive function
+
+
+
 0.5.2 (2017-12-15)
 ------------------
 
