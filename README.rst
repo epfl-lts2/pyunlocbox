@@ -13,7 +13,7 @@ PyUNLocBoX: Optimization by Proximal Splitting
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
 .. |pypi| image:: https://img.shields.io/pypi/v/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
+   :target: https://pypi.org/pypi/pyunlocbox
 .. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1199081.svg
    :target: https://doi.org/10.5281/zenodo.1199081
 .. |license| image:: https://img.shields.io/pypi/l/pyunlocbox.svg

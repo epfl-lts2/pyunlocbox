@@ -11,6 +11,12 @@ setup(
     long_description=open('README.rst').read(),
     author='EPFL LTS2',
     url='https://github.com/epfl-lts2/pyunlocbox',
+    project_urls={
+        'Documentation': 'https://pyunlocbox.readthedocs.io',
+        'Source Code': 'https://github.com/epfl-lts2/pyunlocbox',
+        'Bug Tracker': 'https://github.com/epfl-lts2/pyunlocbox/issues',
+        'Try It Online': 'https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb',  # noqa
+    },
     packages=[
         'pyunlocbox',
         'pyunlocbox.tests'
