@@ -14,8 +14,8 @@ addons:
       - graphviz  # sphinx inheritance diagrams
 
 install:
-  - pip install -U pip
-  - pip install -U .[test,doc]
+  - pip install -U --upgrade-strategy eager .[test,doc]
+  # Update dependencies (e.g. numpy formatting changed in v1.14).
   - mkdir -p ~/.config/matplotlib
   - "echo backend : agg > ~/.config/matplotlib/matplotlibrc"
 
