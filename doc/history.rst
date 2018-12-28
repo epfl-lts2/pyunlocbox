@@ -2,6 +2,11 @@
 History
 =======
 
+0.6.0 (xxxx-xx-xx)
+------------------
+
+* Drop support of Python 3.4 and test with 3.7. Last version to support 2.7.
+
 0.5.2 (2017-12-15)
 ------------------
 
