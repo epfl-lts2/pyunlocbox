@@ -19,8 +19,6 @@ addons:
 install:
   - pip install -U --upgrade-strategy eager .[test,doc]
   # Update dependencies (e.g. numpy formatting changed in v1.14).
-  - mkdir -p ~/.config/matplotlib
-  - "echo backend : agg > ~/.config/matplotlib/matplotlibrc"
 
 script:
   - make lint

@@ -14,6 +14,9 @@ clean:
 lint:
 	flake8 --doctests --exclude=doc
 
+# Matplotlib doesn't print to screen. Also faster.
+export MPLBACKEND = agg
+
 test:
 	coverage run --branch --source pyunlocbox setup.py test
 	coverage report
