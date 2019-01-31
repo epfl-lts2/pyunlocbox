@@ -478,7 +478,7 @@ class gradient_descent(solver):
                 raise ValueError('Gradient descent requires each function to '
                                  'implement grad().')
 
-        if self.verbosity is 'HIGH':
+        if self.verbosity == 'HIGH':
             print('INFO: Gradient descent minimizing {} smooth '
                   'functions.'.format(len(self.smooth_funs)))
 
@@ -542,7 +542,7 @@ class forward_backward(solver):
 
     def _pre(self, functions, x0):
 
-        if self.verbosity is 'HIGH':
+        if self.verbosity == 'HIGH':
             print('INFO: Forward-backward method')
 
         if len(functions) != 2:
@@ -629,10 +629,10 @@ class generalized_forward_backward(solver):
                 raise ValueError('Generalized forward-backward requires each '
                                  'function to implement prox() or grad().')
 
-        if self.verbosity is 'HIGH':
+        if self.verbosity == 'HIGH':
             print('INFO: Generalized forward-backward minimizing {} smooth '
-                  'functions and {} non-smooth functions.'.format(len(self.smooth_funs),
-                                                                  len(self.non_smooth_funs)))
+                  'functions and {} non-smooth functions.'.format(
+                      len(self.smooth_funs), len(self.non_smooth_funs)))
 
     def _algo(self):
 

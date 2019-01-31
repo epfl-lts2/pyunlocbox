@@ -886,10 +886,10 @@ class proj_b2(proj):
             # Initialization.
             sol = x
             u = np.zeros(np.shape(self.y()))
-            if self.method is 'FISTA':
+            if self.method == 'FISTA':
                 v_last = u
                 t_last = 1.
-            elif self.method is not 'ISTA':
+            elif self.method != 'ISTA':
                 raise ValueError('The method should be either FISTA or ISTA.')
 
             # Tolerance around the L2-ball.
@@ -910,7 +910,7 @@ class proj_b2(proj):
                 res = self.A(sol) - self.y()
                 norm_res = np.linalg.norm(res, 2)
 
-                if self.verbosity is 'HIGH':
+                if self.verbosity == 'HIGH':
                     print('    proj_b2 iteration {:3d}: epsilon = {:.2e}, '
                           '||y-A(z)||_2 = {:.2e}'.format(niter, self.epsilon,
                                                          norm_res))
@@ -922,7 +922,7 @@ class proj_b2(proj):
                 ratio = min(1, self.epsilon / norm_proj)
                 v = 1. / self.nu * (res - res * ratio)
 
-                if self.method is 'FISTA':
+                if self.method == 'FISTA':
                     t = (1. + np.sqrt(1. + 4. * t_last**2.)) / 2.  # Time step.
                     u = v + (t_last - 1.) / t * (v - v_last)
                     v_last = v
