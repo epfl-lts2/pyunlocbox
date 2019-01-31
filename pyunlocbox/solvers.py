@@ -631,8 +631,8 @@ class generalized_forward_backward(solver):
 
         if self.verbosity is 'HIGH':
             print('INFO: Generalized forward-backward minimizing {} smooth '
-                  'functions and {} non-smooth functions.'.format(len(self.f),
-                                                                  len(self.g)))
+                  'functions and {} non-smooth functions.'.format(len(self.smooth_funs),
+                                                                  len(self.non_smooth_funs)))
 
     def _algo(self):
 
