@@ -13,9 +13,8 @@ tests for any new code.
 The package can be set up (ideally in a virtual environment) for local
 development with the following::
 
-    $ git clone https://github.com/epfl-lts2/pygsp.git
-    $ pip install -U -r pyunlocbox/requirements.txt
-    $ pip install -e pyunlocbox
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ pip install -U -e pyunlocbox[dev]
 
 You can improve or add solvers, functions, and acceleration schemes in
 ``pyunlocbox/solvers.py``, ``pyunlocbox/functions.py``, and
@@ -38,3 +37,29 @@ documentation with the following (enforced by Travis CI)::
 
 Check the generated coverage report at ``htmlcov/index.html`` to make sure the
 tests reasonably cover the changes you've introduced.
+
+Making a release
+----------------
+
+#. Update the version number and release date in ``setup.py``,
+   ``pyunlocbox/__init__.py`` and ``doc/history.rst``.
+#. Create a git tag with ``git tag -a v0.5.0 -m "PyUNLocBox v0.5.0"``.
+#. Push the tag to GitHub with ``git push github v0.5.0``. The tag should now
+   appear in the releases and tags tab.
+#. `Create a release <https://github.com/epfl-lts2/pygsp/releases/new>`_ on
+   GitHub and select the created tag. A DOI should then be issued by Zenodo.
+#. Go on Zenodo and fix the metadata if necessary.
+#. Build the distribution with ``make dist`` and check that the
+   ``dist/pyunlocbox-0.5.0.tar.gz`` source archive contains all required files.
+   The binary wheel should be found as
+   ``dist/pyunlocbox-0.5.0-py2.py3-none-any.whl``.
+#. Test the upload and installation process::
+
+    $ twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    $ pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pyunlocbox
+
+   Log in as the LTS2 user.
+#. Build and upload the distribution to the real PyPI with ``make release``.
+#. Update the conda feedstock (at least the version number and sha256 in
+   ``recipe/meta.yaml``) by sending a PR to
+   `conda-forge <https://github.com/conda-forge/pyunlocbox-feedstock>`_.

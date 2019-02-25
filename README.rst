@@ -2,37 +2,43 @@
 PyUNLocBoX: Optimization by Proximal Splitting
 ==============================================
 
-+----------------------------------------+
-| |doc|  |pypi|  |license|  |pyversions| |
-+----------------------------------------+
-| |travis|  |coveralls|  |github|        |
-+----------------------------------------+
++-----------------------------------+
+| |doc|  |pypi|  |conda|  |binder|  |
++-----------------------------------+
+| |zenodo|  |license|  |pyversions| |
++-----------------------------------+
+| |travis|  |coveralls|  |github|   |
++-----------------------------------+
 
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
 .. |pypi| image:: https://img.shields.io/pypi/v/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
+   :target: https://pypi.org/project/pyunlocbox
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1199081.svg
+   :target: https://doi.org/10.5281/zenodo.1199081
 .. |license| image:: https://img.shields.io/pypi/l/pyunlocbox.svg
    :target: https://github.com/epfl-lts2/pyunlocbox/blob/master/LICENSE.txt
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
-   :target: https://pypi.python.org/pypi/pyunlocbox
+   :target: https://pypi.org/project/pyunlocbox
 .. |travis| image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
    :target: https://travis-ci.org/epfl-lts2/pyunlocbox
 .. |coveralls| image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
+.. |binder| image:: https://mybinder.org/badge.svg
+   :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb
+.. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
+   :target: https://anaconda.org/conda-forge/pyunlocbox
 
 The PyUNLocBoX is a Python package which uses
 `proximal splitting methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_
 to solve non-differentiable convex optimization problems.
-It is a free software, distributed under the BSD license, and
-available on `PyPI <https://pypi.python.org/pypi/pyunlocbox>`_.
 The documentation is available on
 `Read the Docs <https://pyunlocbox.readthedocs.io>`_
 and development takes place on
 `GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
-(A `Matlab counterpart <https://lts2.epfl.ch/unlocbox>`_ exists.)
+A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists.
 
 The package is designed to be easy to use while allowing any advanced tasks. It
 is not meant to be a black-box optimization tool. You'll have to carefully
@@ -79,14 +85,26 @@ Solution found after 9 iterations:
     objective function f(sol) = 6.714385e-08
     stopping criterion: ATOL
 >>> ret['sol']
-array([ 3.99990766,  4.99988458,  5.99986149,  6.99983841])
+array([3.99990766, 4.99988458, 5.99986149, 6.99983841])
+
+You can
+`try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb>`_,
+look at the
+`tutorials <https://pyunlocbox.readthedocs.io/en/stable/tutorials/index.html>`_
+to learn how to use it, or look at the
+`reference guide <https://pyunlocbox.readthedocs.io/en/stable/reference/index.html>`_
+for an exhaustive documentation of the API. Enjoy!
 
 Installation
 ------------
 
-The PyUNLocBox is available on PyPI::
+The PyUNLocBoX is available on PyPI::
 
     $ pip install pyunlocbox
+
+The PyUNLocBoX is available on `conda-forge <https://github.com/conda-forge/pyunlocbox-feedstock>`_::
+
+    $ conda install -c conda-forge pyunlocbox
 
 Contributing
 ------------
@@ -98,3 +116,17 @@ Acknowledgments
 
 The PyUNLocBoX was started in 2014 as an academic open-source project for
 research purpose at the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
+
+The code in this repository is released under the terms of the `BSD 3-Clause license <LICENSE.txt>`_.
+
+If you are using the library for your research, for the sake of
+reproducibility, please cite the version you used as indexed by
+`Zenodo <https://doi.org/10.5281/zenodo.1199081>`_.
+Or cite the generic concept as::
+
+    @misc{pyunlocbox,
+      title = {PyUNLocBoX: Optimization by Proximal Splitting},
+      author = {Defferrard, Micha\"el and Pena, Rodrigo and Perraudin, Nathana\"el},
+      doi = {10.5281/zenodo.1199081},
+      url = {https://github.com/epfl-lts2/pyunlocbox/},
+    }

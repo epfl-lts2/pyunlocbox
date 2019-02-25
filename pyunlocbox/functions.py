@@ -361,7 +361,7 @@ class dummy(func):
     >>> f.prox(x, 1)
     array([1, 2, 3, 4])
     >>> f.grad(x)
-    array([ 0.,  0.,  0.,  0.])
+    array([0., 0., 0., 0.])
 
     """
 
@@ -474,7 +474,7 @@ class norm_l2(norm):
     >>> f.eval(x)
     30
     >>> f.prox(x, 1)
-    array([ 0.33333333,  0.66666667,  1.        ,  1.33333333])
+    array([0.33333333, 0.66666667, 1.        , 1.33333333])
     >>> f.grad(x)
     array([2, 4, 6, 8])
 
@@ -536,8 +536,8 @@ class norm_nuclear(norm):
     >>> f.eval([[1, 2],[2, 3]])  # doctest:+ELLIPSIS
     4.47213595...
     >>> f.prox([[1, 2],[2, 3]], 1)
-    array([[ 0.89442719,  1.4472136 ],
-           [ 1.4472136 ,  2.34164079]])
+    array([[0.89442719, 1.4472136 ],
+           [1.4472136 , 2.34164079]])
 
     """
 
@@ -847,7 +847,7 @@ class proj_b2(proj):
     >>> f.eval(x)
     0
     >>> f.prox(x, 0)
-    array([ 1.70710678,  1.70710678])
+    array([1.70710678, 1.70710678])
 
     """
 
@@ -877,10 +877,10 @@ class proj_b2(proj):
             # Initialization.
             sol = x
             u = np.zeros(np.shape(self.y()))
-            if self.method is 'FISTA':
+            if self.method == 'FISTA':
                 v_last = u
                 t_last = 1.
-            elif self.method is not 'ISTA':
+            elif self.method != 'ISTA':
                 raise ValueError('The method should be either FISTA or ISTA.')
 
             # Tolerance around the L2-ball.
@@ -901,7 +901,7 @@ class proj_b2(proj):
                 res = self.A(sol) - self.y()
                 norm_res = np.linalg.norm(res, 2)
 
-                if self.verbosity is 'HIGH':
+                if self.verbosity == 'HIGH':
                     print('    proj_b2 iteration {:3d}: epsilon = {:.2e}, '
                           '||y-A(z)||_2 = {:.2e}'.format(niter, self.epsilon,
                                                          norm_res))
@@ -913,7 +913,7 @@ class proj_b2(proj):
                 ratio = min(1, self.epsilon / norm_proj)
                 v = 1. / self.nu * (res - res * ratio)
 
-                if self.method is 'FISTA':
+                if self.method == 'FISTA':
                     t = (1. + np.sqrt(1. + 4. * t_last**2.)) / 2.  # Time step.
                     u = v + (t_last - 1.) / t * (v - v_last)
                     v_last = v
