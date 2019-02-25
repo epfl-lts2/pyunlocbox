@@ -27,22 +27,18 @@ setup(
         'scipy'
     ],
     extras_require={
-        # Testing dependencies.
-        'test': [
+        'dev': [
+            # Testing dependencies.
             'flake8',
             'coverage',
             'coveralls',
-        ],
-        # Dependencies to build the documentation.
-        'doc': [
+            # Dependencies to build the documentation.
             'sphinx',
             'numpydoc',
             'sphinxcontrib-bibtex',
             'sphinx-rtd-theme',
             'matplotlib',
-        ],
-        # Dependencies to build and upload packages.
-        'pkg': [
+            # Dependencies to build and upload packages.
             'wheel',
             'twine',
         ],
