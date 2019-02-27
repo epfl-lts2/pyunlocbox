@@ -2,6 +2,15 @@
 PyUNLocBoX: Optimization by Proximal Splitting
 ==============================================
 
+The PyUNLocBoX is a Python package which uses
+`proximal splitting methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_
+to solve non-differentiable convex optimization problems.
+The documentation is available on
+`Read the Docs <https://pyunlocbox.readthedocs.io>`_
+and development takes place on
+`GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
+A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists.
+
 +-----------------------------------+
 | |doc|  |pypi|  |conda|  |binder|  |
 +-----------------------------------+
@@ -30,15 +39,6 @@ PyUNLocBoX: Optimization by Proximal Splitting
    :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb
 .. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/pyunlocbox
-
-The PyUNLocBoX is a Python package which uses
-`proximal splitting methods <https://en.wikipedia.org/wiki/Proximal_gradient_method>`_
-to solve non-differentiable convex optimization problems.
-The documentation is available on
-`Read the Docs <https://pyunlocbox.readthedocs.io>`_
-and development takes place on
-`GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
-A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists.
 
 The package is designed to be easy to use while allowing any advanced tasks. It
 is not meant to be a black-box optimization tool. You'll have to carefully
