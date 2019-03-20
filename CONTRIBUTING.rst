@@ -16,6 +16,9 @@ development with the following::
     $ git clone https://github.com/epfl-lts2/pyunlocbox.git
     $ pip install -U -e pyunlocbox[dev]
 
+The ``dev`` "extras requirement" ensures that dependencies required for
+development (to run the test suite and build the documentation) are installed.
+
 You can improve or add solvers, functions, and acceleration schemes in
 ``pyunlocbox/solvers.py``, ``pyunlocbox/functions.py``, and
 ``pyunlocbox/acceleration.py``, along with their corresponding unit tests in
@@ -37,6 +40,12 @@ documentation with the following (enforced by Travis CI)::
 
 Check the generated coverage report at ``htmlcov/index.html`` to make sure the
 tests reasonably cover the changes you've introduced.
+
+To iterate faster, you can partially run the test suite, at various degrees of
+granularity, as follows::
+
+   $ python -m unittest pyunlocbox.tests.test_functions
+   $ python -m unittest pyunlocbox.tests.test_functions.TestCase.test_norm_l1
 
 Making a release
 ----------------
