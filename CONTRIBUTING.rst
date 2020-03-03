@@ -13,9 +13,11 @@ tests for any new code.
 The package can be set up (ideally in a virtual environment) for local
 development with the following::
 
-    $ git clone https://github.com/epfl-lts2/pygsp.git
-    $ pip install -U -r pyunlocbox/requirements.txt
-    $ pip install -e pyunlocbox
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ pip install -U -e pyunlocbox[dev]
+
+The ``dev`` "extras requirement" ensures that dependencies required for
+development (to run the test suite and build the documentation) are installed.
 
 You can improve or add solvers, functions, and acceleration schemes in
 ``pyunlocbox/solvers.py``, ``pyunlocbox/functions.py``, and
@@ -26,8 +28,7 @@ the introduced functionality, please consider adding a tutorial in
 ``doc/tutorials``.
 
 Do not forget to update ``README.rst`` and ``doc/history.rst`` with e.g. new
-features. The version number needs to be updated in ``setup.py`` and
-``pyunlocbox/__init__.py``.
+features.
 
 After making any change, please check the style, run the tests, and build the
 documentation with the following (enforced by Travis CI)::
@@ -38,6 +39,12 @@ documentation with the following (enforced by Travis CI)::
 
 Check the generated coverage report at ``htmlcov/index.html`` to make sure the
 tests reasonably cover the changes you've introduced.
+
+To iterate faster, you can partially run the test suite, at various degrees of
+granularity, as follows::
+
+   $ python -m unittest pyunlocbox.tests.test_functions
+   $ python -m unittest pyunlocbox.tests.test_functions.TestCase.test_norm_l1
 
 Making a release
 ----------------

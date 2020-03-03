@@ -1,12 +1,15 @@
-sudo: false
+# Needed as trusty (the default) doesn't support python 3.7.
+# Remove once xenial is made default.
+# https://github.com/travis-ci/travis-ci/issues/9815
+dist: xenial
 
 language: python
 
 python:
   - 2.7
-  - 3.4
   - 3.5
   - 3.6
+  - 3.7
 
 addons:
   apt:
@@ -14,10 +17,8 @@ addons:
       - graphviz  # sphinx inheritance diagrams
 
 install:
-  - pip install -U pip
-  - pip install -U .[test,doc]
-  - mkdir -p ~/.config/matplotlib
-  - "echo backend : agg > ~/.config/matplotlib/matplotlibrc"
+  - pip install --upgrade --upgrade-strategy eager .[dev]
+  # Upgrade to test with the latest version of our dependencies.
 
 script:
   - make lint

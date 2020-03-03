@@ -6,23 +6,13 @@ Test suite for the pyunlocbox package.
 
 """
 
-import os
 import unittest
-import doctest
 
-from . import test_functions, test_operators, test_solvers, test_acceleration
-
-
-def gen_recursive_file(root, ext):
-    for root, dirnames, filenames in os.walk(root):
-        for name in filenames:
-            if name.lower().endswith(ext):
-                yield os.path.join(root, name)
-
-
-def test_docstrings(root, ext):
-    files = list(gen_recursive_file(root, ext))
-    return doctest.DocFileSuite(*files, module_relative=False)
+from . import test_functions
+from . import test_operators
+from . import test_solvers
+from . import test_acceleration
+from . import test_docstrings
 
 
 suites = []
@@ -30,8 +20,7 @@ suites.append(test_functions.suite)
 suites.append(test_operators.suite)
 suites.append(test_solvers.suite)
 suites.append(test_acceleration.suite)
-suites.append(test_docstrings('pyunlocbox', '.py'))
-suites.append(test_docstrings('.', '.rst'))
+suites.append(test_docstrings.suite)
 suite = unittest.TestSuite(suites)
 
 
