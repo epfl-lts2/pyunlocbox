@@ -36,24 +36,42 @@ class TestCase(unittest.TestCase):
         # f.grad = lambda x: 2 * x
         # f.prox = lambda x, T: x + T
 
-        def assert_equivalent(param1, param2):
-            x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
+        def assert_equivalent(param1, param2, test_data):
             funcs = inspect.getmembers(functions, inspect.isclass)
             for f in funcs:
                 if f[0] not in ['func', 'norm', 'proj']:
                     f1 = f[1](**param1)
                     f2 = f[1](**param2)
-                    self.assertEqual(f1.eval(x), f2.eval(x))
-                    nptest.assert_array_equal(f1.prox(x, 3), f2.prox(x, 3))
-                    if 'GRAD' in f1.cap(x):
-                        nptest.assert_array_equal(f1.grad(x), f2.grad(x))
+                    self.assertEqual(f1.eval(test_data), f2.eval(test_data))
+                    nptest.assert_array_equal(f1.prox(test_data, 3),
+                                              f2.prox(test_data, 3))
+                    if 'GRAD' in f1.cap(test_data):
+                        nptest.assert_array_equal(f1.grad(test_data),
+                                                  f2.grad(test_data))
 
+        # First check with real data
+        x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
         # Default parameters. Callable or matrices.
-        assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
-        assert_equivalent({'A': None}, {'A': np.identity(3)})
+        assert_equivalent({'y': 3.2}, {'y': lambda: 3.2}, x)
+        assert_equivalent({'A': None}, {'A': np.identity(3)}, x)
         A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
-        assert_equivalent({'A': A}, {'A': A, 'At': A.T})
-        assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A})
+        assert_equivalent({'A': A}, {'A': A, 'At': A.T}, x)
+        # Repeat with complex A
+        A = np.array([[-4, 2j, 5], [1j, 3, -7], [2, -1j, 0]])
+        assert_equivalent({'A': A}, {'A': A, 'At': A.conj().T}, x)
+        assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A}, x)
+
+        # Repeat the whole thing with complex data
+        x = [[7j, 8, 9], [10, 324, -45j], [-7, -.2j, 5]]
+        # Default parameters. Callable or matrices.
+        assert_equivalent({'y': 3.2}, {'y': lambda: 3.2}, x)
+        assert_equivalent({'A': None}, {'A': np.identity(3)}, x)
+        A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
+        assert_equivalent({'A': A}, {'A': A, 'At': A.T}, x)
+        # Repeat with complex A
+        A = np.array([[-4, 2j, 5], [1j, 3, -7], [2, -1j, 0]])
+        assert_equivalent({'A': A}, {'A': A, 'At': A.conj().T}, x)
+        assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A}, x)
 
     def test_dummy(self):
         """
@@ -131,16 +149,32 @@ class TestCase(unittest.TestCase):
 
         """
         x = np.arange(-4, 5, 1)
-        # Test integer division for complex method.
+        # Test with integers
         Ts = [2]
         y_gold = [[-2, -1, 0, 0, 0, 0, 0, 1, 2]]
-        # Test division by 0 for complex method.
+        # Test with floats
         Ts.append([.4, .3, .2, .1, 0, .1, .2, .3, .4])
         y_gold.append([-3.6, -2.7, -1.8, -.9, 0, .9, 1.8, 2.7, 3.6])
         for k, T in enumerate(Ts):
-            for cmplx in [False, True]:
-                y_test = functions._soft_threshold(x, T, cmplx)
-                nptest.assert_array_equal(y_test, y_gold[k])
+            y_test = functions._soft_threshold(x, T)
+            nptest.assert_array_equal(y_test, y_gold[k])
+        # Test division by 0 for complex method.
+        x = np.arange(-4, 5, 1) + 0j
+        y_gold = [-3.6 + 0j, -2.7 + 0j, -1.8 + 0j, -.9 + 0j,
+                  0 + 0j, .9 + 0j, 1.8 + 0j, 2.7 + 0j, 3.6 + 0j]
+        y_test = functions._soft_threshold(x, Ts[-1])
+        nptest.assert_array_equal(y_test, y_gold)
+
+        x = 1j * np.arange(-4, 5, 1)
+        y_gold = [-3.6j, -2.7j, -1.8j, -.9j, 0j, .9j, 1.8j, 2.7j, 3.6j]
+        y_test = functions._soft_threshold(x, Ts[-1])
+        nptest.assert_array_equal(y_test, y_gold)
+
+        x = (1 + 1j) * np.array([-1, 1])
+        T = .1
+        y_gold = x - T * x / np.abs(x)
+        y_test = functions._soft_threshold(x, T)
+        nptest.assert_array_almost_equal(y_test, y_gold)
 
     def test_norm_l1(self):
         """

@@ -58,7 +58,7 @@ from scipy.optimize import minimize
 from pyunlocbox import operators as op
 
 
-def _soft_threshold(z, T, handle_complex=True):
+def _soft_threshold(z, T):
     r"""
     Return the soft thresholded signal.
 
@@ -86,17 +86,19 @@ def _soft_threshold(z, T, handle_complex=True):
     array([-1,  0,  0,  0,  1])
 
     """
-    sz = np.maximum(np.abs(z) - T, 0)
 
-    if not handle_complex:
+    input_dtype = np.asarray(z).dtype
+
+    if not input_dtype == np.complex:
         # This soft thresholding method only supports real signal.
-        sz[:] = np.sign(z) * sz
+        sz = np.sign(z) * np.maximum(np.abs(z) - T, 0)
 
     else:
         # This soft thresholding method supports complex complex signal.
         # Transform to float to avoid integer division.
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
+        sz = np.maximum(np.abs(z) - T, 0, dtype=input_dtype)
         old_err_state = np.seterr(invalid='ignore')
         sz[:] = np.nan_to_num(1. * sz / (sz + T) * z)
         np.seterr(**old_err_state)
@@ -194,7 +196,7 @@ class func(object):
             elif callable(A):
                 self.At = A
             else:
-                self.At = lambda x: A.T.dot(x)
+                self.At = lambda x: A.T.conj().dot(x)
         else:
             if callable(At):
                 self.At = At
@@ -491,7 +493,7 @@ class norm_l2(norm):
 
     def _eval(self, x):
         sol = self.A(x) - self.y()
-        return self.lambda_ * np.sum((self.w * sol)**2)
+        return self.lambda_ * np.sum(np.abs(self.w * sol)**2)
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
@@ -500,8 +502,9 @@ class norm_l2(norm):
             sol = x + 2. * gamma * self.At(self.y() * self.w**2)
             sol /= 1. + 2. * gamma * self.nu * self.w**2
         else:
-            res = minimize(fun=lambda z: 0.5 * np.sum((z - x)**2) + gamma *
-                           np.sum((self.w * (self.A(z) - self.y()))**2),
+            res = minimize(fun=lambda z: 0.5 * np.sum(np.abs(z - x)**2)
+                           + gamma * np.sum((self.w * np.abs(self.A(z)
+                                             - self.y()))**2),
                            x0=x,
                            method='BFGS',
                            jac=lambda z: z - x + 2. * gamma *
