@@ -822,6 +822,42 @@ class proj(func):
         return 0
 
 
+class proj_positive(proj):
+    r"""
+    Projection on the positive octant.
+
+    This function is the indicator function :math:`i_S(z)` of the set S which
+    is zero if `z` is in the set and infinite otherwise. The set S is defined
+    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.proj` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    * The evaluation of this function is zero.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions
+    >>> f = functions.proj_positive()
+    >>> x = [-2.5, 1.5]
+    >>> f.eval(x)
+    0
+    >>> f.prox(x, 0)
+    array([0. , 1.5])
+
+    """
+
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(proj_positive, self).__init__(**kwargs)
+
+    def _prox(self, x, T):
+        return np.clip(x, 0, np.inf)
+
+
 class proj_b2(proj):
     r"""
     Projection on the L2-ball (eval, prox).

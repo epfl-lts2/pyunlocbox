@@ -38,11 +38,10 @@ class TestCase(unittest.TestCase):
 
         def assert_equivalent(param1, param2):
             x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
-            funcs = inspect.getmembers(functions, inspect.isclass)
-            for f in funcs:
-                if f[0] not in ['func', 'norm', 'proj']:
-                    f1 = f[1](**param1)
-                    f2 = f[1](**param2)
+            for name, func in inspect.getmembers(functions, inspect.isclass):
+                if name not in ['func', 'norm', 'proj']:
+                    f1 = func(**param1)
+                    f2 = func(**param2)
                     self.assertEqual(f1.eval(x), f2.eval(x))
                     nptest.assert_array_equal(f1.prox(x, 3), f2.prox(x, 3))
                     if 'GRAD' in f1.cap(x):
@@ -168,6 +167,8 @@ class TestCase(unittest.TestCase):
         First with default class properties, then custom ones.
 
         """
+
+        # TODO: this method should be tested more extensively.
         f = functions.norm_nuclear(lambda_=3)
         self.assertEqual(f.eval(np.diag([10, 0])), 30)
         self.assertEqual(f.eval(np.diag(np.array([-10, 0]))), 30)
@@ -375,10 +376,41 @@ class TestCase(unittest.TestCase):
         f.method = 'NOT_A_VALID_METHOD'
         self.assertRaises(ValueError, f.prox, x, 0)
 
+    def test_proj_positive(self):
+        """
+        Test the projection on the positive octant.
+
+        """
+        fpos = functions.proj_positive()
+        x = np.random.randn(10, 12)
+        res = fpos.prox(x, T=1)
+        nptest.assert_equal(res >= 0, True)  # All values are positive.
+        nptest.assert_equal(res[x < 0], 0)  # Negative values are set to zero.
+        nptest.assert_equal(res[x > 0], x[x > 0])  # Positives are unchanged.
+        self.assertEqual(fpos.eval(x), 0)
+
+    def test_capabilities(self):
+        """
+        Test that a function implements the necessary methods. A function must
+        always be evaluable (by implementing _eval) and must have a gradient or
+        proximal operator (by implementing at least one of _prox or _grad).
+
+        """
+        for name, func in inspect.getmembers(functions, inspect.isclass):
+            if name in ['func', 'proj', 'norm']:  # exclude abstract classes
+                continue
+            cap = func().cap(np.diag([10, 42]))
+            self.assertIn('EVAL', cap)
+            assert('GRAD' in cap or 'PROX' in cap)
+
     def test_independent_problems(self):
+        """
+        Test that multiple independent problems can be solved in parallel.
+
+        """
 
         # Parameters.
-        N = 3   # independent problems.
+        N = 3  # independent problems.
         n = 25  # dimensions.
 
         # Generate some data.
@@ -386,35 +418,39 @@ class TestCase(unittest.TestCase):
         step = 10 * np.random.uniform()
 
         # Test all available functions.
-        funcs = inspect.getmembers(functions, inspect.isclass)
-        for func in funcs:
+        for name, func in inspect.getmembers(functions, inspect.isclass):
+            # TODO: use subTest once python 2.7 is dropped
+            # with self.subTest(i=func[0]):
 
-            # Instanciate the class.
-            if func[0] in ['norm_tv']:
-                f = func[1](dim=1)  # Each column is one-dimensional.
+            # Instantiate the class.
+            if name == 'norm_tv':
+                # Each column is one-dimensional.
+                f = func(dim=1, maxit=20, tol=0)
+            elif name == 'norm_nuclear':
+                # TODO: make this test two dimensional for the norm nuclear?
+                continue
             else:
-                f = func[1]()
+                f = func()
+
+            cap = f.cap(X)
 
             # The combined objective function of the N problems is the sum of
             # each objective.
-            if func[0] not in ['func', 'norm', 'norm_nuclear', 'proj']:
+            if 'EVAL' in cap:
                 res = 0
                 for iN in range(N):
                     res += f.eval(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.eval(X))
 
             # Each column is the prox of one of the N problems.
-            # TODO: norm_tv shoud pass this test. Why is there a difference ?
-            if func[0] not in ['func', 'norm', 'norm_nuclear', 'norm_tv',
-                               'proj']:
+            if 'PROX' in cap:
                 res = np.zeros((n, N))
                 for iN in range(N):
                     res[:, iN] = f.prox(X[:, iN], step)
                 nptest.assert_array_almost_equal(res, f.prox(X, step))
 
             # Each column is the gradient of one of the N problems.
-            if func[0] not in ['func', 'norm', 'norm_l1', 'norm_nuclear',
-                               'norm_tv', 'proj', 'proj_b2']:
+            if 'GRAD' in cap:
                 res = np.zeros((n, N))
                 for iN in range(N):
                     res[:, iN] = f.grad(X[:, iN])

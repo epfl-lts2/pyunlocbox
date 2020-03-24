@@ -7,6 +7,7 @@ History
 
 * Drop support of Python 3.4 and test with 3.7. Last version to support 2.7.
 * Merged all the extra requirements in a single dev requirement.
+* Addition of the proj_positive function
 
 0.5.2 (2017-12-15)
 ------------------
