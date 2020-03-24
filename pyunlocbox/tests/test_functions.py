@@ -388,10 +388,10 @@ class TestCase(unittest.TestCase):
 
         res = fpos.prox(x, T=1)
         # Assert that the value after the prox are all elements are positive
-        nptest.assert_((res >= 0).all())
+        nptest.assert_equal(res >= 0, True)
 
         # Assert that the he negative values are set to 0
-        nptest.assert_((res[x < 0] == 0).all())
+        nptest.assert_equal(res[x < 0], 0)
 
         # Assert that the the positive values are unchanged
         nptest.assert_equal(res[x > 0], x[x > 0])
