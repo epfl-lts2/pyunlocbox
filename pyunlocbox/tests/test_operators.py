@@ -402,5 +402,11 @@ class TestCase(unittest.TestCase):
         nptest.assert_array_equal(xyzt_mat_w, operators.div(dx, dy, dz, dt,
                                                             **weights))
 
+    def test_adjoint(self):
+        """Test that 1D div op is the adjoint of grad."""
+        dx = operators.grad(np.eye(10), dim=1)
+        dxt = operators.div(np.eye(10))
+        nptest.assert_equal(dx.T, -dxt)  # we use that definition
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

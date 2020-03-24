@@ -160,6 +160,28 @@ class TestCase(unittest.TestCase):
         T = 0.5
         self.assertRaises(NotImplementedError, f.prox, x, T)
 
+        # Let us test the weights
+        f2 = functions.norm_l1(lambda_=4, w=2)
+        self.assertEqual(f2.eval([10, 1]), 88)
+        self.assertEqual(f2.eval([5]), 40)
+        self.assertEqual(f2.eval([0, -2, 1]), 24)
+        self.assertEqual(f2.eval(np.array([-10, 0])), 80)
+        self.assertEqual(f2.eval([-3, 4]), 56)
+        nptest.assert_array_equal(f2.prox(np.array([[7, -9], [10, -2]]), 1),
+                                  [[0, -1], [2, 0]])
+
+        # Let us multiple weights
+        f3 = functions.norm_l1(lambda_=4, w=[1, 2])
+        self.assertEqual(f3.eval([10, 1]), 48)
+        nptest.assert_array_equal(f3.prox(np.array([[7, -9], [10, -2]]), 1),
+                                  [[3, -1], [6, 0]])
+
+        # Let us test y
+        f3 = functions.norm_l1(lambda_=2, y=[1, 2])
+        self.assertEqual(f3.eval([10, 1]), 20)
+        nptest.assert_array_equal(f3.prox(np.array([[2, 5], [-1, -2]]), 1),
+                                  [[1, 3], [1, 0]])
+
     def test_norm_nuclear(self):
         """
         Test the norm_nuclear derived class.

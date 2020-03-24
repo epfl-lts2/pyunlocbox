@@ -8,11 +8,11 @@ Test suite for the pyunlocbox package.
 
 import unittest
 
-from . import test_functions
-from . import test_operators
-from . import test_solvers
-from . import test_acceleration
-from . import test_docstrings
+from pyunlocbox.tests import test_functions
+from pyunlocbox.tests import test_operators
+from pyunlocbox.tests import test_solvers
+from pyunlocbox.tests import test_acceleration
+from pyunlocbox.tests import test_docstrings
 
 
 suites = []
