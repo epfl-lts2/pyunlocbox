@@ -38,11 +38,10 @@ class TestCase(unittest.TestCase):
 
         def assert_equivalent(param1, param2):
             x = [[7, 8, 9], [10, 324, -45], [-7, -.2, 5]]
-            funcs = inspect.getmembers(functions, inspect.isclass)
-            for f in funcs:
-                if f[0] not in ['func', 'norm', 'proj']:
-                    f1 = f[1](**param1)
-                    f2 = f[1](**param2)
+            for name, func in inspect.getmembers(functions, inspect.isclass):
+                if name not in ['func', 'norm', 'proj']:
+                    f1 = func(**param1)
+                    f2 = func(**param2)
                     self.assertEqual(f1.eval(x), f2.eval(x))
                     nptest.assert_array_equal(f1.prox(x, 3), f2.prox(x, 3))
                     if 'GRAD' in f1.cap(x):
@@ -379,24 +378,15 @@ class TestCase(unittest.TestCase):
 
     def test_proj_positive(self):
         """
-        Test the proj positive function
+        Test the projection on the positive octant.
 
         """
-
         fpos = functions.proj_positive()
         x = np.random.randn(10, 12)
-
         res = fpos.prox(x, T=1)
-        # Assert that the value after the prox are all elements are positive
-        nptest.assert_equal(res >= 0, True)
-
-        # Assert that the he negative values are set to 0
-        nptest.assert_equal(res[x < 0], 0)
-
-        # Assert that the the positive values are unchanged
-        nptest.assert_equal(res[x > 0], x[x > 0])
-
-        # Always evaluate to zero.
+        nptest.assert_equal(res >= 0, True)  # All values are positive.
+        nptest.assert_equal(res[x < 0], 0)  # Negative values are set to zero.
+        nptest.assert_equal(res[x > 0], x[x > 0])  # Positives are unchanged.
         self.assertEqual(fpos.eval(x), 0)
 
     def test_capabilities(self):
@@ -414,6 +404,10 @@ class TestCase(unittest.TestCase):
             assert('GRAD' in cap or 'PROX' in cap)
 
     def test_independent_problems(self):
+        """
+        Test that multiple independent problems can be solved in parallel.
+
+        """
 
         # Parameters.
         N = 3  # independent problems.
@@ -425,10 +419,10 @@ class TestCase(unittest.TestCase):
 
         # Test all available functions.
         for name, func in inspect.getmembers(functions, inspect.isclass):
-            # Unfortunately this subTest is not working with pyhton 2.7
+            # TODO: use subTest once python 2.7 is dropped
             # with self.subTest(i=func[0]):
 
-            # Instanciate the class.
+            # Instantiate the class.
             if name == 'norm_tv':
                 # Each column is one-dimensional.
                 f = func(dim=1, maxit=20, tol=0)
@@ -440,8 +434,8 @@ class TestCase(unittest.TestCase):
 
             cap = f.cap(X)
 
-            # The combined objective function of the N problems is the sum
-            # of each objective.
+            # The combined objective function of the N problems is the sum of
+            # each objective.
             if 'EVAL' in cap:
                 res = 0
                 for iN in range(N):
