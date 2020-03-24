@@ -399,6 +399,20 @@ class TestCase(unittest.TestCase):
         # Always evaluate to zero.
         self.assertEqual(fpos.eval(x), 0)
 
+    def test_capabilities(self):
+        """
+        Test that a function implements the necessary methods. A function must
+        always be evaluable (by implementing _eval) and must have a gradient or
+        proximal operator (by implementing at least one of _prox or _grad).
+
+        """
+        for name, func in inspect.getmembers(functions, inspect.isclass):
+            if name in ['func', 'proj', 'norm']:  # exclude abstract classes
+                continue
+            cap = func().cap(np.diag([10, 42]))
+            self.assertIn('EVAL', cap)
+            assert('GRAD' in cap or 'PROX' in cap)
+
     def test_independent_problems(self):
 
         # Parameters.
@@ -450,15 +464,6 @@ class TestCase(unittest.TestCase):
                 for iN in range(N):
                     res[:, iN] = f.grad(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.grad(X))
-
-            # Test if the function makes sense, i.e: the functin should
-            # contain the function _eval and one of the function _prox or
-            # _grad.
-            if func[0] not in ['func', 'proj', 'norm']:
-                # Assert if the function can be evaluated
-                assert('EVAL' in cap)
-                # Assert if the function has a gradient or a proximal op.
-                assert('GRAD' in cap or 'PROX' in cap)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
