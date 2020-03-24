@@ -424,42 +424,39 @@ class TestCase(unittest.TestCase):
         step = 10 * np.random.uniform()
 
         # Test all available functions.
-        funcs = inspect.getmembers(functions, inspect.isclass)
-        for func in funcs:
+        for name, func in inspect.getmembers(functions, inspect.isclass):
             # Unfortunately this subTest is not working with pyhton 2.7
             # with self.subTest(i=func[0]):
 
             # Instanciate the class.
-            if func[0] in ['norm_tv']:
+            if name == 'norm_tv':
                 # Each column is one-dimensional.
-                f = func[1](dim=1, maxit=20, tol=0)
+                f = func(dim=1, maxit=20, tol=0)
+            elif name == 'norm_nuclear':
+                # TODO: make this test two dimensional for the norm nuclear?
+                continue
             else:
-                f = func[1]()
+                f = func()
 
-            # TODO make this test two dimensional for the norm nuclear?
-            exlude = ['norm_nuclear']
-
-            if func[0] in exlude:
-                break
             cap = f.cap(X)
 
             # The combined objective function of the N problems is the sum
             # of each objective.
-            if 'EVAL' in cap and func[0] not in exlude:
+            if 'EVAL' in cap:
                 res = 0
                 for iN in range(N):
                     res += f.eval(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.eval(X))
 
             # Each column is the prox of one of the N problems.
-            if 'PROX' in cap and func[0] not in exlude:
+            if 'PROX' in cap:
                 res = np.zeros((n, N))
                 for iN in range(N):
                     res[:, iN] = f.prox(X[:, iN], step)
                 nptest.assert_array_almost_equal(res, f.prox(X, step))
 
             # Each column is the gradient of one of the N problems.
-            if 'GRAD' in cap and func[0] not in exlude:
+            if 'GRAD' in cap:
                 res = np.zeros((n, N))
                 for iN in range(N):
                     res[:, iN] = f.grad(X[:, iN])
