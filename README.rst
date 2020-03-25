@@ -46,33 +46,58 @@ design your solver. In exchange you'll get full control of what the package
 does for you, without the pain of rewriting the proximity operators and the
 solvers and with the added benefit of tested algorithms. With this package, you
 can focus on your problem and the best way to solve it rather that the details
-of the algorithms. It comes with the following solvers:
+of the algorithms.
+
+Content
+-------
+
+The following solvers are included:
 
 * Gradient descent
-* Forward-backward splitting algorithm (FISTA, ISTA)
-* Douglas-Rachford splitting algorithm
-* Generalized forward-backward
-* Monotone+Lipschitz forward-backward-forward primal-dual algorithm
-* Projection-based primal-dual algorithm
+* Forward-backward proximal splitting (FISTA and ISTA)
+* Generalized forward-backward proximal splitting
+* Douglas-Rachford proximal splitting
+* Monotone+Lipschitz forward-backward-forward primal-dual
+* Projection-based primal-dual
 
-Moreover, the following acceleration schemes are included:
+The following acceleration schemes are included:
 
-* FISTA acceleration scheme
-* Backtracking based on a quadratic approximation of the objective
-* Regularized nonlinear acceleration (RNA)
+* Backtracking acceleration based on a quadratic approximation of the objective
+* FISTA acceleration for forward-backward solvers
+* FISTA acceleration with backtracking for forward-backward solvers
+* Regularized nonlinear acceleration (RNA) for gradient descent
 
-To compose your objective, you can either define your custom functions (which
-should implement an evaluation method and a gradient or proximity method) or
-use one of the followings:
+To compose your objective, the following functions are included:
 
-* L1-norm
-* L2-norm
-* TV-norm
-* Nuclear-norm
-* Projection on the positive octant
-* Projection on the L2-ball
+* L1-norm (eval, prox)
+* L2-norm (eval, prox, grad)
+* Nuclear-norm (eval, prox)
+* TV-norm (eval, prox)
+* Projection on the positive octant (eval, prox)
+* Projection on the L2-ball (eval, prox)
 
-Following is a typical usage example who solves an optimization problem
+Alternatively, you can easily define a custom function by implementing an
+evaluation method and a proximal operator or gradient method:
+
+>>> from pyunlocbox import functions
+>>> class myfunc(functions.func):
+...     def _eval(self, x):
+...         return 0  # Function evaluated at x.
+...     def _grad(self, x):
+...         return x  # Gradient evaluated at x, if available.
+...     def _prox(self, x, T):
+...         return x  # Proximal operator evaluated at x, if available.
+
+Likewise, custom solvers are defined by inheriting from ``solvers.solver``
+and implementing ``_pre``, ``_algo``, and ``_post``.
+Custom acceleration schemes are defined by inheriting from
+``acceleration.accel`` and implementing ``_pre``, ``_update_step``,
+``_update_sol``, and ``_post``.
+
+Usage
+-----
+
+Following is a typical usage example that solves an optimization problem
 composed by the sum of two convex functions. The functions and solver objects
 are first instantiated with the desired parameters. The problem is then solved
 by a call to the solving function.
