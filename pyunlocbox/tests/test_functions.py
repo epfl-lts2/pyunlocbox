@@ -118,11 +118,22 @@ class TestCase(unittest.TestCase):
         nptest.assert_allclose(f.grad([1, 1, 1]),
                                [329.625, 262.500, 430.500], rtol=1e-3)
         nptest.assert_allclose(f.prox([1, 1, 1], 1),
-                               [-0.887,  0.252,  0.798], rtol=1e-3)
+                               [-0.887, 0.252, 0.798], rtol=1e-3)
         nptest.assert_allclose(f.prox([6, 7, 3], 1),
-                               [-0.345,  0.298,  0.388], rtol=1e-3)
+                               [-0.345, 0.298, 0.388], rtol=1e-3)
         nptest.assert_allclose(f.prox([10, 0, -5], 1),
-                               [1.103,  0.319,  -0.732], rtol=1e-3)
+                               [1.103, 0.319, -0.732], rtol=1e-3)
+
+        # Cannot have non-scalar weights with tight operator.
+        self.assertRaises(
+            ValueError,
+            functions.norm_l2,
+            A=L,
+            tight=True,
+            y=np.array([1, 2, 3, 4]),
+            w=np.array([1, 1, 0.5, 0.75]))
+        functions.norm_l2(A=L, tight=True, y=[1, 2, 3, 4], w=np.array([2]))
+        functions.norm_l2(A=L, tight=True, y=[1, 2, 3, 4], w=2)
 
     def test_soft_thresholding(self):
         """

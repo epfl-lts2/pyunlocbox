@@ -489,6 +489,13 @@ class norm_l2(norm):
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
         super(norm_l2, self).__init__(**kwargs)
+        if self.tight:
+            if self.w.size > 1:
+                raise ValueError(
+                    "Cannot use tight with vector of weights. Please use a "
+                    "constant weight or set tight=False. Alternatively, you "
+                    "can merge the weights into your operator."
+                )
 
     def _eval(self, x):
         sol = self.A(x) - self.y()
