@@ -30,7 +30,7 @@ class TestCase(unittest.TestCase):
 
         y = 5 - 10 * rs.uniform(size=(15, 4))
 
-        def x0(): return np.zeros(y.shape)
+        def x0(): return np.zeros_like(y)
         nverb = {'verbosity': 'NONE'}
 
         # Function verbosity.

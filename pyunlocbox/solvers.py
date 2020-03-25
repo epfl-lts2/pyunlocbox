@@ -483,7 +483,7 @@ class gradient_descent(solver):
                   'functions.'.format(len(self.smooth_funs)))
 
     def _algo(self):
-        grad = np.zeros(self.sol.shape)
+        grad = np.zeros_like(self.sol)
         for f in self.smooth_funs:
             grad += f.grad(self.sol)
         self.sol[:] -= self.step * grad
@@ -637,7 +637,7 @@ class generalized_forward_backward(solver):
     def _algo(self):
 
         # Smooth functions.
-        grad = np.zeros(self.sol.shape)
+        grad = np.zeros_like(self.sol)
         for f in self.smooth_funs:
             grad += f.grad(self.sol)
 
@@ -645,7 +645,7 @@ class generalized_forward_backward(solver):
         if not self.non_smooth_funs:
             self.sol[:] -= self.step * grad  # Reduces to gradient descent.
         else:
-            sol = np.zeros(self.sol.shape)
+            sol = np.zeros_like(self.sol)
             for i, g in enumerate(self.non_smooth_funs):
                 tmp = 2 * self.sol - self.z[i] - self.step * grad
                 tmp[:] = g.prox(tmp, self.step * len(self.non_smooth_funs))

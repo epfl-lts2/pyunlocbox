@@ -227,7 +227,7 @@ class backtracking(dummy):
 
         # Initialize some useful variables
         fn = 0
-        grad = np.zeros(properties['sol'].shape)
+        grad = np.zeros_like(properties['sol'])
         for f in solver.smooth_funs:
             fn += f.eval(properties['sol'])
             grad += f.grad(properties['sol'])
@@ -439,7 +439,7 @@ class regularized_nonlinear(dummy):
             # Grid search for the best parameter for the extrapolation
             fvals = []
             c = np.zeros((self.k,))
-            extrap = np.zeros(np.shape(solver.sol))
+            extrap = np.zeros_like(solver.sol)
 
             for lambda_ in self.lambda_:
                 # Coefficients of the extrapolation

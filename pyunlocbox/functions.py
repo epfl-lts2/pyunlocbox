@@ -365,7 +365,7 @@ class dummy(func):
     >>> f.prox(x, 1)
     array([1, 2, 3, 4])
     >>> f.grad(x)
-    array([0., 0., 0., 0.])
+    array([0, 0, 0, 0])
 
     """
 
@@ -380,7 +380,7 @@ class dummy(func):
         return x
 
     def _grad(self, x):
-        return np.zeros(np.shape(x))
+        return np.zeros_like(x)
 
 
 class norm(func):
@@ -922,7 +922,7 @@ class proj_b2(proj):
 
             # Initialization.
             sol = x
-            u = np.zeros(np.shape(self.y()))
+            u = np.zeros_like(self.y())
             if self.method == 'FISTA':
                 v_last = u
                 t_last = 1.
