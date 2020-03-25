@@ -81,7 +81,6 @@ def _soft_threshold(z, T, handle_complex=True):
 
     Examples
     --------
-    >>> from pyunlocbox import functions
     >>> functions._soft_threshold([-2, -1, 0, 1, 2], 1)
     array([-1,  0,  0,  0,  1])
 
@@ -157,7 +156,6 @@ class func(object):
     Let's define a parabola as an example of the manual implementation of a
     function object :
 
-    >>> from pyunlocbox import functions
     >>> f = functions.func()
     >>> f._eval = lambda x: x**2
     >>> f._grad = lambda x: 2*x
@@ -356,7 +354,6 @@ class dummy(func):
 
     Examples
     --------
-    >>> from pyunlocbox import functions
     >>> f = functions.dummy()
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
@@ -423,7 +420,6 @@ class norm_l1(norm):
 
     Examples
     --------
-    >>> from pyunlocbox import functions
     >>> f = functions.norm_l1()
     >>> f.eval([1, 2, 3, 4])
     10
@@ -473,7 +469,6 @@ class norm_l2(norm):
 
     Examples
     --------
-    >>> from pyunlocbox import functions
     >>> f = functions.norm_l2()
     >>> x = [1, 2, 3, 4]
     >>> f.eval(x)
@@ -537,7 +532,6 @@ class norm_nuclear(norm):
 
     Examples
     --------
-    >>> from pyunlocbox import functions
     >>> f = functions.norm_nuclear()
     >>> f.eval([[1, 2],[2, 3]])  # doctest:+ELLIPSIS
     4.47213595...
@@ -582,8 +576,6 @@ class norm_tv(norm):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from pyunlocbox import functions
     >>> f = functions.norm_tv()
     >>> x = np.arange(0, 16)
     >>> x = x.reshape(4, 4)
@@ -886,7 +878,6 @@ class proj_b2(proj):
 
     Examples
     --------
-    >>> from pyunlocbox import functions
     >>> f = functions.proj_b2(y=[1, 1])
     >>> x = [3, 3]
     >>> f.eval(x)
