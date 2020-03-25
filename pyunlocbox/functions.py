@@ -34,6 +34,7 @@ Then, derived classes implement various common objective functions.
 
 .. autosummary::
 
+    proj_positive
     proj_b2
 
 **Miscellaneous**

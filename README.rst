@@ -69,6 +69,7 @@ use one of the followings:
 * L2-norm
 * TV-norm
 * Nuclear-norm
+* Projection on the positive octant
 * Projection on the L2-ball
 
 Following is a typical usage example who solves an optimization problem
