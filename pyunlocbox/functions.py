@@ -825,7 +825,7 @@ class proj(func):
 
 class proj_positive(proj):
     r"""
-    Projection on the positive octant.
+    Projection on the positive octant (eval, prox).
 
     This function is the indicator function :math:`i_S(z)` of the set S which
     is zero if `z` is in the set and infinite otherwise. The set S is defined

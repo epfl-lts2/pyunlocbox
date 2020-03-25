@@ -164,8 +164,8 @@ class dummy(accel):
 
 class backtracking(dummy):
     r"""
-    Backtracking based on a local quadratic approximation of the smooth
-    part of the objective.
+    Backtracking acceleration based on a local quadratic approximation of the
+    smooth part of the objective.
 
     Parameters
     ----------
@@ -275,7 +275,7 @@ class backtracking(dummy):
 
 class fista(dummy):
     r"""
-    Acceleration scheme for forward-backward solvers.
+    FISTA acceleration for forward-backward solvers.
 
     Notes
     -----
@@ -290,7 +290,7 @@ class fista(dummy):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> accel=acceleration.fista()
+    >>> accel = acceleration.fista()
     >>> solver = solvers.forward_backward(accel=accel, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 15 iterations:
@@ -322,7 +322,7 @@ class fista(dummy):
 
 class regularized_nonlinear(dummy):
     r"""
-    Regularized nonlinear acceleration (RNA) for gradient descent.
+    Regularized nonlinear acceleration (RNA) for gradient descent solvers.
 
     Parameters
     ----------
@@ -369,20 +369,20 @@ class regularized_nonlinear(dummy):
     --------
     >>> import numpy as np
     >>> from pyunlocbox import functions, solvers, acceleration
-    >>> dim = 25;
+    >>> dim = 25
     >>> np.random.seed(0)
-    >>> xstar = np.random.rand(dim) # True solution
+    >>> xstar = np.random.rand(dim)  # True solution.
     >>> x0 = np.random.rand(dim)
-    >>> x0 = xstar + 5.*(x0 - xstar) / np.linalg.norm(x0 - xstar)
+    >>> x0 = xstar + 5*(x0 - xstar) / np.linalg.norm(x0 - xstar)
     >>> A = np.random.rand(dim, dim)
-    >>> step = 1/np.linalg.norm(np.dot(A.T, A))
+    >>> step = 1 / np.linalg.norm(np.dot(A.T, A))
     >>> f = functions.norm_l2(lambda_=0.5, A=A, y=np.dot(A, xstar))
     >>> fd = functions.dummy()
     >>> accel = acceleration.regularized_nonlinear(k=5)
     >>> solver = solvers.gradient_descent(step=step, accel=accel)
     >>> params = {'rtol':0, 'maxit':200, 'verbosity':'NONE'}
     >>> ret = solvers.solve([f, fd], x0, solver, **params)
-    >>> pctdiff = 100*np.sum((xstar - ret['sol'])**2)/np.sum(xstar**2)
+    >>> pctdiff = 100 * np.sum((xstar - ret['sol'])**2) / np.sum(xstar**2)
     >>> print('Difference: {0:.1f}%'.format(pctdiff))
     Difference: 1.3%
 
@@ -508,6 +508,7 @@ class regularized_nonlinear(dummy):
     def _post(self):
         del self.buffer, self.functions
 
+
 # -----------------------------------------------------------------------------
 # Mixed optimizers
 # -----------------------------------------------------------------------------
@@ -515,7 +516,7 @@ class regularized_nonlinear(dummy):
 
 class fista_backtracking(backtracking, fista):
     r"""
-    Acceleration scheme with backtracking for forward-backward solvers.
+    FISTA acceleration with backtracking for forward-backward solvers.
 
     Notes
     -----
@@ -530,7 +531,7 @@ class fista_backtracking(backtracking, fista):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> accel=acceleration.fista_backtracking()
+    >>> accel = acceleration.fista_backtracking()
     >>> solver = solvers.forward_backward(accel=accel, step=0.5)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 15 iterations:

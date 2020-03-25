@@ -448,19 +448,19 @@ class gradient_descent(solver):
     --------
     >>> import numpy as np
     >>> from pyunlocbox import functions, solvers
-    >>> dim = 25;
+    >>> dim = 25
     >>> np.random.seed(0)
-    >>> xstar = np.random.rand(dim) # True solution
+    >>> xstar = np.random.rand(dim)  # True solution
     >>> x0 = np.random.rand(dim)
-    >>> x0 = xstar + 5.*(x0 - xstar) / np.linalg.norm(x0 - xstar)
+    >>> x0 = xstar + 5*(x0 - xstar) / np.linalg.norm(x0 - xstar)
     >>> A = np.random.rand(dim, dim)
-    >>> step = 1/np.linalg.norm(np.dot(A.T, A))
+    >>> step = 1 / np.linalg.norm(np.dot(A.T, A))
     >>> f = functions.norm_l2(lambda_=0.5, A=A, y=np.dot(A, xstar))
     >>> fd = functions.dummy()
     >>> solver = solvers.gradient_descent(step=step)
     >>> params = {'rtol':0, 'maxit':14000, 'verbosity':'NONE'}
     >>> ret = solvers.solve([f, fd], x0, solver, **params)
-    >>> pctdiff = 100*np.sum((xstar - ret['sol'])**2)/np.sum(xstar**2)
+    >>> pctdiff = 100 * np.sum((xstar - ret['sol'])**2) / np.sum(xstar**2)
     >>> print('Difference: {0:.1f}%'.format(pctdiff))
     Difference: 1.3%
 
@@ -494,7 +494,7 @@ class gradient_descent(solver):
 
 class forward_backward(solver):
     r"""
-    Forward-backward proximal splitting algorithm.
+    Forward-backward proximal splitting (FISTA and ISTA) algorithm.
 
     This algorithm solves convex optimization problems composed of the sum of
     a smooth and a non-smooth function.
@@ -791,7 +791,7 @@ class primal_dual(solver):
 
 class mlfbf(primal_dual):
     r"""
-    Monotone+Lipschitz Forward-Backward-Forward primal-dual algorithm.
+    Monotone+Lipschitz forward-backward-forward primal-dual algorithm.
 
     This algorithm solves convex optimization problems with objective of the
     form :math:`f(x) + g(Lx) + h(x)`, where :math:`f` and :math:`g` are proper,
