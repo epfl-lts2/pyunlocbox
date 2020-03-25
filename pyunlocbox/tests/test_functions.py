@@ -124,6 +124,19 @@ class TestCase(unittest.TestCase):
         nptest.assert_allclose(f.prox([10, 0, -5], 1),
                                [1.103,  0.319,  -0.732], rtol=1e-3)
 
+        # Test input for tight.
+        self.assertRaises(
+            ValueError,
+            functions.norm_l2,
+            A=L,
+            tight=True,
+            y=np.array([1, 2, 3, 4]),
+            w=np.array([1, 1, 0.5, 0.75]))
+
+        functions.norm_l2(A=L, tight=True, y=np.array([1, 2, 3, 4]),
+                          w=np.array([2]))
+        functions.norm_l2(A=L, tight=True, y=np.array([1, 2, 3, 4]), w=2)
+
     def test_soft_thresholding(self):
         """
         Test the soft thresholding helper function.
