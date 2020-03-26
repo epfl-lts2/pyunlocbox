@@ -9,6 +9,7 @@ setup(
     version='0.5.2',
     description='Convex Optimization in Python using Proximal Splitting',
     long_description=open('README.rst').read(),
+    long_description_content_type='text/x-rst',
     author='EPFL LTS2',
     url='https://github.com/epfl-lts2/pyunlocbox',
     project_urls={
