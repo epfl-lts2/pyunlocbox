@@ -12,8 +12,8 @@ addons:
       - graphviz  # sphinx inheritance diagrams
 
 install:
-  - pip install --upgrade --upgrade-strategy eager .[dev]
-  # Upgrade to test with the latest version of our dependencies.
+  - pip install --upgrade pip setuptools wheel  # install with latest tools
+  - pip install --upgrade --upgrade-strategy eager .[dev]  # get latest deps
 
 script:
   - make lint
