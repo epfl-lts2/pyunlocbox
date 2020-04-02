@@ -75,6 +75,7 @@ To compose your objective, the following functions are included:
 * TV-norm (eval, prox)
 * Projection on the positive octant (eval, prox)
 * Projection on the L2-ball (eval, prox)
+* Structured Sparsity (eval, prox)
 
 Alternatively, you can easily define a custom function by implementing an
 evaluation method and a proximal operator or gradient method:
