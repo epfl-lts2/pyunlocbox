@@ -351,7 +351,7 @@ class func(object):
 
 class dummy(func):
     r"""
-    Dummy function which returns 0 (eval, prox, grad).
+    Dummy function (eval, prox, grad).
 
     This can be used as a second function object when there is only one
     function to minimize. It always evaluates as 0.
@@ -995,34 +995,36 @@ class proj_b2(proj):
 
 class structured_sparsity(func):
     r"""
-    Structured Sparsity term (eval, prox).
+    Structured sparsity (eval, prox).
 
-    This class implements the structured sparsity term that is defined in the
-    work of Jenatton et al. 2011 "Proximal methods for hierachical sparse
-    coding" (https://hal.inria.fr/inria-00516723).
+    The structured sparsity term that is defined in the work of
+    Jenatton et al. 2011 `Proximal methods for hierarchical sparse coding
+    <https://hal.inria.fr/inria-00516723>`_.
 
-    .. math:: \Omega(x) = \lambda \cdot \sum_{g\in G}w_g\cdot \|x_g\|_2
+    .. math:: \Omega(x) = \lambda \cdot \sum_{g \in G} w_g \cdot \|x_g\|_2
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
 
     Parameters
     ----------
-    lam: float,
+    lambda_ : float, optional
         The scaling factor of the function that corresponds to :math:`\lambda`.
-        Must be a float greater or equal than zero.
-    groups: list of lists
+        Must be a non-negative number.
+    groups: list of lists of integers
         Each element encodes the indices of the vector belonging to a single
         group. Corresponds to :math:`G`.
-    weights: iterable
+    weights : array_like
         Weight associated to each group. Corresponds to :math:`w_g`. Must have
         the same length as :math:`G`.
 
     Examples
     --------
     >>> from pyunlocbox import functions
-    >>> lam = 10.0
-    >>> gg = [[0, 1], [3, 2, 4]]
-    >>> ww = [2., 1.]
-    >>> f = functions.structured_sparsity(lam=lam, groups=gg, weights=ww)
-    >>> x = [2., 2.5, -0.5, 0.3, 0.01]
+    >>> groups = [[0, 1], [3, 2, 4]]
+    >>> weights = [2, 1]
+    >>> f = functions.structured_sparsity(10, groups, weights)
+    >>> x = [2, 2.5, -0.5, 0.3, 0.01]
     >>> f.eval(x)
     69.86305169905782
     >>> f.prox(x, 0.1)
@@ -1030,36 +1032,35 @@ class structured_sparsity(func):
 
     """
 
-    def __init__(self, lam=1.0, groups=[[]], weights=[0.0], **kwargs):
+    def __init__(self, lambda_=1, groups=[[]], weights=[0], **kwargs):
         super(structured_sparsity, self).__init__(**kwargs)
 
-        lam = float(lam)
-        if lam < 0:
-            raise ValueError('The lambda scaling factor must be greater or '
-                             'equal than zero.')
-        self._regularization_parameter = lam
+        if lambda_ < 0:
+            raise ValueError('The scaling factor must be non-negative.')
+        self.lambda_ = lambda_
 
         if not isinstance(groups, list):
             raise TypeError('The groups must be defined as a list of lists.')
-        self._groups = groups
+        self.groups = groups
 
         if len(weights) != len(groups):
             raise ValueError('Length of weights must be equal to number of '
-                             'groups')
-        self._weights = weights
+                             'groups.')
+        self.weights = weights
 
     def _eval(self, x):
         costs = [w * np.linalg.norm(x[g])
-                 for g, w in zip(self._groups, self._weights)]
-        return self._regularization_parameter * np.sum(costs)
+                 for g, w in zip(self.groups, self.weights)]
+        return self.lambda_ * np.sum(costs)
 
-    def _prox(self, x, mu):
+    def _prox(self, x, T):
+        gamma = self.lambda_ * T
         v = x.copy()
-        for g, w in zip(self._groups, self._weights):
+        for g, w in zip(self.groups, self.weights):
             xn = np.linalg.norm(v[g])
-            r = mu * self._regularization_parameter * w
+            r = gamma * w
             if xn > r:
                 v[g] -= v[g] * r / xn
             else:
-                v[g] = 0.0
+                v[g] = 0
         return v
