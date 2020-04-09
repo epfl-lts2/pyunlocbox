@@ -14,6 +14,7 @@ setup(
     url='https://github.com/epfl-lts2/pyunlocbox',
     project_urls={
         'Documentation': 'https://pyunlocbox.readthedocs.io',
+        'Download': 'https://pypi.org/project/pyunlocbox',
         'Source Code': 'https://github.com/epfl-lts2/pyunlocbox',
         'Bug Tracker': 'https://github.com/epfl-lts2/pyunlocbox/issues',
         'Try It Online': 'https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb',  # noqa
@@ -29,17 +30,17 @@ setup(
     ],
     extras_require={
         'dev': [
-            # Testing dependencies.
+            # Run the tests.
             'flake8',
             'coverage',
             'coveralls',
-            # Dependencies to build the documentation.
+            # Build the documentation.
             'sphinx',
             'numpydoc',
             'sphinxcontrib-bibtex',
             'sphinx-rtd-theme',
             'matplotlib',
-            # Dependencies to build and upload packages.
+            # Build and upload packages.
             'wheel',
             'twine',
         ],
@@ -48,15 +49,15 @@ setup(
     keywords='convex optimization',
     platforms='any',
     classifiers=[
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Environment :: Console',
         'Development Status :: 4 - Beta',
+        'Topic :: Scientific/Engineering',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
-        'Natural Language :: English',
         'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
