@@ -9,8 +9,12 @@ extensions = ['sphinx.ext.viewcode',
               'sphinxcontrib.bibtex']
 
 extensions.append('sphinx.ext.autodoc')
-autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
-autodoc_member_order = 'bysource'  # alphabetical, groupwise, bysource
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+    'member-order': 'bysource',  # alphabetical, groupwise, bysource
+}
 
 extensions.append('numpydoc')
 numpydoc_show_class_members = False
