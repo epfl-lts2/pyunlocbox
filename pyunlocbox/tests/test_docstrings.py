@@ -22,7 +22,7 @@ def test_docstrings(root, ext):
     return doctest.DocFileSuite(*files, module_relative=False)
 
 
-# Docstrings from reference documentation.
+# Docstrings from API reference.
 suite_reference = test_docstrings('pyunlocbox', '.py')
 
 # Docstrings from tutorials.
