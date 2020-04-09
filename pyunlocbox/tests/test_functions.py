@@ -422,6 +422,42 @@ class TestCase(unittest.TestCase):
         nptest.assert_equal(res[x > 0], x[x > 0])  # Positives are unchanged.
         self.assertEqual(fpos.eval(x), 0)
 
+    def test_structured_sparsity(self):
+        """
+        Test the structured sparsity function.
+
+        """
+        # test init
+        # test parsing of lambda
+        with self.assertRaises(ValueError):
+            functions.structured_sparsity(-1, [[]], [0.0])
+        # test parsing of groups
+        with self.assertRaises(TypeError):
+            functions.structured_sparsity(1.0, 1, [0.0])
+        # test parsing of weights
+        with self.assertRaises(ValueError):
+            functions.structured_sparsity(1.0, [[1, 2], [3, 4]], [10.])
+
+        # test call of eval and prox
+        x = np.array([0.01, 0.5, 3, 4])
+        groups = [[0, 1], [2, 3]]
+        weights = np.array([10, .2])
+        f = functions.structured_sparsity(1, groups, weights)
+        # test eval
+        result = f.eval(x)
+        gt = (weights[0] * np.linalg.norm(x[groups[0]], 2) +
+              weights[1] * np.linalg.norm(x[groups[1]], 2))
+        self.assertAlmostEqual(result, gt)
+        # test prox
+        gt = x.copy()
+        # the first group has norm lower than the corresponding weight
+        gt[groups[0]] = 0
+        # the second group has norm higher than the corresponding weight
+        gt[groups[1]] -= (x[groups[1]] * weights[1] /
+                          np.linalg.norm(x[groups[1]]))
+        prox = f.prox(x, 1)
+        np.testing.assert_almost_equal(prox, gt)
+
     def test_capabilities(self):
         """
         Test that a function implements the necessary methods. A function must

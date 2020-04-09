@@ -42,6 +42,7 @@ Then, derived classes implement various common objective functions.
 .. autosummary::
 
     dummy
+    structured_sparsity
 
 .. inheritance-diagram:: pyunlocbox.functions
     :parts: 2
@@ -350,7 +351,7 @@ class func(object):
 
 class dummy(func):
     r"""
-    Dummy function which returns 0 (eval, prox, grad).
+    Dummy function (eval, prox, grad).
 
     This can be used as a second function object when there is only one
     function to minimize. It always evaluates as 0.
@@ -990,3 +991,76 @@ class proj_b2(proj):
                                               niter))
 
         return sol
+
+
+class structured_sparsity(func):
+    r"""
+    Structured sparsity (eval, prox).
+
+    The structured sparsity term that is defined in the work of
+    Jenatton et al. 2011 `Proximal methods for hierarchical sparse coding
+    <https://hal.inria.fr/inria-00516723>`_.
+
+    .. math:: \Omega(x) = \lambda \cdot \sum_{g \in G} w_g \cdot \|x_g\|_2
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.func` base class.
+
+    Parameters
+    ----------
+    lambda_ : float, optional
+        The scaling factor of the function that corresponds to :math:`\lambda`.
+        Must be a non-negative number.
+    groups: list of lists of integers
+        Each element encodes the indices of the vector belonging to a single
+        group. Corresponds to :math:`G`.
+    weights : array_like
+        Weight associated to each group. Corresponds to :math:`w_g`. Must have
+        the same length as :math:`G`.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions
+    >>> groups = [[0, 1], [3, 2, 4]]
+    >>> weights = [2, 1]
+    >>> f = functions.structured_sparsity(10, groups, weights)
+    >>> x = [2, 2.5, -0.5, 0.3, 0.01]
+    >>> f.eval(x)
+    69.86305169905782
+    >>> f.prox(x, 0.1)
+    array([0.7506099 , 0.93826238, 0.        , 0.        , 0.        ])
+
+    """
+
+    def __init__(self, lambda_=1, groups=[[]], weights=[0], **kwargs):
+        super(structured_sparsity, self).__init__(**kwargs)
+
+        if lambda_ < 0:
+            raise ValueError('The scaling factor must be non-negative.')
+        self.lambda_ = lambda_
+
+        if not isinstance(groups, list):
+            raise TypeError('The groups must be defined as a list of lists.')
+        self.groups = groups
+
+        if len(weights) != len(groups):
+            raise ValueError('Length of weights must be equal to number of '
+                             'groups.')
+        self.weights = weights
+
+    def _eval(self, x):
+        costs = [w * np.linalg.norm(x[g])
+                 for g, w in zip(self.groups, self.weights)]
+        return self.lambda_ * np.sum(costs)
+
+    def _prox(self, x, T):
+        gamma = self.lambda_ * T
+        v = x.copy()
+        for g, w in zip(self.groups, self.weights):
+            xn = np.linalg.norm(v[g])
+            r = gamma * w
+            if xn > r:
+                v[g] -= v[g] * r / xn
+            else:
+                v[g] = 0
+        return v
