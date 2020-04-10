@@ -17,17 +17,10 @@ The :mod:`pyunlocbox` package is divided into the following modules:
 
 """
 
-# When importing the toolbox, you surely want these modules.
-from pyunlocbox import functions
-from pyunlocbox import solvers
-from pyunlocbox import operators
-from pyunlocbox import acceleration
-
-# Silence the code checker warning about unused symbols.
-assert functions
-assert solvers
-assert operators
-assert acceleration
+from pyunlocbox import functions  # noqa: F401
+from pyunlocbox import solvers  # noqa: F401
+from pyunlocbox import acceleration  # noqa: F401
+from pyunlocbox import operators  # noqa: F401
 
 __version__ = '0.5.2'
 __release_date__ = '2017-12-15'
