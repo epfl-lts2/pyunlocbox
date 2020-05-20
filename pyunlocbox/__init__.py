@@ -24,3 +24,11 @@ from pyunlocbox import operators  # noqa: F401
 
 __version__ = '0.5.2'
 __release_date__ = '2017-12-15'
+
+
+def test():  # pragma: no cover
+    """Run the test suite."""
+    import unittest
+    # Lazy as it might be slow and require additional dependencies.
+    from pyunlocbox.tests import suite
+    unittest.TextTestRunner(verbosity=2).run(suite)
