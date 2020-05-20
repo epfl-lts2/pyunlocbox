@@ -23,7 +23,7 @@ setup(
         'pyunlocbox',
         'pyunlocbox.tests'
     ],
-    test_suite='pyunlocbox.tests.test_all.suite',
+    test_suite='pyunlocbox.tests.suite',
     install_requires=[
         'numpy',
         'scipy'
