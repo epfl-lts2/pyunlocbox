@@ -16,6 +16,15 @@ autodoc_default_options = {
     'member-order': 'bysource',  # alphabetical, groupwise, bysource
 }
 
+extensions.append('sphinx.ext.intersphinx')
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org', None),
+    'pygsp': ('https://pygsp.readthedocs.io/en/stable', None),
+}
+
 extensions.append('numpydoc')
 numpydoc_show_class_members = False
 
