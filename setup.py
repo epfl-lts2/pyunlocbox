@@ -17,7 +17,7 @@ setup(
         'Download': 'https://pypi.org/project/pyunlocbox',
         'Source Code': 'https://github.com/epfl-lts2/pyunlocbox',
         'Bug Tracker': 'https://github.com/epfl-lts2/pyunlocbox/issues',
-        'Try It Online': 'https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb',  # noqa
+        'Try It Online': 'https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=examples/playground.ipynb',  # noqa
     },
     packages=[
         'pyunlocbox',

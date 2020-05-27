@@ -36,7 +36,7 @@ A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
 .. |binder| image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb
+   :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=examples/playground.ipynb
 .. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/pyunlocbox
 
@@ -114,7 +114,7 @@ Solution found after 9 iterations:
 array([3.99990766, 4.99988458, 5.99986149, 6.99983841])
 
 You can
-`try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb>`_,
+`try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=examples/playground.ipynb>`_,
 look at the
 `tutorials <https://pyunlocbox.readthedocs.io/en/stable/tutorials/index.html>`_
 to learn how to use it, or look at the
