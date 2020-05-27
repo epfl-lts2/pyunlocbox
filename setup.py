@@ -39,6 +39,7 @@ setup(
             'numpydoc',
             'sphinxcontrib-bibtex',
             'sphinx-rtd-theme',
+            'sphinx-copybutton',
             'matplotlib',
             # Build and upload packages.
             'wheel',

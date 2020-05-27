@@ -2,11 +2,13 @@
 
 import pyunlocbox
 
-extensions = ['sphinx.ext.viewcode',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.inheritance_diagram',
-              'sphinxcontrib.bibtex']
+extensions = [
+        'sphinx.ext.viewcode',
+        'sphinx.ext.autosummary',
+        'sphinx.ext.mathjax',
+        'sphinx.ext.inheritance_diagram',
+        'sphinxcontrib.bibtex',
+]
 
 extensions.append('sphinx.ext.autodoc')
 autodoc_default_options = {
@@ -33,6 +35,9 @@ plot_include_source = True
 plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_working_directory = '.'
+
+extensions.append('sphinx_copybutton')
+copybutton_prompt_text = ">>> "
 
 exclude_patterns = ['_build']
 source_suffix = '.rst'
