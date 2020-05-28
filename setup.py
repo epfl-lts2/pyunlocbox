@@ -35,7 +35,6 @@ setup(
             'coveralls',
             # Dependencies to build the documentation.
             'sphinx',
-            'numpydoc',
             'sphinxcontrib-bibtex',
             'sphinx-rtd-theme',
             'matplotlib',

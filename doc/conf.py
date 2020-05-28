@@ -12,8 +12,9 @@ extensions.append('sphinx.ext.autodoc')
 autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
 autodoc_member_order = 'bysource'  # alphabetical, groupwise, bysource
 
-extensions.append('numpydoc')
-numpydoc_show_class_members = False
+extensions.append('sphinx.ext.napoleon')
+napoleon_numpy_docstring = True
+napoleon_use_rtype = False  # rtd-theme doesn't use rtype
 
 extensions.append('matplotlib.sphinxext.plot_directive')
 plot_include_source = True
