@@ -430,7 +430,7 @@ class norm_l1(norm):
     >>> f.eval([1, 2, 3, 4])
     10
     >>> f.prox([1, 2, 3, 4], 1)
-    array([0, 1, 2, 3])
+    array([0., 1., 2., 3.])
 
     """
 
@@ -448,8 +448,8 @@ class norm_l1(norm):
         if self.tight:
             # Nati: I've checked this code the use of 'y' seems correct
             sol = self.A(x) - self.y()
-            sol[:] = _soft_threshold(sol, gamma * self.nu * self.w) - sol
-            sol[:] = x + self.At(sol) / self.nu
+            sol = _soft_threshold(sol, gamma * self.nu * self.w) - sol
+            sol = x + self.At(sol) / self.nu
         else:
             raise NotImplementedError('Not implemented for non-tight frame.')
         return sol

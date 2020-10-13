@@ -167,9 +167,7 @@ class TestCase(unittest.TestCase):
                                   [[0, -1], [2, 0]])
 
         f = functions.norm_l1(tight=False)
-        x = np.ones((4,))
-        T = 0.5
-        self.assertRaises(NotImplementedError, f.prox, x, T)
+        self.assertRaises(NotImplementedError, f.prox, [1, 2], 1)
 
         # Let us test the weights
         f2 = functions.norm_l1(lambda_=4, w=2)
@@ -192,6 +190,16 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f3.eval([10, 1]), 20)
         nptest.assert_array_equal(f3.prox(np.array([[2, 5], [-1, -2]]), 1),
                                   [[1, 3], [1, 0]])
+
+        # Forward operators (square and non-square).
+        A = np.eye(3)
+        f = functions.norm_l1(A=A)
+        self.assertEqual(f.eval([1, 2, 4]), 7)
+        nptest.assert_allclose(f.prox([1, 2, 4], 1), [0, 1, 3])
+        A = np.concatenate([A] * 2, 0)
+        f = functions.norm_l1(A=A)
+        self.assertEqual(f.eval([1, 2, 4]), 14)
+        nptest.assert_allclose(f.prox([1, 2, 4], 1), [-1, 0, 2])
 
     def test_norm_nuclear(self):
         """
