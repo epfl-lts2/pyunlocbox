@@ -11,7 +11,7 @@ Unreleased
 
 * New function: proj_positive.
 * New function: structured_sparsity.
-* Continuous integration with Python 3.6, 3.7, 3.8. Dropped 2.7, 3.4, 3.5.
+* Continuous integration with Python 3.6, 3.7, 3.8, 3.9. Dropped 2.7, 3.4, 3.5.
 * Merged all the extra requirements in a single dev requirement.
 
 0.5.2 (2017-12-15)
