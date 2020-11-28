@@ -24,7 +24,6 @@ Load an image and convert it to grayscale
    ...     im_original = mpimg.imread('tutorials/barbara.png')
    ... except:
    ...     im_original = mpimg.imread('doc/tutorials/barbara.png')
-   >>> im_original = np.dot(im_original[..., :3], [0.299, 0.587, 0.144])
 
 and generate a random masking matrix
 
@@ -91,8 +90,8 @@ and the problem solved with
 
    >>> x0 = np.array(im_masked)  # Make a copy to preserve im_masked.
    >>> ret = solvers.solve([f1, f2], x0, solver, maxit=100)
-   Solution found after 93 iterations:
-       objective function f(sol) = 4.268861e+03
+   Solution found after 78 iterations:
+       objective function f(sol) = 6.723857e+03
        stopping criterion: RTOL
 
 Let's display the results:
