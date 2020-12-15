@@ -29,8 +29,8 @@ A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists
    :target: https://github.com/epfl-lts2/pyunlocbox/blob/master/LICENSE.txt
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
    :target: https://pypi.org/project/pyunlocbox
-.. |travis| image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
-   :target: https://travis-ci.org/epfl-lts2/pyunlocbox
+.. |travis| image:: https://img.shields.io/travis/com/epfl-lts2/pyunlocbox.svg
+   :target: https://travis-ci.com/epfl-lts2/pyunlocbox
 .. |coveralls| image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
