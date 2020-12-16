@@ -29,14 +29,14 @@ A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists
    :target: https://github.com/epfl-lts2/pyunlocbox/blob/master/LICENSE.txt
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
    :target: https://pypi.org/project/pyunlocbox
-.. |travis| image:: https://img.shields.io/travis/epfl-lts2/pyunlocbox.svg
-   :target: https://travis-ci.org/epfl-lts2/pyunlocbox
+.. |travis| image:: https://img.shields.io/travis/com/epfl-lts2/pyunlocbox.svg
+   :target: https://travis-ci.com/epfl-lts2/pyunlocbox
 .. |coveralls| image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
-.. |binder| image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb
+.. |binder| image:: https://static.mybinder.org/badge_logo.svg
+   :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?urlpath=lab/tree/examples/playground.ipynb
 .. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/pyunlocbox
 
@@ -115,7 +115,7 @@ Solution found after 9 iterations:
 array([3.99990766, 4.99988458, 5.99986149, 6.99983841])
 
 You can
-`try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=playground.ipynb>`_,
+`try it online <https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?urlpath=lab/tree/examples/playground.ipynb>`_,
 look at the
 `tutorials <https://pyunlocbox.readthedocs.io/en/stable/tutorials/index.html>`_
 to learn how to use it, or look at the
@@ -144,7 +144,7 @@ Acknowledgments
 The PyUNLocBoX was started in 2014 as an academic open-source project for
 research purpose at the `EPFL LTS2 laboratory <https://lts2.epfl.ch>`_.
 
-The code in this repository is released under the terms of the `BSD 3-Clause license <LICENSE.txt>`_.
+It is released under the terms of the BSD 3-Clause license.
 
 If you are using the library for your research, for the sake of
 reproducibility, please cite the version you used as indexed by

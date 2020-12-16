@@ -1,16 +1,18 @@
-=======
-History
-=======
+=========
+Changelog
+=========
 
-Versions follow `SemVer <https://semver.org>`_ (we try our best).
+All notable changes to this project will be documented in this file.
+The format is based on `Keep a Changelog <https://keepachangelog.com>`_
+and this project adheres to `Semantic Versioning <https://semver.org>`_.
 
 Unreleased
 ----------
 
-* Drop support of Python 3.4 and test with 3.7. Last version to support 2.7.
+* New function: proj_positive.
+* New function: structured_sparsity.
+* Continuous integration with Python 3.6, 3.7, 3.8, 3.9. Dropped 2.7, 3.4, 3.5.
 * Merged all the extra requirements in a single dev requirement.
-* Addition of the proj_positive function
-* Addition of the structured_sparsity function.
 
 0.5.2 (2017-12-15)
 ------------------
