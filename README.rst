@@ -35,7 +35,7 @@ A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
-.. |binder| image:: https://mybinder.org/badge_logo.svg
+.. |binder| image:: https://static.mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?filepath=examples/playground.ipynb
 .. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/pyunlocbox
