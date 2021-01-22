@@ -51,8 +51,10 @@ class TestCase(unittest.TestCase):
         assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
         assert_equivalent({'A': None}, {'A': np.identity(3)})
         A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
+        pinvA = np.linalg.pinv(A)
         assert_equivalent({'A': A}, {'A': A, 'At': A.T})
-        assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A})
+        assert_equivalent({'A': lambda x: A.dot(x), 'pinvA': pinvA},
+                          {'A': A, 'At': A})
 
     def test_dummy(self):
         """
@@ -416,6 +418,61 @@ class TestCase(unittest.TestCase):
 
         f.method = 'NOT_A_VALID_METHOD'
         self.assertRaises(ValueError, f.prox, x, 0)
+
+    def test_proj_lineq(self):
+        """
+        Test the projection on Ax = y
+
+        """
+        x = np.zeros([10])
+        A = np.ones([1, 10])
+        y = np.array([10])
+        f = functions.proj_lineq(A=A, y=y)
+        sol = f.prox(x, 0)
+        np.testing.assert_allclose(sol, np.ones([10]))
+        np.abs(A.dot(sol) - y) < 1e-15
+
+        f = functions.proj_lineq(A=A)
+        sol = f.prox(x, 0)
+        np.testing.assert_allclose(sol, np.zeros([10]))
+
+        for i in range(1, 11):
+            x = np.random.randn(10)
+            A = np.random.randn(i, 10)
+            y = np.random.randn(i)
+            pinvA = np.linalg.pinv(A)
+            f1 = functions.proj_lineq(A=A, y=y)
+            f2 = functions.proj_lineq(A=lambda x: A.dot(x), pinvA=pinvA, y=y)
+            f3 = functions.proj_lineq(A=A, pinvA=lambda x: pinvA.dot(x), y=y)
+            f4 = functions.proj_lineq(A=A, pinvA=pinvA, y=y)
+            sol1 = f1.prox(x, 0)
+            sol2 = f2.prox(x, 0)
+            sol3 = f3.prox(x, 0)
+            sol4 = f4.prox(x, 0)
+            np.testing.assert_allclose(sol1, sol2)
+            np.testing.assert_allclose(sol1, sol3)
+            np.testing.assert_allclose(sol1, sol4)
+            np.testing.assert_allclose(A.dot(sol1), y)
+
+        for i in range(11, 15):
+            x = np.random.randn(10)
+            A = np.random.randn(i, 10)
+            y = np.random.randn(i)
+            pinvA = np.linalg.pinv(A)
+            f1 = functions.proj_lineq(A=A, y=y)
+            f2 = functions.proj_lineq(A=lambda x: A.dot(x), pinvA=pinvA, y=y)
+            f3 = functions.proj_lineq(A=A, pinvA=lambda x: pinvA.dot(x), y=y)
+            f4 = functions.proj_lineq(A=A, pinvA=pinvA, y=y)
+            sol1 = f1.prox(x, 0)
+            sol2 = f2.prox(x, 0)
+            sol3 = f3.prox(x, 0)
+            sol4 = f4.prox(x, 0)
+            np.testing.assert_allclose(sol1, sol2)
+            np.testing.assert_allclose(sol1, sol3)
+            np.testing.assert_allclose(sol1, sol4)
+            np.testing.assert_allclose(sol1, pinvA.dot(y))
+
+        self.assertRaises(ValueError, functions.proj_lineq, A=lambda x: x)
 
     def test_proj_positive(self):
         """

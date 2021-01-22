@@ -36,6 +36,7 @@ Then, derived classes implement various common objective functions.
 
     proj_positive
     proj_b2
+    proj_lineq
     proj_spsd
 
 **Miscellaneous**
@@ -1040,6 +1041,74 @@ class proj_b2(proj):
                       '{}, niter = {}'.format(self.epsilon, norm_res, crit,
                                               niter))
 
+        return sol
+
+
+class proj_lineq(proj):
+    r"""
+    Projection on the plane argmin_x || x - z||_2 s.t. Ax = b
+
+    This function is the indicator function :math:`i_S(z)` of the set S which
+    is zero if `z` is in the set and infinite otherwise. The set S is defined
+    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.proj` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Parameters
+    ----------
+    This projection requires A as a matrix or pinvA to be provided.
+
+    Notes
+    -----
+    * The evaluation of this function is zero.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions
+    >>> import numpy as np
+    >>> x = np.array([0,0])
+    >>> A = np.array([[1,1]])
+    >>> pinvA = np.linalg.pinv(A)
+    >>> y = np.array([1])
+    >>> f = functions.proj_lineq(A=A, pinvA=pinvA,y=y)
+    >>> sol = f.prox(x, 0)
+    >>> sol
+    array([0.5, 0.5])
+    >>> np.abs(A.dot(sol) - y)<1e-15
+    array([ True])
+
+    """
+    def __init__(self, A=None, pinvA=None, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(proj_lineq, self).__init__(A=A, **kwargs)
+        if pinvA is None:
+            if A is None:
+                print("Are you sure about the imput parameters?" +
+                      "The projection will return y.")
+                self.pinvA = lambda x: x
+            else:
+                if callable(A):
+                    raise ValueError(
+                        "Please: provide A as a numpy array or provide pinv")
+                else:
+                    # Transform matrix form to operator form.
+                    self._pinvA = np.linalg.pinv(A)
+                    self.pinvA = lambda x: self._pinvA.dot(x)
+
+        else:
+            if callable(pinvA):
+                self.pinvA = pinvA
+            else:
+                self.pinvA = lambda x: pinvA.dot(x)
+
+    def _prox(self, x, T):
+
+        # Applying the projection formula
+        # (for now, only the non scalable version)
+        residue = self.A(x) - self.y()
+        sol = x - self.pinvA(residue)
         return sol
 
 
