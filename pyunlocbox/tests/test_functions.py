@@ -95,16 +95,16 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f.eval([4, 6]), 0)
         self.assertEqual(f.eval([5, -2]), 256 + 4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
-#        nptest.assert_allclose(f.grad([5, -2]), [8, -64])
+        #        nptest.assert_allclose(f.grad([5, -2]), [8, -64])
         nptest.assert_allclose(f.prox([4, 6], 1), [4, 6])
 
         f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4]) / np.sqrt(2),
                               A=lambda x: np.fft.fft(x) / np.sqrt(x.size),
                               At=lambda x: np.fft.ifft(x) * np.sqrt(x.size))
-#        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
-#        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
+        #        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
+        #        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
         nptest.assert_allclose(f.grad([2, 4]), 0)
-#        nptest.assert_allclose(f.grad([3, 5]), [4*np.sqrt(5), 4*3])
+        #        nptest.assert_allclose(f.grad([3, 5]), [4*np.sqrt(5), 4*3])
         nptest.assert_allclose(f.prox([2, 4], 1), [2, 4])
         nptest.assert_allclose(f.prox([3, 5], 1), [2.2, 4.2])
         nptest.assert_allclose(f.prox([2.2, 4.2], 1), [2.04, 4.04])
@@ -430,6 +430,30 @@ class TestCase(unittest.TestCase):
         nptest.assert_equal(res[x > 0], x[x > 0])  # Positives are unchanged.
         self.assertEqual(fpos.eval(x), 0)
 
+    def test_proj_spsd(self):
+        """
+        Test the projection on the positive octant.
+
+        """
+        f_spds = functions.proj_spsd()
+        A = np.random.randn(10, 10)
+        A = A + A.T
+        eig1 = np.sort(np.real(np.linalg.eig(A)[0]))
+        res = f_spds.prox(A, T=1)
+        eig2 = np.sort(np.real(np.linalg.eig(res)[0]))
+        # All eigenvalues are positive
+        assert ((eig2 > -1e-15).all())
+
+        # Positive value are unchanged
+        np.testing.assert_allclose(eig2[eig1 > 0], eig1[eig1 > 0])
+
+        # The symetrization works
+        A = np.random.rand(10, 10) + 10 * np.eye(10)
+        res = f_spds.prox(A, T=1)
+        np.testing.assert_allclose(res, (A + A.T) / 2)
+
+        self.assertEqual(f_spds.eval(A), 0)
+
     def test_structured_sparsity(self):
         """
         Test the structured sparsity function.
@@ -503,8 +527,9 @@ class TestCase(unittest.TestCase):
             if name == 'norm_tv':
                 # Each column is one-dimensional.
                 f = func(dim=1, maxit=20, tol=0)
-            elif name == 'norm_nuclear':
-                # TODO: make this test two dimensional for the norm nuclear?
+            elif name in ['norm_nuclear', 'proj_spsd']:
+                # TODO: make this test two dimensional for the norm nuclear
+                # and the spsd projection?
                 continue
             else:
                 f = func()

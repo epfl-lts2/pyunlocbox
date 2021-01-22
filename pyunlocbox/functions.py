@@ -36,6 +36,7 @@ Then, derived classes implement various common objective functions.
 
     proj_positive
     proj_b2
+    proj_spsd
 
 **Miscellaneous**
 
@@ -803,24 +804,13 @@ class proj(func):
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.func` base class.
 
-    Parameters
-    ----------
-    epsilon : float, optional
-        The radius of the ball. Default is 1.
-    method : {'FISTA', 'ISTA'}, optional
-        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
-        Default is 'FISTA'.
-
     Notes
     -----
     * All indicator functions (projections) evaluate to zero by definition.
 
     """
-
-    def __init__(self, epsilon=1, method='FISTA', **kwargs):
+    def __init__(self, **kwargs):
         super(proj, self).__init__(**kwargs)
-        self.epsilon = epsilon
-        self.method = method
 
     def _eval(self, x):
         # Matlab version returns a small delta to avoid division by 0 when
@@ -867,6 +857,57 @@ class proj_positive(proj):
         return np.clip(x, 0, np.inf)
 
 
+class proj_spsd(proj):
+    r"""
+    Projection on the Symetric positive semi definite set of matrices
+
+    This function is the indicator function :math:`i_S(z)` of the set S which
+    is zero if `z` is in the set and infinite otherwise. The set S is defined
+    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.proj` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    * The evaluation of this function is zero.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions
+    >>> f = functions.proj_spsd()
+    >>> A = np.array([[0,-1],[-1,1]])
+    >>> A = ( A + A.T)/2 # Symetrize the matrix
+    >>> np.linalg.eig(A)[0]
+    array([-0.61803399,  1.61803399])
+    >>> f.eval(A)
+    0
+    >>> Aproj = f.prox(A, 0)
+    >>> np.linalg.eig(Aproj)[0]
+    array([0.        , 1.61803399])
+
+    """
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(proj_spsd, self).__init__(**kwargs)
+
+    def _prox(self, x, T):
+        isreal = np.isreal(x).all()
+
+        # 1. make it symetric
+        sol = (x + np.conj(x.T)) / 2
+
+        # 2. make semi positive
+        D, V = np.linalg.eig(sol)
+        D = np.real(D)
+        if isreal:
+            V = np.real(V)
+        D = np.clip(D, 0, np.inf)
+        sol = V @ np.diag(D) @ np.conj(V.T)
+        return sol
+
+
 class proj_b2(proj):
     r"""
     Projection on the L2-ball (eval, prox).
@@ -879,6 +920,14 @@ class proj_b2(proj):
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
     takes keyword-only parameters.
+
+    Parameters
+    ----------
+    * epsilon : float, optional
+        The radius of the ball. Default is 1.
+    * method : {'FISTA', 'ISTA'}, optional
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
+        Default is 'FISTA'.
 
     Notes
     -----
@@ -904,10 +953,11 @@ class proj_b2(proj):
     array([1.70710678, 1.70710678])
 
     """
-
-    def __init__(self, **kwargs):
+    def __init__(self, epsilon=1, method='FISTA', **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
         super(proj_b2, self).__init__(**kwargs)
+        self.epsilon = epsilon
+        self.method = method
 
     def _prox(self, x, T):
 
