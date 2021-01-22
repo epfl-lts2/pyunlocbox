@@ -442,7 +442,7 @@ class TestCase(unittest.TestCase):
         res = f_spds.prox(A, T=1)
         eig2 = np.sort(np.real(np.linalg.eig(res)[0]))
         # All eigenvalues are positive
-        assert ((eig2 > -1e-15).all())
+        assert ((eig2 > -1e-13).all())
 
         # Positive value are unchanged
         np.testing.assert_allclose(eig2[eig1 > 0], eig1[eig1 > 0])
