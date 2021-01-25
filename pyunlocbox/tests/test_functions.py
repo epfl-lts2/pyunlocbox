@@ -430,16 +430,16 @@ class TestCase(unittest.TestCase):
         f = functions.proj_lineq(A=A, y=y)
         sol = f.prox(x, 0)
         np.testing.assert_allclose(sol, np.ones([10]))
-        np.abs(A.dot(sol) - y) < 1e-15
+        np.testing.assert_allclose(A.dot(sol), y)
 
         f = functions.proj_lineq(A=A)
         sol = f.prox(x, 0)
         np.testing.assert_allclose(sol, np.zeros([10]))
 
-        for i in range(1, 11):
+        for i in range(1, 15):
             x = np.random.randn(10)
-            A = np.random.randn(i, 10)
             y = np.random.randn(i)
+            A = np.random.randn(i, 10)
             pinvA = np.linalg.pinv(A)
             f1 = functions.proj_lineq(A=A, y=y)
             f2 = functions.proj_lineq(A=lambda x: A.dot(x), pinvA=pinvA, y=y)
@@ -452,25 +452,10 @@ class TestCase(unittest.TestCase):
             np.testing.assert_allclose(sol1, sol2)
             np.testing.assert_allclose(sol1, sol3)
             np.testing.assert_allclose(sol1, sol4)
-            np.testing.assert_allclose(A.dot(sol1), y)
-
-        for i in range(11, 15):
-            x = np.random.randn(10)
-            A = np.random.randn(i, 10)
-            y = np.random.randn(i)
-            pinvA = np.linalg.pinv(A)
-            f1 = functions.proj_lineq(A=A, y=y)
-            f2 = functions.proj_lineq(A=lambda x: A.dot(x), pinvA=pinvA, y=y)
-            f3 = functions.proj_lineq(A=A, pinvA=lambda x: pinvA.dot(x), y=y)
-            f4 = functions.proj_lineq(A=A, pinvA=pinvA, y=y)
-            sol1 = f1.prox(x, 0)
-            sol2 = f2.prox(x, 0)
-            sol3 = f3.prox(x, 0)
-            sol4 = f4.prox(x, 0)
-            np.testing.assert_allclose(sol1, sol2)
-            np.testing.assert_allclose(sol1, sol3)
-            np.testing.assert_allclose(sol1, sol4)
-            np.testing.assert_allclose(sol1, pinvA.dot(y))
+            if i <= x.size:
+                np.testing.assert_allclose(A.dot(sol1), y)
+            if i >= x.size:
+                np.testing.assert_allclose(sol1, pinvA.dot(y))
 
         self.assertRaises(ValueError, functions.proj_lineq, A=lambda x: x)
 
