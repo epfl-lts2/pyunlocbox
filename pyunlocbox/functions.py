@@ -860,7 +860,7 @@ class proj_positive(proj):
 
 class proj_spsd(proj):
     r"""
-    Projection on the Symetric positive semi definite set of matrices
+    Projection on symmetric positive semi-definite matrices (eval, prox).
 
     This function is the indicator function :math:`i_S(z)` of the set S which
     is zero if `z` is in the set and infinite otherwise. The set S is defined
@@ -878,8 +878,8 @@ class proj_spsd(proj):
     --------
     >>> from pyunlocbox import functions
     >>> f = functions.proj_spsd()
-    >>> A = np.array([[0,-1],[-1,1]])
-    >>> A = ( A + A.T)/2 # Symetrize the matrix
+    >>> A = np.array([[0, -1] , [-1, 1]])
+    >>> A = (A + A.T) / 2  # Symetrize the matrix.
     >>> np.linalg.eig(A)[0]
     array([-0.61803399,  1.61803399])
     >>> f.eval(A)
@@ -896,10 +896,10 @@ class proj_spsd(proj):
     def _prox(self, x, T):
         isreal = np.isreal(x).all()
 
-        # 1. make it symetric
+        # 1. make it symmetric.
         sol = (x + np.conj(x.T)) / 2
 
-        # 2. make semi positive
+        # 2. make it semi-positive.
         D, V = np.linalg.eig(sol)
         D = np.real(D)
         if isreal:
@@ -1046,7 +1046,7 @@ class proj_b2(proj):
 
 class proj_lineq(proj):
     r"""
-    Projection on the plane argmin_x || x - z||_2 s.t. Ax = b
+    Projection on the plane argmin_x || x - z ||_2 s.t. Ax = b (eval, prox).
 
     This function is the indicator function :math:`i_S(z)` of the set S which
     is zero if `z` is in the set and infinite otherwise. The set S is defined
@@ -1068,35 +1068,35 @@ class proj_lineq(proj):
     --------
     >>> from pyunlocbox import functions
     >>> import numpy as np
-    >>> x = np.array([0,0])
-    >>> A = np.array([[1,1]])
+    >>> x = np.array([0, 0])
+    >>> A = np.array([[1, 1]])
     >>> pinvA = np.linalg.pinv(A)
     >>> y = np.array([1])
-    >>> f = functions.proj_lineq(A=A, pinvA=pinvA,y=y)
+    >>> f = functions.proj_lineq(A=A, pinvA=pinvA, y=y)
     >>> sol = f.prox(x, 0)
     >>> sol
     array([0.5, 0.5])
-    >>> np.abs(A.dot(sol) - y)<1e-15
+    >>> np.abs(A.dot(sol) - y) < 1e-15
     array([ True])
 
     """
     def __init__(self, A=None, pinvA=None, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
         super(proj_lineq, self).__init__(A=A, **kwargs)
+
         if pinvA is None:
             if A is None:
-                print("Are you sure about the imput parameters?" +
+                print("Are you sure about the parameters?" +
                       "The projection will return y.")
                 self.pinvA = lambda x: x
             else:
                 if callable(A):
                     raise ValueError(
-                        "Please: provide A as a numpy array or provide pinv")
+                            "Provide A as a numpy array or provide pinvA.")
                 else:
                     # Transform matrix form to operator form.
                     self._pinvA = np.linalg.pinv(A)
                     self.pinvA = lambda x: self._pinvA.dot(x)
-
         else:
             if callable(pinvA):
                 self.pinvA = pinvA
@@ -1104,8 +1104,7 @@ class proj_lineq(proj):
                 self.pinvA = lambda x: pinvA.dot(x)
 
     def _prox(self, x, T):
-
-        # Applying the projection formula
+        # Applying the projection formula.
         # (for now, only the non scalable version)
         residue = self.A(x) - self.y()
         sol = x - self.pinvA(residue)

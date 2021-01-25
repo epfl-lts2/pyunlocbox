@@ -51,7 +51,7 @@ class TestCase(unittest.TestCase):
         assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
         assert_equivalent({'A': None}, {'A': np.identity(3)})
         A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
-        pinvA = np.linalg.pinv(A)
+        pinvA = np.linalg.pinv(A)  # For proj_linalg.
         assert_equivalent({'A': A}, {'A': A, 'At': A.T})
         assert_equivalent({'A': lambda x: A.dot(x), 'pinvA': pinvA},
                           {'A': A, 'At': A})
@@ -97,16 +97,16 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f.eval([4, 6]), 0)
         self.assertEqual(f.eval([5, -2]), 256 + 4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
-        #        nptest.assert_allclose(f.grad([5, -2]), [8, -64])
+        # nptest.assert_allclose(f.grad([5, -2]), [8, -64])
         nptest.assert_allclose(f.prox([4, 6], 1), [4, 6])
 
         f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4]) / np.sqrt(2),
                               A=lambda x: np.fft.fft(x) / np.sqrt(x.size),
                               At=lambda x: np.fft.ifft(x) * np.sqrt(x.size))
-        #        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
-        #        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
+        # self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
+        # self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
         nptest.assert_allclose(f.grad([2, 4]), 0)
-        #        nptest.assert_allclose(f.grad([3, 5]), [4*np.sqrt(5), 4*3])
+        # nptest.assert_allclose(f.grad([3, 5]), [4*np.sqrt(5), 4*3])
         nptest.assert_allclose(f.prox([2, 4], 1), [2, 4])
         nptest.assert_allclose(f.prox([3, 5], 1), [2.2, 4.2])
         nptest.assert_allclose(f.prox([2.2, 4.2], 1), [2.04, 4.04])
@@ -474,7 +474,7 @@ class TestCase(unittest.TestCase):
 
     def test_proj_spsd(self):
         """
-        Test the projection on the positive octant.
+        Test the projection on symmetric positive semi-definite matrices.
 
         """
         f_spds = functions.proj_spsd()
@@ -483,13 +483,13 @@ class TestCase(unittest.TestCase):
         eig1 = np.sort(np.real(np.linalg.eig(A)[0]))
         res = f_spds.prox(A, T=1)
         eig2 = np.sort(np.real(np.linalg.eig(res)[0]))
-        # All eigenvalues are positive
+        # All eigenvalues are positive.
         assert ((eig2 > -1e-13).all())
 
-        # Positive value are unchanged
+        # Positive value are unchanged.
         np.testing.assert_allclose(eig2[eig1 > 0], eig1[eig1 > 0])
 
-        # The symetrization works
+        # The symmetrization works.
         A = np.random.rand(10, 10) + 10 * np.eye(10)
         res = f_spds.prox(A, T=1)
         np.testing.assert_allclose(res, (A + A.T) / 2)
