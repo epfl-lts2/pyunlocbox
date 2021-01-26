@@ -9,6 +9,8 @@ and this project adheres to `Semantic Versioning <https://semver.org>`_.
 Unreleased
 ----------
 
+* New function: proj_linalg.
+* New function: proj_sdsp.
 * New function: proj_positive.
 * New function: structured_sparsity.
 * Continuous integration with Python 3.6, 3.7, 3.8, 3.9. Dropped 2.7, 3.4, 3.5.

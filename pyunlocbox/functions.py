@@ -36,6 +36,8 @@ Then, derived classes implement various common objective functions.
 
     proj_positive
     proj_b2
+    proj_lineq
+    proj_spsd
 
 **Miscellaneous**
 
@@ -803,24 +805,13 @@ class proj(func):
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.func` base class.
 
-    Parameters
-    ----------
-    epsilon : float, optional
-        The radius of the ball. Default is 1.
-    method : {'FISTA', 'ISTA'}, optional
-        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
-        Default is 'FISTA'.
-
     Notes
     -----
     * All indicator functions (projections) evaluate to zero by definition.
 
     """
-
-    def __init__(self, epsilon=1, method='FISTA', **kwargs):
+    def __init__(self, **kwargs):
         super(proj, self).__init__(**kwargs)
-        self.epsilon = epsilon
-        self.method = method
 
     def _eval(self, x):
         # Matlab version returns a small delta to avoid division by 0 when
@@ -835,9 +826,9 @@ class proj_positive(proj):
     r"""
     Projection on the positive octant (eval, prox).
 
-    This function is the indicator function :math:`i_S(z)` of the set S which
-    is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+    This function is the indicator function :math:`i_S(z)` of the set
+    :math:`S = \left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`
+    that is zero if :math:`z` is in the set and infinite otherwise.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
@@ -867,18 +858,77 @@ class proj_positive(proj):
         return np.clip(x, 0, np.inf)
 
 
-class proj_b2(proj):
+class proj_spsd(proj):
     r"""
-    Projection on the L2-ball (eval, prox).
+    Projection on symmetric positive semi-definite matrices (eval, prox).
 
-    This function is the indicator function :math:`i_S(z)` of the set S which
-    is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid \|A(z)-y\|_2 \leq \epsilon
-    \right\}`.
+    This function is the indicator function :math:`i_S(M)` of the set
+    :math:`S = \left\{M \in \mathbb{R}^{N \times N}
+    \mid M \succeq 0, M=M^T \right\}`
+    that is zero if :math:`M` is in the set and infinite otherwise.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
     takes keyword-only parameters.
+
+    Notes
+    -----
+    * The evaluation of this function is zero.
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions
+    >>> f = functions.proj_spsd()
+    >>> A = np.array([[0, -1] , [-1, 1]])
+    >>> A = (A + A.T) / 2  # Symmetrize the matrix.
+    >>> np.linalg.eig(A)[0]
+    array([-0.61803399,  1.61803399])
+    >>> f.eval(A)
+    0
+    >>> Aproj = f.prox(A, 0)
+    >>> np.linalg.eig(Aproj)[0]
+    array([0.        , 1.61803399])
+
+    """
+    def __init__(self, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(proj_spsd, self).__init__(**kwargs)
+
+    def _prox(self, x, T):
+        isreal = np.isreal(x).all()
+
+        # 1. make it symmetric.
+        sol = (x + np.conj(x.T)) / 2
+
+        # 2. make it semi-positive.
+        D, V = np.linalg.eig(sol)
+        D = np.real(D)
+        if isreal:
+            V = np.real(V)
+        D = np.clip(D, 0, np.inf)
+        sol = V @ np.diag(D) @ np.conj(V.T)
+        return sol
+
+
+class proj_b2(proj):
+    r"""
+    Projection on the L2-ball (eval, prox).
+
+    This function is the indicator function :math:`i_S(z)` of the set
+    :math:`S= \left\{z \in \mathbb{R}^N \mid \|Az-y\|_2 \leq \epsilon \right\}`
+    that is zero if :math:`z` is in the set and infinite otherwise.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.proj` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Parameters
+    ----------
+    epsilon : float, optional
+        The radius of the ball. Default is 1.
+    method : {'FISTA', 'ISTA'}, optional
+        The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
+        Default is 'FISTA'.
 
     Notes
     -----
@@ -893,6 +943,10 @@ class proj_b2(proj):
       :math:`\|A(z)-y\|_2 \leq \epsilon`. It is thus a projection of the vector
       `x` onto an L2-ball of diameter `epsilon`.
 
+    See Also
+    --------
+    proj_lineq : use instead of ``epsilon=0``
+
     Examples
     --------
     >>> from pyunlocbox import functions
@@ -904,10 +958,11 @@ class proj_b2(proj):
     array([1.70710678, 1.70710678])
 
     """
-
-    def __init__(self, **kwargs):
+    def __init__(self, epsilon=1, method='FISTA', **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
         super(proj_b2, self).__init__(**kwargs)
+        self.epsilon = epsilon
+        self.method = method
 
     def _prox(self, x, T):
 
@@ -990,6 +1045,78 @@ class proj_b2(proj):
                       '{}, niter = {}'.format(self.epsilon, norm_res, crit,
                                               niter))
 
+        return sol
+
+
+class proj_lineq(proj):
+    r"""
+    Projection on the plane satisfying the linear equality Az = y (eval, prox).
+
+    This function is the indicator function :math:`i_S(z)` of the set
+    :math:`S = \left\{z \in \mathbb{R}^N \mid Az = y \right\}`
+    that is zero if :math:`z` is in the set and infinite otherwise.
+
+    The proximal operator is
+    :math:`\operatorname{arg\,min}_z \| z - x \|_2 \text{ s.t. } Az = y`.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.functions.proj` base class. Note that the constructor
+    takes keyword-only parameters.
+
+    Notes
+    -----
+    * A parameter `pinvA`, the pseudo-inverse of `A`, must be provided if the
+      parameter `A` is provided as an operator/callable (not a matrix).
+    * The evaluation of this function is zero.
+
+    See Also
+    --------
+    proj_b2 : quadratic case
+
+    Examples
+    --------
+    >>> from pyunlocbox import functions
+    >>> import numpy as np
+    >>> x = np.array([0, 0])
+    >>> A = np.array([[1, 1]])
+    >>> pinvA = np.linalg.pinv(A)
+    >>> y = np.array([1])
+    >>> f = functions.proj_lineq(A=A, pinvA=pinvA, y=y)
+    >>> sol = f.prox(x, 0)
+    >>> sol
+    array([0.5, 0.5])
+    >>> np.abs(A.dot(sol) - y) < 1e-15
+    array([ True])
+
+    """
+    def __init__(self, A=None, pinvA=None, **kwargs):
+        # Constructor takes keyword-only parameters to prevent user errors.
+        super(proj_lineq, self).__init__(A=A, **kwargs)
+
+        if pinvA is None:
+            if A is None:
+                print("Are you sure about the parameters?" +
+                      "The projection will return y.")
+                self.pinvA = lambda x: x
+            else:
+                if callable(A):
+                    raise ValueError(
+                            "Provide A as a numpy array or provide pinvA.")
+                else:
+                    # Transform matrix form to operator form.
+                    self._pinvA = np.linalg.pinv(A)
+                    self.pinvA = lambda x: self._pinvA.dot(x)
+        else:
+            if callable(pinvA):
+                self.pinvA = pinvA
+            else:
+                self.pinvA = lambda x: pinvA.dot(x)
+
+    def _prox(self, x, T):
+        # Applying the projection formula.
+        # (for now, only the non scalable version)
+        residue = self.A(x) - self.y()
+        sol = x - self.pinvA(residue)
         return sol
 
 

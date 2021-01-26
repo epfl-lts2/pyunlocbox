@@ -51,8 +51,10 @@ class TestCase(unittest.TestCase):
         assert_equivalent({'y': 3.2}, {'y': lambda: 3.2})
         assert_equivalent({'A': None}, {'A': np.identity(3)})
         A = np.array([[-4, 2, 5], [1, 3, -7], [2, -1, 0]])
+        pinvA = np.linalg.pinv(A)  # For proj_linalg.
         assert_equivalent({'A': A}, {'A': A, 'At': A.T})
-        assert_equivalent({'A': lambda x: A.dot(x)}, {'A': A, 'At': A})
+        assert_equivalent({'A': lambda x: A.dot(x), 'pinvA': pinvA},
+                          {'A': A, 'At': A})
 
     def test_dummy(self):
         """
@@ -95,16 +97,16 @@ class TestCase(unittest.TestCase):
         self.assertEqual(f.eval([4, 6]), 0)
         self.assertEqual(f.eval([5, -2]), 256 + 4)
         nptest.assert_allclose(f.grad([4, 6]), 0)
-#        nptest.assert_allclose(f.grad([5, -2]), [8, -64])
+        # nptest.assert_allclose(f.grad([5, -2]), [8, -64])
         nptest.assert_allclose(f.prox([4, 6], 1), [4, 6])
 
         f = functions.norm_l2(lambda_=2, y=np.fft.fft([2, 4]) / np.sqrt(2),
                               A=lambda x: np.fft.fft(x) / np.sqrt(x.size),
                               At=lambda x: np.fft.ifft(x) * np.sqrt(x.size))
-#        self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
-#        self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
+        # self.assertEqual(f.eval(np.fft.ifft([2, 4])*np.sqrt(2)), 0)
+        # self.assertEqual(f.eval([3, 5]), 2*np.sqrt(25+81))
         nptest.assert_allclose(f.grad([2, 4]), 0)
-#        nptest.assert_allclose(f.grad([3, 5]), [4*np.sqrt(5), 4*3])
+        # nptest.assert_allclose(f.grad([3, 5]), [4*np.sqrt(5), 4*3])
         nptest.assert_allclose(f.prox([2, 4], 1), [2, 4])
         nptest.assert_allclose(f.prox([3, 5], 1), [2.2, 4.2])
         nptest.assert_allclose(f.prox([2.2, 4.2], 1), [2.04, 4.04])
@@ -417,6 +419,46 @@ class TestCase(unittest.TestCase):
         f.method = 'NOT_A_VALID_METHOD'
         self.assertRaises(ValueError, f.prox, x, 0)
 
+    def test_proj_lineq(self):
+        """
+        Test the projection on Ax = y
+
+        """
+        x = np.zeros([10])
+        A = np.ones([1, 10])
+        y = np.array([10])
+        f = functions.proj_lineq(A=A, y=y)
+        sol = f.prox(x, 0)
+        np.testing.assert_allclose(sol, np.ones([10]))
+        np.testing.assert_allclose(A.dot(sol), y)
+
+        f = functions.proj_lineq(A=A)
+        sol = f.prox(x, 0)
+        np.testing.assert_allclose(sol, np.zeros([10]))
+
+        for i in range(1, 15):
+            x = np.random.randn(10)
+            y = np.random.randn(i)
+            A = np.random.randn(i, 10)
+            pinvA = np.linalg.pinv(A)
+            f1 = functions.proj_lineq(A=A, y=y)
+            f2 = functions.proj_lineq(A=lambda x: A.dot(x), pinvA=pinvA, y=y)
+            f3 = functions.proj_lineq(A=A, pinvA=lambda x: pinvA.dot(x), y=y)
+            f4 = functions.proj_lineq(A=A, pinvA=pinvA, y=y)
+            sol1 = f1.prox(x, 0)
+            sol2 = f2.prox(x, 0)
+            sol3 = f3.prox(x, 0)
+            sol4 = f4.prox(x, 0)
+            np.testing.assert_allclose(sol1, sol2)
+            np.testing.assert_allclose(sol1, sol3)
+            np.testing.assert_allclose(sol1, sol4)
+            if i <= x.size:
+                np.testing.assert_allclose(A.dot(sol1), y)
+            if i >= x.size:
+                np.testing.assert_allclose(sol1, pinvA.dot(y))
+
+        self.assertRaises(ValueError, functions.proj_lineq, A=lambda x: x)
+
     def test_proj_positive(self):
         """
         Test the projection on the positive octant.
@@ -429,6 +471,30 @@ class TestCase(unittest.TestCase):
         nptest.assert_equal(res[x < 0], 0)  # Negative values are set to zero.
         nptest.assert_equal(res[x > 0], x[x > 0])  # Positives are unchanged.
         self.assertEqual(fpos.eval(x), 0)
+
+    def test_proj_spsd(self):
+        """
+        Test the projection on symmetric positive semi-definite matrices.
+
+        """
+        f_spds = functions.proj_spsd()
+        A = np.random.randn(10, 10)
+        A = A + A.T
+        eig1 = np.sort(np.real(np.linalg.eig(A)[0]))
+        res = f_spds.prox(A, T=1)
+        eig2 = np.sort(np.real(np.linalg.eig(res)[0]))
+        # All eigenvalues are positive.
+        assert ((eig2 > -1e-13).all())
+
+        # Positive value are unchanged.
+        np.testing.assert_allclose(eig2[eig1 > 0], eig1[eig1 > 0])
+
+        # The symmetrization works.
+        A = np.random.rand(10, 10) + 10 * np.eye(10)
+        res = f_spds.prox(A, T=1)
+        np.testing.assert_allclose(res, (A + A.T) / 2)
+
+        self.assertEqual(f_spds.eval(A), 0)
 
     def test_structured_sparsity(self):
         """
@@ -503,8 +569,9 @@ class TestCase(unittest.TestCase):
             if name == 'norm_tv':
                 # Each column is one-dimensional.
                 f = func(dim=1, maxit=20, tol=0)
-            elif name == 'norm_nuclear':
-                # TODO: make this test two dimensional for the norm nuclear?
+            elif name in ['norm_nuclear', 'proj_spsd']:
+                # TODO: make this test two dimensional for the norm nuclear
+                # and the spsd projection?
                 continue
             else:
                 f = func()
