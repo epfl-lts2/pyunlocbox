@@ -826,9 +826,9 @@ class proj_positive(proj):
     r"""
     Projection on the positive octant (eval, prox).
 
-    This function is the indicator function :math:`i_S(z)` of the set S which
-    is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+    This function is the indicator function :math:`i_S(z)` of the set
+    :math:`S = \left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`
+    that is zero if :math:`z` is in the set and infinite otherwise.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
@@ -862,9 +862,9 @@ class proj_spsd(proj):
     r"""
     Projection on symmetric positive semi-definite matrices (eval, prox).
 
-    This function is the indicator function :math:`i_S(M)` of the set S which
-    is zero if `M` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{M \in \mathbb{R}^{N \times N} \mid M \leq 0 \right\}`.
+    This function is the indicator function :math:`i_S(M)` of the set
+    :math:`S = \left\{M \in \mathbb{R}^{N \times N} \mid M \leq 0 \right\}`
+    that is zero if :math:`M` is in the set and infinite otherwise.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
@@ -879,7 +879,7 @@ class proj_spsd(proj):
     >>> from pyunlocbox import functions
     >>> f = functions.proj_spsd()
     >>> A = np.array([[0, -1] , [-1, 1]])
-    >>> A = (A + A.T) / 2  # Symetrize the matrix.
+    >>> A = (A + A.T) / 2  # Symmetrize the matrix.
     >>> np.linalg.eig(A)[0]
     array([-0.61803399,  1.61803399])
     >>> f.eval(A)
@@ -913,10 +913,9 @@ class proj_b2(proj):
     r"""
     Projection on the L2-ball (eval, prox).
 
-    This function is the indicator function :math:`i_S(z)` of the set S which
-    is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid \|A(z)-y\|_2 \leq \epsilon
-    \right\}`.
+    This function is the indicator function :math:`i_S(z)` of the set
+    :math:`S= \left\{z \in \mathbb{R}^N \mid \|Az-y\|_2 \leq \epsilon \right\}`
+    that is zero if :math:`z` is in the set and infinite otherwise.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
@@ -924,9 +923,9 @@ class proj_b2(proj):
 
     Parameters
     ----------
-    * epsilon : float, optional
+    epsilon : float, optional
         The radius of the ball. Default is 1.
-    * method : {'FISTA', 'ISTA'}, optional
+    method : {'FISTA', 'ISTA'}, optional
         The method used to solve the problem. It can be 'FISTA' or 'ISTA'.
         Default is 'FISTA'.
 
@@ -1046,25 +1045,23 @@ class proj_b2(proj):
 
 class proj_lineq(proj):
     r"""
-    Projection on the plane satisfying linear equality `Az = y` (eval, prox).
+    Projection on the plane satisfying the linear equality Az = y (eval, prox).
 
-    This proximal opertator solve the following projection problem:
-        :math:`\text{arg}\min_z \| z - x \|_2 \mid Az = y`.
+    This function is the indicator function :math:`i_S(z)` of the set
+    :math:`S = \left\{z \in \mathbb{R}^N \mid Az = y \right\}`
+    that is zero if :math:`z` is in the set and infinite otherwise.
 
-    This function is the indicator function :math:`i_S(z)` of the set S which
-    is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid Ax = y \right\}`.
+    The proximal operator is
+    :math:`\operatorname{arg\,min}_z \| z - x \|_2 \text{ s.t. } Az = y`.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
     takes keyword-only parameters.
 
-    Parameters
-    ----------
-    This projection requires A as a matrix or pinvA to be provided.
-
     Notes
     -----
+    * A parameter `pinvA`, the pseudo-inverse of `A`, must be provided if the
+      parameter `A` is provided as an operator/callable (not a matrix).
     * The evaluation of this function is zero.
 
     Examples
