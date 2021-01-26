@@ -862,9 +862,9 @@ class proj_spsd(proj):
     r"""
     Projection on symmetric positive semi-definite matrices (eval, prox).
 
-    This function is the indicator function :math:`i_S(z)` of the set S which
-    is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+    This function is the indicator function :math:`i_S(M)` of the set S which
+    is zero if `M` is in the set and infinite otherwise. The set S is defined
+    by :math:`\left\{M \in \mathbb{R}^{N \times N} \mid M \leq 0 \right\}`.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
@@ -1046,11 +1046,14 @@ class proj_b2(proj):
 
 class proj_lineq(proj):
     r"""
-    Projection on the plane argmin_x || x - z ||_2 s.t. Ax = b (eval, prox).
+    Projection on the plane satisfying linear equality `Az = y` (eval, prox).
+
+    This proximal opertator solve the following projection problem:
+        :math:`\text{arg}\min_z \| z - x \|_2 \mid Az = y`.
 
     This function is the indicator function :math:`i_S(z)` of the set S which
     is zero if `z` is in the set and infinite otherwise. The set S is defined
-    by :math:`\left\{z \in \mathbb{R}^N \mid z \leq 0 \right\}`.
+    by :math:`\left\{z \in \mathbb{R}^N \mid Ax = y \right\}`.
 
     See generic attributes descriptions of the
     :class:`pyunlocbox.functions.proj` base class. Note that the constructor
