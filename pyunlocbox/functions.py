@@ -863,7 +863,8 @@ class proj_spsd(proj):
     Projection on symmetric positive semi-definite matrices (eval, prox).
 
     This function is the indicator function :math:`i_S(M)` of the set
-    :math:`S = \left\{M \in \mathbb{R}^{N \times N} \mid M \leq 0 \right\}`
+    :math:`S = \left\{M \in \mathbb{R}^{N \times N}
+    \mid M \succeq 0, M=M^T \right\}`
     that is zero if :math:`M` is in the set and infinite otherwise.
 
     See generic attributes descriptions of the
@@ -941,6 +942,10 @@ class proj_b2(proj):
       :math:`\operatorname{arg\,min}\limits_z \|x-z\|_2^2` such that
       :math:`\|A(z)-y\|_2 \leq \epsilon`. It is thus a projection of the vector
       `x` onto an L2-ball of diameter `epsilon`.
+
+    See Also
+    --------
+    proj_lineq : use instead of ``epsilon=0``
 
     Examples
     --------
@@ -1063,6 +1068,10 @@ class proj_lineq(proj):
     * A parameter `pinvA`, the pseudo-inverse of `A`, must be provided if the
       parameter `A` is provided as an operator/callable (not a matrix).
     * The evaluation of this function is zero.
+
+    See Also
+    --------
+    proj_b2 : quadratic case
 
     Examples
     --------
