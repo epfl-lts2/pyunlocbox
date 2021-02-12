@@ -613,5 +613,9 @@ class TestCase(unittest.TestCase):
             
         np.testing.assert_array_almost_equal(p1,p2)
 
+        p1 = f.prox(x,gamma) -x 
+        p2 = - gamma * f2.prox(x/gamma,1/gamma)
+        np.testing.assert_array_almost_equal(p1,p2)
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
