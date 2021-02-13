@@ -54,7 +54,7 @@ from pyunlocbox import acceleration
 
 
 def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
-          xtol=None, maxit=200, verbosity='LOW', persistent=True):
+          xtol=None, maxit=200, verbosity='LOW', persistent=False):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
@@ -79,10 +79,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         documentation of the considered solver.
     x0 : array_like
         Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^{n \times
-        N}`. Note that if you pass a numpy array it will be modified in place
-        during execution to save memory. It will then contain the solution. Be
-        careful to pass data of the type (int, float32, float64) you want your
-        computations to use.
+        N}`.
     solver : solver class instance, optional
         The solver algorithm. It is an object who must inherit from
         :class:`pyunlocbox.solvers.solver` and implement the :meth:`_pre`,
@@ -111,6 +108,11 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         convergence, ``'HIGH'`` for info at all solving steps, ``'ALL'`` for
         all possible outputs, including at each steps of the proximal operators
         computation. Default is ``'LOW'``.
+    persistent : bool, optional
+        If True and x0 is a numpy array, then x0 will be modified in place
+        during execution to save memory. It will then contain the solution. Be
+        careful to pass data of the type (int, float32, float64) you want your
+        computations to use.
 
     Returns
     -------
@@ -199,7 +201,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
     """
     # to prevent any modification of the input
-    if persistent:
+    if not(persistent):
         x0 = x0.copy()
 
     if verbosity not in ['NONE', 'LOW', 'HIGH', 'ALL']:

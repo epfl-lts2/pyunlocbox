@@ -410,7 +410,7 @@ class TestCase(unittest.TestCase):
             # The initial value not was modified.
             np.testing.assert_array_equal(np.zeros(len(y)), x0)
             ret = solvers.solve([f1, f2], x0, solver,
-                                persistent=False, **params)
+                                persistent=True, **params)
             # The initial value was modified.
             self.assertIs(ret['sol'], x0)
 
@@ -456,10 +456,10 @@ class TestCase(unittest.TestCase):
 
             if type(solver) is solvers.mlfbf:
                 ret = solvers.solve([f1, f2, f3], x0, solver,
-                                    persistent=False, **params)
+                                    persistent=True, **params)
             else:
                 ret = solvers.solve([f1, f2], x0, solver,
-                                    persistent=False, **params)
+                                    persistent=True, **params)
             # The initial value was modified.
             self.assertIs(ret['sol'], x0)
             nptest.assert_allclose(ret['sol'], sol)
