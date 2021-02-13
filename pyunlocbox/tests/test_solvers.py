@@ -297,6 +297,59 @@ class TestCase(unittest.TestCase):
         # Sanity check
         self.assertRaises(ValueError, solver.pre, [f, g], x0())
 
+        # Make a second test where the solution is calculated by hand
+        n = 10
+        y = np.random.rand(n) * 2
+        z = np.random.rand(n)
+        c = 1
+
+        delta = (y - z - c)**2 + 4 * (1 + y * z - z * c)
+        sol = 0.5 * ((y - z - c) + np.sqrt(delta))
+
+        class mlog(functions.func):
+            def __init__(self, z):
+                super().__init__()
+                self.z = z
+
+            def _eval(self, x):
+                return -np.sum(np.log(x + self.z))
+
+            def _prox(self, x, T):
+                delta = (x - self.z)**2 + 4 * (T + x * self.z)
+                sol = 0.5 * (x - self.z + np.sqrt(delta))
+                return sol
+
+        f = functions.norm_l1(lambda_=c)
+        g = mlog(z=z)
+        h = functions.norm_l2(lambda_=0.5, y=y)
+
+        mu = 1 + 1
+        step = 1 / mu / 2
+
+        solver = solvers.mlfbf(step=step)
+        ret = solvers.solve([f, g, h],
+                            y.copy(),
+                            solver,
+                            maxit=200,
+                            rtol=0,
+                            verbosity="NONE")
+
+        nptest.assert_allclose(ret["sol"], sol, atol=1e-10)
+
+        # Make a final test where the function g can not be evaluate
+        # on the primal variables
+        y = np.random.rand(3)
+        y_2 = L.dot(y)
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        x0 = np.zeros(len(y))
+        f = functions.norm_l1(y=y)
+        g = functions.norm_l2(lambda_=0.5, y=y_2)
+        h = functions.norm_l2(y=y, lambda_=0.5)
+        max_step = 1 / (1 + np.linalg.norm(L, 2))
+        solver = solvers.mlfbf(L=L, step=max_step / 2.)
+        ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0)
+        np.testing.assert_allclose(ret["sol"], y)
+
     def test_projection_based(self):
         """
         Test the projection-based solver with arbitrarily selected functions.
@@ -354,7 +407,12 @@ class TestCase(unittest.TestCase):
             ret = solvers.solve([f1, f2], x0, solver, **params)
             nptest.assert_allclose(ret['sol'], sol)
             self.assertEqual(ret['niter'], niter)
-            self.assertIs(ret['sol'], x0)  # The initial value was modified.
+            # The initial value not was modified.
+            np.testing.assert_array_equal(np.zeros(len(y)), x0)
+            ret = solvers.solve([f1, f2], x0, solver,
+                                persistent=False, **params)
+            # The initial value was modified.
+            self.assertIs(ret['sol'], x0)
 
     def test_primal_dual_solver_comparison(self):
         """
@@ -366,33 +424,45 @@ class TestCase(unittest.TestCase):
         """
 
         # Convex functions.
-        y = np.array([294, 390, 361])
-        sol = [1., 1., 1.]
-        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        y = np.random.randn(3)
+        L = np.random.randn(4, 3)
+
+        sol = y
+        y2 = L.dot(y)
         f1 = functions.norm_l1(y=y)
-        f2 = functions.norm_l1()
+        f2 = functions.norm_l2(y=y2)
         f3 = functions.dummy()
 
         # Solvers.
         step = 0.5 / (1 + np.linalg.norm(L, 2))
         slvs = []
-        slvs.append(solvers.mlfbf(step=step))
-        slvs.append(solvers.projection_based(step=step))
+        slvs.append(solvers.mlfbf(step=step, L=L))
+        slvs.append(solvers.projection_based(step=step, L=L))
 
         # Compare solutions.
-        params = {'rtol': 0, 'verbosity': 'NONE', 'maxit': 50}
-        niters = [50, 50]
-        for solver, niter in zip(slvs, niters):
+        niter = 1000
+        params = {'rtol': 0, 'verbosity': 'NONE', 'maxit': niter}
+        for solver in slvs:
             x0 = np.zeros(len(y))
 
             if type(solver) is solvers.mlfbf:
                 ret = solvers.solve([f1, f2, f3], x0, solver, **params)
             else:
                 ret = solvers.solve([f1, f2], x0, solver, **params)
-
             nptest.assert_allclose(ret['sol'], sol)
             self.assertEqual(ret['niter'], niter)
-            self.assertIs(ret['sol'], x0)  # The initial value was modified.
+            # The initial value was not modified.
+            nptest.assert_array_equal(x0, np.zeros(len(y)))
+
+            if type(solver) is solvers.mlfbf:
+                ret = solvers.solve([f1, f2, f3], x0, solver,
+                                    persistent=False, **params)
+            else:
+                ret = solvers.solve([f1, f2], x0, solver,
+                                    persistent=False, **params)
+            # The initial value was modified.
+            self.assertIs(ret['sol'], x0)
+            nptest.assert_allclose(ret['sol'], sol)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
