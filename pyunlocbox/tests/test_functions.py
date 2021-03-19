@@ -600,5 +600,22 @@ class TestCase(unittest.TestCase):
                     res[:, iN] = f.grad(X[:, iN])
                 nptest.assert_array_almost_equal(res, f.grad(X))
 
+    def test_prox_star(self):
+        n = 10
+        x = 3 * np.random.randn(n, 1)
+        f = functions.norm_l1()
+        f2 = functions.dummy()
+        f2.prox = lambda x, T: functions._prox_star(f, x, T)
+        gamma = np.random.rand()
+
+        p1 = f.prox(x, gamma)
+        p2 = functions._prox_star(f2, x, gamma)
+
+        np.testing.assert_array_almost_equal(p1, p2)
+
+        p1 = f.prox(x, gamma) - x
+        p2 = -gamma * f2.prox(x / gamma, 1 / gamma)
+        np.testing.assert_array_almost_equal(p1, p2)
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

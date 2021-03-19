@@ -54,7 +54,7 @@ from pyunlocbox import acceleration
 
 
 def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
-          xtol=None, maxit=200, verbosity='LOW'):
+          xtol=None, maxit=200, verbosity='LOW', inplace=False):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
@@ -79,10 +79,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         documentation of the considered solver.
     x0 : array_like
         Starting point of the algorithm, :math:`x_0 \in \mathbb{R}^{n \times
-        N}`. Note that if you pass a numpy array it will be modified in place
-        during execution to save memory. It will then contain the solution. Be
-        careful to pass data of the type (int, float32, float64) you want your
-        computations to use.
+        N}`.
     solver : solver class instance, optional
         The solver algorithm. It is an object who must inherit from
         :class:`pyunlocbox.solvers.solver` and implement the :meth:`_pre`,
@@ -111,6 +108,11 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         convergence, ``'HIGH'`` for info at all solving steps, ``'ALL'`` for
         all possible outputs, including at each steps of the proximal operators
         computation. Default is ``'LOW'``.
+    inplace : bool, optional
+        If True and x0 is a numpy array, then x0 will be modified in place
+        during execution to save memory. It will then contain the solution. Be
+        careful to pass data of the type (int, float32, float64) you want your
+        computations to use.
 
     Returns
     -------
@@ -143,28 +145,28 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     >>> ret = solvers.solve([f], x0, atol=1e-2, verbosity='ALL')
     INFO: Dummy objective function added.
     INFO: Selected solver: forward_backward
-        norm_l2 evaluation: 1.260000e+02
-        dummy evaluation: 0.000000e+00
     INFO: Forward-backward method
-    Iteration 1 of forward_backward:
-        norm_l2 evaluation: 1.400000e+01
         dummy evaluation: 0.000000e+00
+        norm_l2 evaluation: 1.260000e+02
+    Iteration 1 of forward_backward:
+        dummy evaluation: 0.000000e+00
+        norm_l2 evaluation: 1.400000e+01
         objective = 1.40e+01
     Iteration 2 of forward_backward:
-        norm_l2 evaluation: 2.963739e-01
         dummy evaluation: 0.000000e+00
+        norm_l2 evaluation: 2.963739e-01
         objective = 2.96e-01
     Iteration 3 of forward_backward:
-        norm_l2 evaluation: 7.902529e-02
         dummy evaluation: 0.000000e+00
+        norm_l2 evaluation: 7.902529e-02
         objective = 7.90e-02
     Iteration 4 of forward_backward:
-        norm_l2 evaluation: 5.752265e-02
         dummy evaluation: 0.000000e+00
+        norm_l2 evaluation: 5.752265e-02
         objective = 5.75e-02
     Iteration 5 of forward_backward:
-        norm_l2 evaluation: 5.142032e-03
         dummy evaluation: 0.000000e+00
+        norm_l2 evaluation: 5.142032e-03
         objective = 5.14e-03
     Solution found after 5 iterations:
         objective function f(sol) = 5.142032e-03
@@ -198,6 +200,9 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     [0.05752265..., 0], [0.00514203..., 0]]
 
     """
+    # to prevent any modification of the input
+    if not(inplace):
+        x0 = x0.copy()
 
     if verbosity not in ['NONE', 'LOW', 'HIGH', 'ALL']:
         raise ValueError('Verbosity should be either NONE, LOW, HIGH or ALL.')
@@ -243,11 +248,13 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     tstart = time.time()
     crit = None
     niter = 0
-    objective = [[f.eval(x0) for f in functions]]
     rtol_only_zeros = True
 
     # Solver specific initialization.
     solver.pre(functions, x0)
+
+    # Evaluate the objective function at the begining
+    objective = [solver.objective(x0)]
 
     while not crit:
 
@@ -263,7 +270,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         # Solver iterative algorithm.
         solver.algo(objective, niter)
 
-        objective.append([f.eval(solver.sol) for f in functions])
+        objective.append(solver.objective(solver.sol))
         current = np.sum(objective[-1])
         last = np.sum(objective[-2])
 
@@ -424,6 +431,19 @@ class solver(object):
 
     def _post(self):
         raise NotImplementedError("Class user should define this method.")
+
+    def objective(self, x):
+        """
+        Return the objective function at x.
+
+        Necessitate `solver._pre(...)` to be run first.
+        """
+        return self._objective(x)
+
+    def _objective(self, x):
+        obj_smooth = [f.eval(x) for f in self.smooth_funs]
+        obj_nonsmooth = [f.eval(x) for f in self.non_smooth_funs]
+        return obj_nonsmooth + obj_smooth
 
 
 class gradient_descent(solver):
@@ -780,13 +800,20 @@ class primal_dual(solver):
     def _pre(self, functions, x0):
         # Dual variable.
         if self.d0 is None:
-            self.dual_sol = self.L(x0)
+            # The copy is necessary in case `L = lambda x: x`.
+            self.dual_sol = self.L(np.asarray(x0).copy())
         else:
             self.dual_sol = self.d0
 
     def _post(self):
         self.d0 = None
         del self.dual_sol
+
+    def _objective(self, x):
+        obj_smooth = [f.eval(x) for f in self.smooth_funs]
+        obj_nonsmooth = [self.non_smooth_funs[0].eval(x),
+                         self.non_smooth_funs[1].eval(self.L(x))]
+        return obj_nonsmooth + obj_smooth
 
 
 class mlfbf(primal_dual):
@@ -831,7 +858,7 @@ class mlfbf(primal_dual):
     >>> solver = solvers.mlfbf(L=L, step=max_step/2.)
     >>> ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0)
     Solution found after 1000 iterations:
-        objective function f(sol) = 1.833865e+05
+        objective function f(sol) = 1.839060e+05
         stopping criterion: MAXIT
     >>> ret['sol']
     array([1., 1., 1.])

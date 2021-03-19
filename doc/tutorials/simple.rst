@@ -66,9 +66,9 @@ And finally solve the problem :
 
    >>> x0 = [0., 0., 0., 0.]
    >>> ret = solvers.solve([f2, f1], x0, solver, atol=1e-5, verbosity='HIGH')
+   INFO: Forward-backward method
        func evaluation: 0.000000e+00
        norm_l2 evaluation: 1.260000e+02
-   INFO: Forward-backward method
    Iteration 1 of forward_backward:
        func evaluation: 0.000000e+00
        norm_l2 evaluation: 1.400000e+01
