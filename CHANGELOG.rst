@@ -9,7 +9,7 @@ and this project adheres to `Semantic Versioning <https://semver.org>`_.
 Unreleased
 ----------
 
-* New function: proj_linalg.
+* New function: proj_lineq.
 * New function: proj_sdsp.
 * New function: proj_positive.
 * New function: structured_sparsity.
