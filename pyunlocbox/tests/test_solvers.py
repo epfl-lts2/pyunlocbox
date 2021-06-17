@@ -214,6 +214,26 @@ class TestCase(unittest.TestCase):
         self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
         self.assertRaises(ValueError, solver.pre, [f1, f2, f1], x0)
 
+        "Test linearized ADMM"
+        y = [4, -9, -13, -4]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        solver = solvers.douglas_rachford(lambda_= 0.5, step=max_step, A=L)
+        param = {'solver': solver, 'verbosity': 'NONE'}
+
+        # L2-norm prox and L1-norm prox.
+        x0 = np.zeros(3)
+        f2 = functions.norm_l2(y=y, A=L)
+        f1 = functions.norm_l1()
+        solver = solvers.douglas_rachford(lambda_= 0.5, step=max_step, A=L)
+        ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
+
+        nptest.assert_allclose(ret['sol'], y)
+
+        print(ret['sol'])
+        print(y)
+        self.assertEqual(ret['crit'], 'RTOL')
+        # self.assertEqual(ret['niter'], 35)
+
     def test_generalized_forward_backward(self):
         """
         Test the generalized forward-backward algorithm.
@@ -463,6 +483,49 @@ class TestCase(unittest.TestCase):
             # The initial value was modified.
             self.assertIs(ret['sol'], x0)
             nptest.assert_allclose(ret['sol'], sol)
+
+    def test_chambolle_pock(self):
+        """
+        Test the Chambolle-Pock algorithm.
+
+        """
+        
+        sol = np.random.randn(3)
+        L = np.random.randn(4, 3)
+        y = L.dot(sol)
+
+        f1 = functions.norm_l1()
+        f2 = functions.norm_l1(y=y)
+        f3 = functions.dummy()
+
+        # Solvers.
+        step = 0.5 / (1 + np.linalg.norm(L, 2))
+
+        solver = solvers.chambolle_pock(L=L, sigma=step, theta=step, tau=step)
+
+        # Compare solutions.
+        niter = 1000
+        params = {'rtol': 0, 'verbosity': 'NONE', 'maxit': niter}
+        x0 = np.zeros(L.shape[1])
+
+        if type(solver) is solvers.mlfbf:
+            ret = solvers.solve([f1, f2, f3], x0, solver, **params)
+        else:
+            ret = solvers.solve([f1, f2], x0, solver, **params)
+        nptest.assert_allclose(ret['sol'], sol, atol=1e-2)
+        self.assertEqual(ret['niter'], niter)
+
+        # The initial value was not modified.
+        nptest.assert_array_equal(x0, np.zeros(L.shape[1]))
+
+        if type(solver) is solvers.mlfbf:
+            ret = solvers.solve([f1, f2, f3], x0, solver,
+                                inplace=True, **params)
+        else:
+            ret = solvers.solve([f1, f2], x0, solver,
+                                inplace=True, **params)
+        # The initial value was modified.
+        self.assert_Is(ret['sol'], x0)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)
