@@ -395,6 +395,31 @@ class TestCase(unittest.TestCase):
         solver.lambda_ = -3.
         self.assertRaises(ValueError, solver.pre, [f, g], x0())
 
+    def test_chambolle_pock(self):
+        """
+        Test the Chambolle-Pock algorithm.
+
+        """
+        x = [-4, 3, -1]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        max_step = 1/(1 + np.linalg.norm(L, 2))
+        solver = solvers.chambolle_pock(L=L, sigma=max_step/2., theta=max_step/2., tau=max_step/2.)
+        params = {'solver': solver, 'verbosity': 'NONE'}
+
+        # Two L1-norm prox.
+        y = np.array([4,-9,-13,-4])
+        F = functions.norm_l1(y=y)
+        G = functions.norm_l1()
+        x0 = np.array([0,0,0])
+        ret = solvers.solve([G, F], x0, solver, maxit=1000, rtol=None, xtol=None, **params)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
+        # Sanity checks
+        self.assertRaises(ValueError, solver.pre, [F], x0)
+        solver.sigma = -1.
+        self.assertRaises(ValueError, solver.pre, [G, F], x0)
+
+
     def test_solver_comparison(self):
         """
         Test that all solvers return the same and correct solution.
@@ -458,6 +483,7 @@ class TestCase(unittest.TestCase):
         slvs = []
         slvs.append(solvers.mlfbf(step=step, L=L))
         slvs.append(solvers.projection_based(step=step, L=L))
+        slvs.append(solvers.chambolle_pock(step=step, theta=step, sigma=step, tau=step, L=L))
 
         # Compare solutions.
         niter = 1000
@@ -483,49 +509,6 @@ class TestCase(unittest.TestCase):
             # The initial value was modified.
             self.assertIs(ret['sol'], x0)
             nptest.assert_allclose(ret['sol'], sol)
-
-    def test_chambolle_pock(self):
-        """
-        Test the Chambolle-Pock algorithm.
-
-        """
-        
-        sol = np.random.randn(3)
-        L = np.random.randn(4, 3)
-        y = L.dot(sol)
-
-        f1 = functions.norm_l1()
-        f2 = functions.norm_l1(y=y)
-        f3 = functions.dummy()
-
-        # Solvers.
-        step = 0.5 / (1 + np.linalg.norm(L, 2))
-
-        solver = solvers.chambolle_pock(L=L, sigma=step, theta=step, tau=step)
-
-        # Compare solutions.
-        niter = 1000
-        params = {'rtol': 0, 'verbosity': 'NONE', 'maxit': niter}
-        x0 = np.zeros(L.shape[1])
-
-        if type(solver) is solvers.mlfbf:
-            ret = solvers.solve([f1, f2, f3], x0, solver, **params)
-        else:
-            ret = solvers.solve([f1, f2], x0, solver, **params)
-        nptest.assert_allclose(ret['sol'], sol, atol=1e-2)
-        self.assertEqual(ret['niter'], niter)
-
-        # The initial value was not modified.
-        nptest.assert_array_equal(x0, np.zeros(L.shape[1]))
-
-        if type(solver) is solvers.mlfbf:
-            ret = solvers.solve([f1, f2, f3], x0, solver,
-                                inplace=True, **params)
-        else:
-            ret = solvers.solve([f1, f2], x0, solver,
-                                inplace=True, **params)
-        # The initial value was modified.
-        self.assert_Is(ret['sol'], x0)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestCase)

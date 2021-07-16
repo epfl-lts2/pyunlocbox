@@ -22,8 +22,8 @@ from pyunlocbox import solvers  # noqa: F401
 from pyunlocbox import acceleration  # noqa: F401
 from pyunlocbox import operators  # noqa: F401
 
-__version__ = '0.5.2'
-__release_date__ = '2017-12-15'
+__version__ = '0.5.3'
+__release_date__ = '2021-07-16'
 
 
 def test():  # pragma: no cover

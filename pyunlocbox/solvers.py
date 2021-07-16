@@ -1026,7 +1026,7 @@ class projection_based(primal_dual):
 
 class chambolle_pock(primal_dual):
     r"""
-    Monotone+Lipschitz forward-backward-forward primal-dual algorithm.
+    Primal-Dual Proximal Splitting.
 
     This algorithm solves convex optimization problems with objective of the
     form :math:`G(x) + F(Lx)`, where :math:`F` and :math:`G` are proper,
@@ -1038,16 +1038,16 @@ class chambolle_pock(primal_dual):
 
     Notes
     -----
-    The order of the functions matters: set :math:`F` first on the list and
-    :math:`G` second.
+    The order of the functions matters: set :math:`G` first on the list and
+    :math:`F` second.
 
     This algorithm requires the two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method.
 
-    The step-size should be in the interval :math:`\left] 0, \frac{1}{\beta +
-    \|L\|_{2}}\right[`.
+    The step-size should be in the interval :math:`\left] 0, \frac{1}{\beta + \|L\|_{2}}\right[`.
 
-    See :cite:`komodakis2015primaldual`, Algorithm 6, for details.
+    See :cite:`Antonin Chambolle and Thomas Pock: A First-order primal-dual algorithm for convex problems
+     with application to imaging, Journal of Mathematical Imaging and Vision, Volume 40, Number 1 (2011), 120-145" for details.
 
     Examples
     --------
@@ -1071,8 +1071,6 @@ class chambolle_pock(primal_dual):
     def __init__(self, sigma=1., tau=1., theta=1., accel=None, *args, **kwargs):
         super(chambolle_pock, self).__init__(*args, **kwargs)
 
-        if (sigma < 0 or tau < 0):
-            raise ValueError('steps sigma and tau should be a positive number.')
         self.sigma = sigma
         self.tau = tau
         self.theta = theta
@@ -1080,6 +1078,13 @@ class chambolle_pock(primal_dual):
 
     def _pre(self, functions, x0):
         super(chambolle_pock, self)._pre(functions, x0)
+
+        if self.tau <= 0 or self.tau > 2:
+            raise ValueError('tau is bounded by 0 and 2.')
+        if self.sigma <= 0 or self.sigma > 2:
+            raise ValueError('sigma is bounded by 0 and 2.')
+        if self.theta <= 0 or self.theta > 2:
+            raise ValueError('theta is bounded by 0 and 2.')
 
         if len(functions) != 2:
             raise ValueError('Chambolle-Pock requires 2 functions.')
