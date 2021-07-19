@@ -31,6 +31,7 @@ Then, derived classes implement various common solvers.
     gradient_descent
     forward_backward
     douglas_rachford
+    chambolle_pock
     generalized_forward_backward
 
 **Primal-dual solvers** (based on :class:`primal_dual`)
