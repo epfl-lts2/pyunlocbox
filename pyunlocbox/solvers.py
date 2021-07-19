@@ -722,15 +722,17 @@ class douglas_rachford(solver):
 
     """
 
-    def __init__(self, lambda_=1, A=None, *args, **kwargs):
+    def __init__(self, A=None, mu=None, *args, **kwargs):
         super(douglas_rachford, self).__init__(*args, **kwargs)
-        self.lambda_ = lambda_
         self.A = A
+        self.mu = mu
+        if (self.A is not None and self.mu is None):
+                self.mu = self.step/(np.linalg.norm(self.A)**2)
 
     def _pre(self, functions, x0):
 
-        if self.lambda_ <= 0 or self.lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
+        if self.mu <= 0 or self.mu > 1:
+            raise ValueError('Mu is bounded by 0 and 1.')
 
         if len(functions) != 2:
             raise ValueError('Douglas-Rachford requires two convex functions.')
@@ -771,10 +773,10 @@ class douglas_rachford(solver):
             # self.z[:] = self.non_smooth_funs[0].prox(self.sol + self.u, self.step)
             # self.sol[:] = self.non_smooth_funs[1].prox(self.z-self.u, self.step)
             # self.u[:] = self.u + self.sol - self.z
-        else :
-            mu = self.step/np.linalg.norm(self.A)
-            self.z[:] = self.non_smooth_funs[0].prox(self.A@self.sol + self.u, self.step)
-            self.sol[:] = self.non_smooth_funs[1].prox(self.sol-(mu/self.step)*self.A.T@(self.A@self.sol-self.z+self.u), mu)
+
+        else : # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014." 
+            self.z[:] = self.non_smooth_funs[1].prox(self.A@self.sol + self.u, self.step)
+            self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.A.T@(self.A@self.sol-self.z+self.u), self.mu)
             self.u[:] = self.u + self.A@self.sol - self.z
 
     def _post(self):
