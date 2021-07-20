@@ -721,7 +721,6 @@ class douglas_rachford(solver):
     >>> ret['sol']
     array([3.99939034, 4.99923792, 5.99908551, 6.99893309])
 
-
     Linearized ADMM:
 
     >>> import numpy as np
@@ -747,7 +746,7 @@ class douglas_rachford(solver):
 
         if A is None:
             self.A = lambda x: x
-            self.At = lambda x: x 
+            self.At = lambda x: x
         else:
             # Transform matrix form to operator form.
             self.A = lambda x: A.dot(x)
@@ -807,14 +806,14 @@ class douglas_rachford(solver):
         #     # self.sol[:] = self.non_smooth_funs[1].prox(self.z-self.u, self.step)
         #     # self.u[:] = self.u + self.sol - self.z
 
-        # else : # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014." 
+        # else: # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014."
         self.z[:] = self.non_smooth_funs[1].prox(self.A(self.sol) + self.u, self.step)
         self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.At(self.A(self.sol)-self.z+self.u), self.mu)
         self.u[:] = self.u + self.A(self.sol) - self.z
 
     def _objective(self, x):
         obj_smooth = [f.eval(x) for f in self.smooth_funs]
-        obj_nonsmooth = [self.non_smooth_funs[0].eval(x), 
+        obj_nonsmooth = [self.non_smooth_funs[0].eval(x),
                          self.non_smooth_funs[1].eval(self.A(x))]
         return obj_nonsmooth + obj_smooth
 
@@ -1139,15 +1138,15 @@ class chambolle_pock(primal_dual):
 
     def _algo(self):
         """
-        g_{k+1} = prox_{\sigma F^∗} (g_k+ \sigma*L(\tilde{f}_k)) 
-        f_{k+1} = prox_{\tau G} (f_k−\tau L^∗(g_{k+1}) ) 
+        g_{k+1} = prox_{\sigma F^∗} (g_k+ \sigma*L(\tilde{f}_k))
+        f_{k+1} = prox_{\tau G} (f_k−\tau L^∗(g_{k+1}) )
         \tilde{f}_{k+1} = f{k+1}+ \theta*(f_{k+1} − f_k)
         """
-        # Backward steps 
-        self.g = _prox_star(self.non_smooth_funs[1], self.g + self.sigma*self.L(self.sol), self.sigma) 
+        # Backward steps
+        self.g = _prox_star(self.non_smooth_funs[1], self.g + self.sigma*self.L(self.sol), self.sigma)
         self.fp1 = self.non_smooth_funs[0].prox(self.f - self.tau*self.Lt(self.g), self.tau)
 
-        # Update solution 
+        # Update solution
         self.sol[:] = self.fp1 + self.theta*( self.fp1 - self.f )
 
         # update
