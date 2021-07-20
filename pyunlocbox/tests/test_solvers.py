@@ -421,7 +421,6 @@ class TestCase(unittest.TestCase):
         solver.sigma = -1.
         self.assertRaises(ValueError, solver.pre, [G, F], x0)
 
-
     def test_solver_comparison(self):
         """
         Test that all solvers return the same and correct solution.

@@ -694,7 +694,7 @@ class douglas_rachford(solver):
     ----------
     lambda_ : float, optional
         The update term weight. It should be between 0 and 1. Default is 1.
-    A       : numpy array, optional
+    A : array_like, optional
         Matrix implementing a linear transformation of x in g() as : minimize f(x) + g(Ax)
 
     Notes
@@ -720,7 +720,9 @@ class douglas_rachford(solver):
     >>> ret['sol']
     array([3.99939034, 4.99923792, 5.99908551, 6.99893309])
 
-    --- Linearized ADMM ---
+
+    Linearized ADMM:
+
     >>> import numpy as np
     >>> from pyunlocbox import functions, solvers
     >>> y = np.array([4,-9,-13,-4])
@@ -774,7 +776,7 @@ class douglas_rachford(solver):
                 self.non_smooth_funs.append(f)
             else:
                 raise ValueError('Douglas-Rachford requires each '
-                                'function to implement prox().')
+                                 'function to implement prox().')
 
         self.z = np.array(self.A(x0), copy=True)
         self.u = np.array(self.A(x0), copy=True)
