@@ -37,6 +37,7 @@ Then, derived classes implement various common solvers.
 
 .. autosummary::
 
+    chambolle_pock
     mlfbf
     projection_based
 
