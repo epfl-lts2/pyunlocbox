@@ -712,7 +712,7 @@ class douglas_rachford(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.douglas_rachford(lambda_=1, step=1)
+    >>> solver = solvers.douglas_rachford(step=1)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 8 iterations:
         objective function f(sol) = 2.927052e-06
@@ -720,14 +720,39 @@ class douglas_rachford(solver):
     >>> ret['sol']
     array([3.99939034, 4.99923792, 5.99908551, 6.99893309])
 
+    --- Linearized ADMM ---
+    >>> import numpy as np
+    >>> from pyunlocbox import functions, solvers
+    >>> y = np.array([4,-9,-13,-4])
+    >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+    >>> max_step = 0.5/(1 + np.linalg.norm(L, 2))
+    >>> x0 = np.zeros(3)
+    >>> f1 = functions.norm_l1()
+    >>> f2 = functions.norm_l1(y=y)
+    >>> solver = solvers.douglas_rachford(step=max_step*50, A=L)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-1, maxit=1000, rtol=1e-5)
+    Solution found after 993 iterations:
+        objective function f(sol) = 8.008191e+00
+        stopping criterion: RTOL
+    >>> ret['sol']
+    array([-4.00133346  3.00096956 -0.99996531])
+
     """
 
     def __init__(self, A=None, mu=None, *args, **kwargs):
         super(douglas_rachford, self).__init__(*args, **kwargs)
-        self.A = A
-        self.mu = mu
-        if (self.A is not None and self.mu is None):
-                self.mu = self.step/(np.linalg.norm(self.A)**2)
+
+        if A is None:
+            self.A = lambda x: x
+            self.At = lambda x: x 
+        else:
+            # Transform matrix form to operator form.
+            self.A = lambda x: A.dot(x)
+            self.At = lambda x: A.T.dot(x)
+
+        self.mu=0.5
+        if (mu is None and A is not None):
+            self.mu = self.step/(np.linalg.norm(A,2)**2)
 
     def _pre(self, functions, x0):
 
@@ -738,16 +763,21 @@ class douglas_rachford(solver):
             raise ValueError('Douglas-Rachford requires two convex functions.')
 
         for f in functions:
-            if 'PROX' in f.cap(x0):
+            x1 = np.copy(x0)
+
+            try :
+                f.cap(x1)
+            except ValueError:
+                x1 = self.A(x0)
+
+            if 'PROX' in f.cap(x1):
                 self.non_smooth_funs.append(f)
             else:
                 raise ValueError('Douglas-Rachford requires each '
-                                 'function to implement prox().')
+                                'function to implement prox().')
 
-        self.z = np.array(x0, copy=True)
-        if (self.A is not None):
-            self.z = np.array(self.A@x0, copy=True)
-            self.u = np.array(self.A@x0, copy=True)
+        self.z = np.array(self.A(x0), copy=True)
+        self.u = np.array(self.A(x0), copy=True)
 
     def _algo(self):
         """
@@ -765,19 +795,25 @@ class douglas_rachford(solver):
             u^{k+1} = u^k+Ax^{k+1}−z^{k+1}
 
         """
-        if (self.A is None):
-            tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
-            self.z[:] = self.z + self.lambda_ * (tmp - self.sol)
-            self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
+        # if (self.A is None):
+        #     tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
+        #     self.z[:] = self.z + self.lambda_ * (tmp - self.sol)        # prox_{λg}(y) != λ prox_{g}(y)
+        #     self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
 
-            # self.z[:] = self.non_smooth_funs[0].prox(self.sol + self.u, self.step)
-            # self.sol[:] = self.non_smooth_funs[1].prox(self.z-self.u, self.step)
-            # self.u[:] = self.u + self.sol - self.z
+        #     # self.z[:] = self.non_smooth_funs[0].prox(self.sol + self.u, self.step)
+        #     # self.sol[:] = self.non_smooth_funs[1].prox(self.z-self.u, self.step)
+        #     # self.u[:] = self.u + self.sol - self.z
 
-        else : # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014." 
-            self.z[:] = self.non_smooth_funs[1].prox(self.A@self.sol + self.u, self.step)
-            self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.A.T@(self.A@self.sol-self.z+self.u), self.mu)
-            self.u[:] = self.u + self.A@self.sol - self.z
+        # else : # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014." 
+        self.z[:] = self.non_smooth_funs[1].prox(self.A(self.sol) + self.u, self.step)
+        self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.At(self.A(self.sol)-self.z+self.u), self.mu)
+        self.u[:] = self.u + self.A(self.sol) - self.z
+
+    def _objective(self, x):
+        obj_smooth = [f.eval(x) for f in self.smooth_funs]
+        obj_nonsmooth = [self.non_smooth_funs[0].eval(x), 
+                         self.non_smooth_funs[1].eval(self.A(x))]
+        return obj_nonsmooth + obj_smooth
 
     def _post(self):
         del self.z

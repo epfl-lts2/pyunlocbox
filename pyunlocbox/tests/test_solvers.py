@@ -184,6 +184,7 @@ class TestCase(unittest.TestCase):
     def test_douglas_rachford(self):
         """
         Test douglas-rachford solver with L1-norm, L2-norm and dummy functions.
+        Also test linearized douglas-rachford solver with two L1-norms.
 
         """
         y = [4, 5, 6, 7]
@@ -214,25 +215,26 @@ class TestCase(unittest.TestCase):
         self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
         self.assertRaises(ValueError, solver.pre, [f1, f2, f1], x0)
 
-        # "Test linearized ADMM"
-        # y = [4, -9, -13, -4]
-        # L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
-        # solver = solvers.douglas_rachford(lambda_= 0.5, step=max_step, A=L)
-        # param = {'solver': solver, 'verbosity': 'NONE'}
 
-        # # L2-norm prox and L1-norm prox.
-        # x0 = np.zeros(3)
-        # f2 = functions.norm_l2(y=y, A=L)
-        # f1 = functions.norm_l1()
-        # solver = solvers.douglas_rachford(lambda_= 0.5, step=max_step, A=L)
-        # ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
+        "Test linearized ADMM"
+        x = [-4, 3, -1]
+        y = [4, -9, -13, -4]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        max_step = 0.5/(1 + np.linalg.norm(L, 2))
+        solver = solvers.douglas_rachford(step=max_step, A=L)
+        param = {'solver': solver, 'verbosity': 'NONE'}
 
-        # nptest.assert_allclose(ret['sol'], y)
+        # Two L1-norm prox.
+        x0 = np.zeros(3)
+        f1 = functions.norm_l1()
+        f2 = functions.norm_l1(y=y)
+        solver = solvers.douglas_rachford(step=max_step*50, A=L)
+        ret = solvers.solve([f1, f2], x0, solver, atol=1e-1, maxit=1000, rtol=1e-5)
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-2)
 
-        # print(ret['sol'])
-        # print(y)
-        # self.assertEqual(ret['crit'], 'RTOL')
-        # # self.assertEqual(ret['niter'], 35)
+        # Sanity checks
+        self.assertRaises(ValueError, solver.pre, [f1], x0)
+        self.assertRaises(ValueError, solver.pre, [f2, f1], x0)
 
     def test_generalized_forward_backward(self):
         """
@@ -402,8 +404,8 @@ class TestCase(unittest.TestCase):
         """
         x = [-4, 3, -1]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
-        max_step = 1/(1 + np.linalg.norm(L, 2))
-        solver = solvers.chambolle_pock(L=L, sigma=max_step/2., theta=max_step/2., tau=max_step/2.)
+        max_step = 0.5/(1 + np.linalg.norm(L, 2))
+        solver = solvers.chambolle_pock(L=L, sigma=max_step, theta=max_step, tau=max_step)
         params = {'solver': solver, 'verbosity': 'NONE'}
 
         # Two L1-norm prox.
