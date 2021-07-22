@@ -1066,7 +1066,7 @@ class projection_based(primal_dual):
 
 class chambolle_pock(primal_dual):
     r"""
-    Primal-Dual Proximal Splitting.
+    Chambolle-Pock Primal-Dual Proximal Splitting.
 
     This algorithm solves convex optimization problems with objective of the
     form :math:`G(x) + F(Lx)`, where :math:`F` and :math:`G` are proper,

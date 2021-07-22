@@ -184,8 +184,6 @@ class TestCase(unittest.TestCase):
     def test_douglas_rachford(self):
         """
         Test douglas-rachford solver with L1-norm, L2-norm and dummy functions.
-        Also test linearized douglas-rachford solver with two L1-norms.
-
         """
         y = [4, 5, 6, 7]
         solver = solvers.douglas_rachford()
@@ -215,8 +213,8 @@ class TestCase(unittest.TestCase):
         self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
         self.assertRaises(ValueError, solver.pre, [f1, f2, f1], x0)
 
-
-        "Test linearized ADMM"
+    def test_linearized_douglas_rachford(self):
+        "Test linearized douglas-rachford solver with two L1-norms.
         x = [-4, 3, -1]
         y = [4, -9, -13, -4]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
