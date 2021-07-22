@@ -16,6 +16,18 @@ Unreleased
 * Continuous integration with Python 3.6, 3.7, 3.8, 3.9. Dropped 2.7, 3.4, 3.5.
 * Merged all the extra requirements in a single dev requirement.
 
+0.5.3 (2021-07-22)
+------------------
+
+New features:
+
+*  New parameter ``is_hermitian`` in the ``norm_nuclear`` function to benefit from the hermitian property in ``np.linalg.svd``.
+
+* Solvers: 
+
+  * Linearized Douglas-Rachford (or ADMM)
+  * Chambolle-Pock
+
 0.5.2 (2017-12-15)
 ------------------
 
