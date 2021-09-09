@@ -220,14 +220,13 @@ class TestCase(unittest.TestCase):
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
         max_step = 0.5/(1 + np.linalg.norm(L, 2))
         solver = solvers.douglas_rachford(step=max_step, A=L)
-        param = {'solver': solver, 'verbosity': 'NONE'}
 
         # Two L1-norm prox.
         x0 = np.zeros(3)
         f1 = functions.norm_l1()
         f2 = functions.norm_l1(y=y)
         solver = solvers.douglas_rachford(step=max_step*50, A=L)
-        ret = solvers.solve([f1, f2], x0, solver, atol=1e-1, maxit=1000, rtol=1e-5)
+        ret = solvers.solve([f1, f2], x0, solver, atol=1e-1, maxit=1000, rtol=1e-5, verbosity='NONE')
         nptest.assert_allclose(ret['sol'], x, rtol=1e-2)
 
         # Sanity checks
@@ -367,7 +366,8 @@ class TestCase(unittest.TestCase):
         h = functions.norm_l2(y=y, lambda_=0.5)
         max_step = 1 / (1 + np.linalg.norm(L, 2))
         solver = solvers.mlfbf(L=L, step=max_step / 2.)
-        ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0)
+        ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0,
+                            verbosity="NONE")
         np.testing.assert_allclose(ret["sol"], y)
 
     def test_projection_based(self):
@@ -404,14 +404,13 @@ class TestCase(unittest.TestCase):
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
         max_step = 0.5/(1 + np.linalg.norm(L, 2))
         solver = solvers.chambolle_pock(L=L, sigma=max_step, theta=max_step, tau=max_step)
-        params = {'solver': solver, 'verbosity': 'NONE'}
 
         # Two L1-norm prox.
         y = np.array([4,-9,-13,-4])
         F = functions.norm_l1(y=y)
         G = functions.norm_l1()
         x0 = np.array([0,0,0])
-        ret = solvers.solve([G, F], x0, solver, maxit=1000, rtol=None, xtol=None, **params)
+        ret = solvers.solve([G, F], x0, solver, maxit=1000, rtol=None, xtol=None, verbosity="NONE")
         nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
 
         # Sanity checks
