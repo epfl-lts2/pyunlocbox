@@ -214,7 +214,7 @@ class TestCase(unittest.TestCase):
         self.assertRaises(ValueError, solver.pre, [f1, f2, f1], x0)
 
     def test_linearized_douglas_rachford(self):
-        "Test linearized douglas-rachford solver with two L1-norms.
+        "Test linearized douglas-rachford solver with two L1-norms."
         x = [-4, 3, -1]
         y = [4, -9, -13, -4]
         L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
