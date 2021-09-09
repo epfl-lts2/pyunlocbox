@@ -55,6 +55,7 @@ from __future__ import division
 
 from time import time
 from copy import deepcopy
+import warnings
 
 import numpy as np
 from scipy.optimize import minimize
@@ -1096,8 +1097,8 @@ class proj_lineq(proj):
 
         if pinvA is None:
             if A is None:
-                print("Are you sure about the parameters?" +
-                      "The projection will return y.")
+                warnings.warn("Are you sure about the parameters? "
+                              "The projection will return y.", RuntimeWarning)
                 self.pinvA = lambda x: x
             else:
                 if callable(A):
