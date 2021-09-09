@@ -9,7 +9,7 @@ The documentation is available on
 `Read the Docs <https://pyunlocbox.readthedocs.io>`_
 and development takes place on
 `GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
-A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists.
+A (mostly unmaintained) `Matlab version <https://epfl-lts2.github.io/unlocbox-html>`_ exists.
 
 +-----------------------------------+
 | |doc|  |pypi|  |conda|  |binder|  |
@@ -30,14 +30,14 @@ A (mostly unmaintained) `Matlab version <https://lts2.epfl.ch/unlocbox>`_ exists
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
    :target: https://pypi.org/project/pyunlocbox
 .. |travis| image:: https://img.shields.io/travis/com/epfl-lts2/pyunlocbox.svg
-   :target: https://travis-ci.com/epfl-lts2/pyunlocbox
-.. |coveralls| image:: https://img.shields.io/coveralls/epfl-lts2/pyunlocbox.svg
+   :target: https://app.travis-ci.com/github/epfl-lts2/pyunlocbox
+.. |coveralls| image:: https://img.shields.io/coveralls/github/epfl-lts2/pyunlocbox.svg
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
    :target: https://github.com/epfl-lts2/pyunlocbox
 .. |binder| image:: https://static.mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?urlpath=lab/tree/examples/playground.ipynb
-.. |conda| image:: https://anaconda.org/conda-forge/pyunlocbox/badges/installer/conda.svg
+.. |conda| image:: https://img.shields.io/conda/vn/conda-forge/pyunlocbox.svg
    :target: https://anaconda.org/conda-forge/pyunlocbox
 
 The package is designed to be easy to use while allowing any advanced tasks. It
