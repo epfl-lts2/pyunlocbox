@@ -1102,17 +1102,17 @@ class chambolle_pock(primal_dual):
     >>> y = np.array([4, -9, -13, -4])
     >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
     >>> max_step = 1 / (1 + np.linalg.norm(L, 2))
-    >>> x0 = np.array([0, 0, 0])
+    >>> x0 = np.zeros(3)
     >>> f = functions.norm_l1(y=y)
     >>> g = functions.norm_l1()
     >>> solver = solvers.chambolle_pock(L=L, sigma=max_step/2,
     ...                                 theta=max_step/2, tau=max_step/2)
     >>> ret = solvers.solve([g, f], x0, solver, maxit=1000, rtol=None, xtol=None)
     Solution found after 1000 iterations:
-        objective function f(sol) = 8.000000e+00
+        objective function f(sol) = 9.068105e+00
         stopping criterion: MAXIT
     >>> ret['sol']
-    array([-4, 3, -1])
+    array([-3.60833292,  2.72982626, -1.02656965])
 
     """
     def __init__(self, sigma=1., tau=1., theta=1., accel=None, *args, **kwargs):
