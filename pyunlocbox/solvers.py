@@ -725,9 +725,9 @@ class douglas_rachford(solver):
 
     >>> import numpy as np
     >>> from pyunlocbox import functions, solvers
-    >>> y = np.array([4,-9,-13,-4])
+    >>> y = np.array([4, -9, -13, -4])
     >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
-    >>> max_step = 0.5/(1 + np.linalg.norm(L, 2))
+    >>> max_step = 0.5 / (1 + np.linalg.norm(L, 2))
     >>> x0 = np.zeros(3)
     >>> f1 = functions.norm_l1()
     >>> f2 = functions.norm_l1(y=y)
@@ -737,7 +737,7 @@ class douglas_rachford(solver):
         objective function f(sol) = 8.008191e+00
         stopping criterion: RTOL
     >>> ret['sol']
-    array([-4.00133346  3.00096956 -0.99996531])
+    array([-4.00133346,  3.00096956, -0.99996531])
 
     """
 
@@ -952,16 +952,16 @@ class mlfbf(primal_dual):
 
     def _algo(self):
         """
-            y1 = x^k - λ ∇h(x^k) + L^T(z^k)
-            y2 = z^k + λ L(x^k)
+        y1 = x^k - λ ∇h(x^k) + L^T(z^k)
+        y2 = z^k + λ L(x^k)
 
-            p1 = prox_{λf} y1
-            p2 = prox_{λg^*} y2
+        p1 = prox_{λf} y1
+        p2 = prox_{λg^*} y2
 
-            q1 = p1 - λ ∇h(p1) + L^T(p2)
-            q2 = p2 + λ L(p1)
+        q1 = p1 - λ ∇h(p1) + L^T(p2)
+        q2 = p2 + λ L(p1)
 
-            with x^k (z^k) the solution (dual-solution) at iteration k.
+        with x^k (z^k) the solution (dual-solution) at iteration k.
         """
         # Forward steps (in both primal and dual spaces)
         y1 = self.sol - self.step * (self.smooth_funs[0].grad(self.sol) +
@@ -1084,28 +1084,35 @@ class chambolle_pock(primal_dual):
     This algorithm requires the two functions to implement the
     :meth:`pyunlocbox.functions.func.prox` method.
 
-    The step-size should be in the interval :math:`\left] 0, \frac{1}{\beta + \|L\|_{2}}\right[`.
+    The step-size should be in the interval
+    :math:`\left] 0, \frac{1}{\beta + \|L\|_{2}}\right[`.
 
-    See :cite:`Antonin Chambolle and Thomas Pock: A First-order primal-dual algorithm for convex problems
-     with application to imaging, Journal of Mathematical Imaging and Vision, Volume 40, Number 1 (2011), 120-145" for details.
+    See [1]_ for details.
+
+    References
+    ----------
+    .. [1] Antonin Chambolle and Thomas Pock, "A First-order primal-dual
+       algorithm for convex problems with application to imaging," Journal of
+       Mathematical Imaging and Vision, Volume 40, Number 1 (2011), 120-145.
 
     Examples
     --------
     >>> import numpy as np
     >>> from pyunlocbox import functions, solvers
-    >>> y = np.array([4,-9,-13,-4])
+    >>> y = np.array([4, -9, -13, -4])
     >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
-    >>> max_step = 1/(1 + np.linalg.norm(L, 2))
-    >>> x0 = np.array([0,0,0])
+    >>> max_step = 1 / (1 + np.linalg.norm(L, 2))
+    >>> x0 = np.array([0, 0, 0])
     >>> f = functions.norm_l1(y=y)
     >>> g = functions.norm_l1()
-    >>> solver = solvers.chambolle_pock(L=L, sigma=max_step/2., theta=max_step/2., tau=max_step/2.)
+    >>> solver = solvers.chambolle_pock(L=L, sigma=max_step/2,
+    ...                                 theta=max_step/2, tau=max_step/2)
     >>> ret = solvers.solve([g, f], x0, solver, maxit=1000, rtol=None, xtol=None)
-    >>> print ('Chambolle-Pock solution : ', ret['sol'])
     Solution found after 1000 iterations:
         objective function f(sol) = 8.000000e+00
         stopping criterion: MAXIT
-    Chambolle-Pock solution :  [-4  3 -1]
+    >>> ret['sol']
+    array([-4, 3, -1])
 
     """
     def __init__(self, sigma=1., tau=1., theta=1., accel=None, *args, **kwargs):
