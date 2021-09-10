@@ -713,7 +713,7 @@ class douglas_rachford(solver):
     >>> x0 = np.zeros(len(y))
     >>> f1 = functions.norm_l2(y=y)
     >>> f2 = functions.dummy()
-    >>> solver = solvers.douglas_rachford(step=1)
+    >>> solver = solvers.douglas_rachford(lambda_=1, step=1)
     >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-5)
     Solution found after 8 iterations:
         objective function f(sol) = 2.927052e-06
@@ -741,8 +741,9 @@ class douglas_rachford(solver):
 
     """
 
-    def __init__(self, A=None, mu=None, *args, **kwargs):
+    def __init__(self, lambda_=1, A=None, mu=None, *args, **kwargs):
         super(douglas_rachford, self).__init__(*args, **kwargs)
+        self.lambda_ = lambda_
 
         if A is None:
             self.A = lambda x: x
@@ -758,6 +759,8 @@ class douglas_rachford(solver):
 
     def _pre(self, functions, x0):
 
+        if self.lambda_ <= 0 or self.lambda_ > 1:
+            raise ValueError('Lambda is bounded by 0 and 1.')
         if self.mu <= 0 or self.mu > 1:
             raise ValueError('Mu is bounded by 0 and 1.')
 
@@ -784,17 +787,17 @@ class douglas_rachford(solver):
     def _algo(self):
         """
         Default:
-            x^{k+1} = prox_{λf} (z^k)
-            z^{k+1} = z^k + prox_{λg}(2x^{k+1}−z^k) − x^{k+1}
+            x^{k+1} = prox_{θf} (z^k)
+            z^{k+1} = z^k + λ (prox_{θg}(2x^{k+1}−z^k) − x^{k+1})
         Or equivalently:
-            z^{k+1} = prox_{λg} (x^k+u^k)
-            x^{k+1} = prox_{λf} (z^{k+1}−u^k)
-            u^{k+1} = u^k+x^{k+1}−z^{k+1}
+            z^{k+1} = prox_{θg} (x^k + u^k)
+            x^{k+1} = prox_{µf} (z^{k+1} − u^k)
+            u^{k+1} = u^k + λ (x^{k+1} − z^{k+1})
 
         If linearized:
-            z^{k+1} = prox_{λg} (Ax^k+u^k)
-            x^{k+1} = prox_{µf} (x^k−(µ/λ)A^T(Ax^k−z^{k+1}+u^k))
-            u^{k+1} = u^k+Ax^{k+1}−z^{k+1}
+            z^{k+1} = prox_{θg} (Ax^k+u^k)
+            x^{k+1} = prox_{µf} (x^k − (µ/θ)A^T(Ax^k−z^{k+1}+u^k))
+            u^{k+1} = u^k + λ (Ax^{k+1} − z^{k+1})
 
         """
         # if (self.A is None):
@@ -809,7 +812,7 @@ class douglas_rachford(solver):
         # else: # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014."
         self.z[:] = self.non_smooth_funs[1].prox(self.A(self.sol) + self.u, self.step)
         self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.At(self.A(self.sol)-self.z+self.u), self.mu)
-        self.u[:] = self.u + self.A(self.sol) - self.z
+        self.u[:] = self.u + self.lambda_* (self.A(self.sol) - self.z)
 
     def _objective(self, x):
         obj_smooth = [f.eval(x) for f in self.smooth_funs]
