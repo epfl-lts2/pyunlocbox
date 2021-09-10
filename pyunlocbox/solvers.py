@@ -746,12 +746,19 @@ class douglas_rachford(solver):
         self.lambda_ = lambda_
 
         if A is None:
-            self.A = lambda x: x
-            self.At = lambda x: x
+            self.A = None
         else:
             # Transform matrix form to operator form.
             self.A = lambda x: A.dot(x)
             self.At = lambda x: A.T.dot(x)
+
+        # if A is None:
+        #     self.A = lambda x: x
+        #     self.At = lambda x: x
+        # else:
+        #     # Transform matrix form to operator form.
+        #     self.A = lambda x: A.dot(x)
+        #     self.At = lambda x: A.T.dot(x)
 
         self.mu=0.5
         if (mu is None and A is not None):
@@ -800,19 +807,19 @@ class douglas_rachford(solver):
             u^{k+1} = u^k + λ (Ax^{k+1} − z^{k+1})
 
         """
-        # if (self.A is None):
-        #     tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
-        #     self.z[:] = self.z + self.lambda_ * (tmp - self.sol)        # prox_{λg}(y) != λ prox_{g}(y)
-        #     self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
+        if (self.A is None):
+            tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
+            self.z[:] = self.z + self.lambda_ * (tmp - self.sol)        # prox_{λg}(y) != λ prox_{g}(y)
+            self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
 
         #     # self.z[:] = self.non_smooth_funs[0].prox(self.sol + self.u, self.step)
         #     # self.sol[:] = self.non_smooth_funs[1].prox(self.z-self.u, self.step)
         #     # self.u[:] = self.u + self.sol - self.z
 
-        # else: # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014."
-        self.z[:] = self.non_smooth_funs[1].prox(self.A(self.sol) + self.u, self.step)
-        self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.At(self.A(self.sol)-self.z+self.u), self.mu)
-        self.u[:] = self.u + self.lambda_* (self.A(self.sol) - self.z)
+        else: # See "Proximal Algorithms. N. Parikh and S. Boyd. Foundations and Trends in Optimization, 1(3):123-231, 2014."
+            self.z[:] = self.non_smooth_funs[1].prox(self.A(self.sol) + self.u, self.step)
+            self.sol[:] = self.non_smooth_funs[0].prox(self.sol-(self.mu/self.step)*self.At(self.A(self.sol)-self.z+self.u), self.mu)
+            self.u[:] = self.u + self.lambda_* (self.A(self.sol) - self.z)
 
     def _objective(self, x):
         obj_smooth = [f.eval(x) for f in self.smooth_funs]
