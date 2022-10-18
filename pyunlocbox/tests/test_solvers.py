@@ -184,7 +184,6 @@ class TestCase(unittest.TestCase):
     def test_douglas_rachford(self):
         """
         Test douglas-rachford solver with L1-norm, L2-norm and dummy functions.
-
         """
         y = [4, 5, 6, 7]
         solver = solvers.douglas_rachford()
@@ -213,6 +212,26 @@ class TestCase(unittest.TestCase):
         solver.lambda_ = -2.
         self.assertRaises(ValueError, solver.pre, [f1, f2], x0)
         self.assertRaises(ValueError, solver.pre, [f1, f2, f1], x0)
+
+    def test_linearized_douglas_rachford(self):
+        "Test linearized douglas-rachford solver with two L1-norms."
+        x = [-4, 3, -1]
+        y = [4, -9, -13, -4]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        max_step = 0.5/(1 + np.linalg.norm(L, 2))
+        solver = solvers.douglas_rachford(step=max_step, A=L)
+
+        # Two L1-norm prox.
+        x0 = np.zeros(3)
+        f1 = functions.norm_l1()
+        f2 = functions.norm_l1(y=y)
+        solver = solvers.douglas_rachford(step=max_step*50, A=L)
+        ret = solvers.solve([f1, f2], x0, solver, atol=1e-1, maxit=1000, rtol=1e-5, verbosity='NONE')
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-2)
+
+        # Sanity checks
+        self.assertRaises(ValueError, solver.pre, [f1], x0)
+        self.assertRaises(ValueError, solver.pre, [f2, f1], x0)
 
     def test_generalized_forward_backward(self):
         """
@@ -347,7 +366,8 @@ class TestCase(unittest.TestCase):
         h = functions.norm_l2(y=y, lambda_=0.5)
         max_step = 1 / (1 + np.linalg.norm(L, 2))
         solver = solvers.mlfbf(L=L, step=max_step / 2.)
-        ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0)
+        ret = solvers.solve([f, g, h], x0, solver, maxit=1000, rtol=0,
+                            verbosity="NONE")
         np.testing.assert_allclose(ret["sol"], y)
 
     def test_projection_based(self):
@@ -374,6 +394,29 @@ class TestCase(unittest.TestCase):
         self.assertRaises(ValueError, solver.pre, [f, g], x0())
         solver.lambda_ = -3.
         self.assertRaises(ValueError, solver.pre, [f, g], x0())
+
+    def test_chambolle_pock(self):
+        """
+        Test the Chambolle-Pock algorithm.
+
+        """
+        x = [-4, 3, -1]
+        L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+        max_step = 0.5/(1 + np.linalg.norm(L, 2))
+        solver = solvers.chambolle_pock(L=L, sigma=max_step, theta=max_step, tau=max_step)
+
+        # Two L1-norm prox.
+        y = np.array([4,-9,-13,-4])
+        F = functions.norm_l1(y=y)
+        G = functions.norm_l1()
+        x0 = np.array([0,0,0])
+        ret = solvers.solve([G, F], x0, solver, maxit=1000, rtol=None, xtol=None, verbosity="NONE")
+        nptest.assert_allclose(ret['sol'], x, rtol=1e-5)
+
+        # Sanity checks
+        self.assertRaises(ValueError, solver.pre, [F], x0)
+        solver.sigma = -1.
+        self.assertRaises(ValueError, solver.pre, [G, F], x0)
 
     def test_solver_comparison(self):
         """
@@ -438,6 +481,7 @@ class TestCase(unittest.TestCase):
         slvs = []
         slvs.append(solvers.mlfbf(step=step, L=L))
         slvs.append(solvers.projection_based(step=step, L=L))
+        slvs.append(solvers.chambolle_pock(step=step, theta=step, sigma=step, tau=step, L=L))
 
         # Compare solutions.
         niter = 1000
