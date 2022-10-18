@@ -141,11 +141,12 @@ See the guidelines for contributing in ``CONTRIBUTING.rst``.
 Similar libraries
 -----------------
 
-Other proximal based algorithm and operators can be found in:
+Other proximal based algorithms and operators can be found in:
+
 * http://proximity-operator.net/
 * https://gitlab.gwdg.de/nam/ProxPython
 
-Many proximal operators are availlable in the `proxop <https://pypi.org/project/proxop/>`_ python library
+Furthermore, many proximal operators are availlable in the `proxop <https://pypi.org/project/proxop/>`_ python library.
 
 Acknowledgments
 ---------------
