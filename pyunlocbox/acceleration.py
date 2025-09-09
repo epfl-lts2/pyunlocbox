@@ -39,7 +39,12 @@ import logging
 import warnings
 
 import numpy as np
-from scipy.optimize.linesearch import line_search_armijo
+# Note: line_search_armijo moved to private module in scipy >= 1.9
+# TODO: Consider migrating to scipy.optimize.line_search for future compatibility
+try:
+    from scipy.optimize.linesearch import line_search_armijo
+except ImportError:
+    from scipy.optimize._linesearch import line_search_armijo
 
 
 class accel(object):

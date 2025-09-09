@@ -125,9 +125,32 @@ for an exhaustive documentation of the API. Enjoy!
 Installation
 ------------
 
+UV (Recommended)
+~~~~~~~~~~~~~~~~
+
+For the fastest installation and dependency management, use `UV <https://docs.astral.sh/uv/>`_::
+
+    $ uv add pyunlocbox
+
+Or install directly::
+
+    $ uv pip install pyunlocbox
+
+To set up a development environment with UV::
+
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ cd pyunlocbox
+    $ uv sync --dev
+
+Pip
+~~~
+
 The PyUNLocBoX is available on PyPI::
 
     $ pip install pyunlocbox
+
+Conda
+~~~~~
 
 The PyUNLocBoX is available on `conda-forge <https://github.com/conda-forge/pyunlocbox-feedstock>`_::
 
@@ -137,6 +160,21 @@ Contributing
 ------------
 
 See the guidelines for contributing in ``CONTRIBUTING.rst``.
+
+For development, we recommend using UV for fast dependency management::
+
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ cd pyunlocbox
+    $ uv sync --dev
+    $ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+Run tests::
+
+    $ uv run python -m pyunlocbox.tests.suite
+
+Build documentation::
+
+    $ uv run sphinx-build -b html doc/ doc/_build/
 
 Similar libraries
 -----------------
