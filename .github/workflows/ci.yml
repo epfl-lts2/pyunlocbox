@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - uses: pre-commit/action@v3.0.1
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        uv sync --dev
+        # Install additional system dependencies for documentation
+        sudo apt-get update
+        sudo apt-get install -y graphviz
+
+    - name: Lint with flake8
+      run: |
+        # Replicate: flake8 --doctests --exclude=doc, also exclude .venv
+        uv run flake8 --doctests --exclude=doc,.venv
+
+    - name: Test with coverage
+      run: |
+        uv run coverage run --branch --source pyunlocbox setup.py test
+        uv run coverage report
+        uv run coverage html
+
+    - name: Generate coverage XML for Coveralls
+      if: matrix.python-version == '3.11'
+      run: uv run coverage xml
+
+    - name: Upload coverage to Coveralls
+      if: matrix.python-version == '3.11'  # Only upload once
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        file: coverage.xml
+      continue-on-error: true
+
+    - name: Build documentation
+      if: matrix.python-version == '3.11'  # Only build docs once
+      run: |
+        # Replicate: sphinx-build commands from Makefile
+        uv run sphinx-build -b html -d doc/_build/doctrees doc doc/_build/html
+        uv run sphinx-build -b linkcheck -d doc/_build/doctrees doc doc/_build/linkcheck
+
+    - name: Upload documentation artifacts
+      if: matrix.python-version == '3.11'
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: doc/_build/html/
+
+  # Separate job for building and checking distribution
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Build package
+      run: |
+        uv build
+        ls -lh dist/*
+
+    - name: Check package
+      run: |
+        uv run twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/

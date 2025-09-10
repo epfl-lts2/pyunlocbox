@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 r"""
 The :mod:`pyunlocbox.acceleration` module implements acceleration schemes for
 use with the :mod:`pyunlocbox.solvers`. Pass a given acceleration object as an
@@ -39,15 +37,16 @@ import logging
 import warnings
 
 import numpy as np
+
 # Note: line_search_armijo moved to private module in scipy >= 1.9
-# TODO: Consider migrating to scipy.optimize.line_search for future compatibility
+# TODO: Consider migrating to scipy.optimize.line_search for future use
 try:
     from scipy.optimize.linesearch import line_search_armijo
 except ImportError:
     from scipy.optimize._linesearch import line_search_armijo
 
 
-class accel(object):
+class accel:
     r"""
     Defines the acceleration scheme object interface.
 
@@ -209,7 +208,7 @@ class backtracking(dummy):
         if (eta > 1) or (eta <= 0):
             raise ValueError("eta must be between 0 and 1.")
         self.eta = eta
-        super(backtracking, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _update_step(self, solver, objective, niter):
         """
@@ -228,46 +227,45 @@ class backtracking(dummy):
         """
         # Save current state of the solver
         properties = copy.deepcopy(vars(solver))
-        logging.debug('(Begin) solver properties: {}'.format(properties))
+        logging.debug(f"(Begin) solver properties: {properties}")
 
         # Initialize some useful variables
         fn = 0
-        grad = np.zeros_like(properties['sol'])
+        grad = np.zeros_like(properties["sol"])
         for f in solver.smooth_funs:
-            fn += f.eval(properties['sol'])
-            grad += f.grad(properties['sol'])
-        step = properties['step']
+            fn += f.eval(properties["sol"])
+            grad += f.grad(properties["sol"])
+        step = properties["step"]
 
-        logging.debug('fn = {}'.format(fn))
+        logging.debug(f"fn = {fn}")
 
         while True:
             # Run the solver with the current stepsize
             solver.step = step
-            logging.debug('Current step: {}'.format(step))
+            logging.debug(f"Current step: {step}")
             solver._algo()
-            logging.debug(
-                '(During) solver properties: {}'.format(vars(solver)))
+            logging.debug(f"(During) solver properties: {vars(solver)}")
 
             # Record results
             fp = np.sum([f.eval(solver.sol) for f in solver.smooth_funs])
-            logging.debug('fp = {}'.format(fp))
+            logging.debug(f"fp = {fp}")
 
-            dot_prod = np.dot(solver.sol - properties['sol'], grad)
-            logging.debug('dot_prod = {}'.format(dot_prod))
+            dot_prod = np.dot(solver.sol - properties["sol"], grad)
+            logging.debug(f"dot_prod = {dot_prod}")
 
-            norm_diff = np.sum((solver.sol - properties['sol'])**2)
-            logging.debug('norm_diff = {}'.format(norm_diff))
+            norm_diff = np.sum((solver.sol - properties["sol"]) ** 2)
+            logging.debug(f"norm_diff = {norm_diff}")
 
             # Restore the previous state of the solver
             for key, val in properties.items():
                 setattr(solver, key, copy.copy(val))
-            logging.debug('(Reset) solver properties: {}'.format(vars(solver)))
+            logging.debug(f"(Reset) solver properties: {vars(solver)}")
 
-            if (2. * step * (fp - fn - dot_prod) <= norm_diff):
-                logging.debug('Break condition reached')
+            if 2.0 * step * (fp - fn - dot_prod) <= norm_diff:
+                logging.debug("Break condition reached")
                 break
             else:
-                logging.debug('Decreasing step')
+                logging.debug("Decreasing step")
                 step *= self.eta
 
         return step
@@ -307,15 +305,15 @@ class fista(dummy):
     """
 
     def __init__(self, **kwargs):
-        self.t = 1.
-        super(fista, self).__init__(**kwargs)
+        self.t = 1.0
+        super().__init__(**kwargs)
 
     def _pre(self, functions, x0):
         self.sol = np.array(x0, copy=True)
 
     def _update_sol(self, solver, objective, niter):
-        self.t = 1. if (niter == 1) else self.t  # Restart variable t if needed
-        t = (1. + np.sqrt(1. + 4. * self.t**2.)) / 2.
+        self.t = 1.0 if (niter == 1) else self.t  # Restart variable t if needed
+        t = (1.0 + np.sqrt(1.0 + 4.0 * self.t**2.0)) / 2.0
         y = solver.sol + ((self.t - 1) / t) * (solver.sol - self.sol)
         self.t = t
         self.sol[:] = solver.sol
@@ -393,8 +391,15 @@ class regularized_nonlinear(dummy):
 
     """
 
-    def __init__(self, k=10, lambda_=1e-6, adaptive=True, dolinesearch=True,
-                 forcedecrease=True, **kwargs):
+    def __init__(
+        self,
+        k=10,
+        lambda_=1e-6,
+        adaptive=True,
+        dolinesearch=True,
+        forcedecrease=True,
+        **kwargs,
+    ):
         self.k = k
         self.lambda_ = lambda_
         self.adaptive = adaptive
@@ -413,10 +418,10 @@ class regularized_nonlinear(dummy):
             try:
                 self._lambda_ = [float(lambda_)]
             except ValueError as err:
-                print('lambda_ is not a number')
+                print("lambda_ is not a number")
                 raise err
         except ValueError as err:
-            print('lambda_ is not a list of numbers')
+            print("lambda_ is not a list of numbers")
             raise err
 
     def _pre(self, functions, x0):
@@ -439,7 +444,7 @@ class regularized_nonlinear(dummy):
                 svals = np.sort(np.abs(np.linalg.eigvals(UU)))
                 svals = np.log(svals)
                 svals = 0.5 * (svals[:-1] + svals[1:])
-                self.lambda_ = np.concatenate(([0.], np.exp(svals)))
+                self.lambda_ = np.concatenate(([0.0], np.exp(svals)))
 
             # Grid search for the best parameter for the extrapolation
             fvals = []
@@ -448,8 +453,7 @@ class regularized_nonlinear(dummy):
 
             for lambda_ in self.lambda_:
                 # Coefficients of the extrapolation
-                c[:] = np.linalg.solve(UU + lambda_ * np.eye(self.k),
-                                       np.ones(self.k))
+                c[:] = np.linalg.solve(UU + lambda_ * np.eye(self.k), np.ones(self.k))
                 c[:] /= np.sum(c)
 
                 extrap[:] = np.dot(np.asarray(self.buffer[:-1]).T, c)
@@ -469,8 +473,7 @@ class regularized_nonlinear(dummy):
                 # but that would require at least double the memory, as we'd
                 # have to store both the current extrapolation and the best
                 # extrapolation.
-                c[:] = np.linalg.solve(UU + lambda_ * np.eye(self.k),
-                                       np.ones(self.k))
+                c[:] = np.linalg.solve(UU + lambda_ * np.eye(self.k), np.ones(self.k))
                 c[:] /= np.sum(c)
                 extrap[:] = np.dot(np.asarray(self.buffer[:-1]).T, c)
 
@@ -479,6 +482,7 @@ class regularized_nonlinear(dummy):
                 # Objective evaluation functional
                 def f(x):
                     return np.sum([f.eval(x) for f in self.functions])
+
                 # Solution at previous extrapolation
                 xk = self.buffer[0]
                 # Search direction
@@ -486,17 +490,13 @@ class regularized_nonlinear(dummy):
                 # Objective value during the previous extrapolation
                 old_fval = np.sum(objective[-self.k])
 
-                a, fc, fa = line_search_armijo(f=f,
-                                               xk=xk,
-                                               pk=pk,
-                                               gfk=-pk,
-                                               old_fval=old_fval,
-                                               c1=1e-4,
-                                               alpha0=1.)
+                a, fc, fa = line_search_armijo(
+                    f=f, xk=xk, pk=pk, gfk=-pk, old_fval=old_fval, c1=1e-4, alpha0=1.0
+                )
 
                 # New point proposal
                 if a is None:
-                    warnings.warn('Line search failed to find good step size')
+                    warnings.warn("Line search failed to find good step size")
                 else:
                     extrap[:] = xk + a * pk
 

@@ -168,13 +168,47 @@ For development, we recommend using UV for fast dependency management::
     $ uv sync --dev
     $ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
+**Quick setup with just** (modern command runner)::
+
+    $ just setup  # Installs dependencies and sets up pre-commit hooks
+
+Set up pre-commit hooks (recommended)::
+
+    $ uv run pre-commit install
+
+This will automatically run code formatting and linting checks before each commit.
+
+**Pre-commit hooks include:**
+
+* **Code formatting**: ``black`` for consistent Python code style
+* **Import sorting**: ``isort`` for organized imports
+* **Linting**: ``flake8`` for code quality and style checks
+* **Security scanning**: ``bandit`` for common security issues
+* **Modern Python**: ``pyupgrade`` for upgrading syntax to newer Python versions
+* **General checks**: trailing whitespace, file endings, YAML/TOML validation
+
 Run tests::
 
-    $ uv run python -m pyunlocbox.tests.suite
+    $ uv run python -c "import pyunlocbox.tests; import unittest; unittest.TextTestRunner(verbosity=2).run(pyunlocbox.tests.suite)"
+
+Run pre-commit checks manually::
+
+    $ uv run pre-commit run --all-files
+
+Run linting::
+
+    $ uv run flake8 --doctests --exclude=doc,.venv
+
+Format code::
+
+    $ uv run black .
+    $ uv run isort .
 
 Build documentation::
 
     $ uv run sphinx-build -b html doc/ doc/_build/
+
+Note: This project has migrated from Travis CI to GitHub Actions. The ``.travis.yml`` file can be removed once the migration is complete.
 
 Similar libraries
 -----------------

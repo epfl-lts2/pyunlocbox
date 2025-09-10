@@ -1,0 +1,132 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyunlocbox"
+version = "0.5.2"
+description = "Convex Optimization in Python using Proximal Splitting"
+readme = "README.rst"
+license = {text = "BSD"}
+authors = [
+    {name = "EPFL LTS2"},
+]
+maintainers = [
+    {name = "EPFL LTS2"},
+]
+keywords = ["convex optimization"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Topic :: Scientific/Engineering",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "scipy",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Run the tests.
+    "flake8",
+    "coverage",
+    "coveralls",
+    # Build the documentation.
+    "sphinx",
+    "numpydoc",
+    "sphinxcontrib-bibtex",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "matplotlib",
+    # Build and upload packages.
+    "wheel",
+    "twine",
+    # Code quality and formatting.
+    "pre-commit",
+    "black",
+    "isort",
+    "bandit[toml]",
+]
+
+[project.urls]
+Homepage = "https://github.com/epfl-lts2/pyunlocbox"
+Documentation = "https://pyunlocbox.readthedocs.io"
+Repository = "https://github.com/epfl-lts2/pyunlocbox"
+"Bug Tracker" = "https://github.com/epfl-lts2/pyunlocbox/issues"
+Download = "https://pypi.org/project/pyunlocbox"
+"Try It Online" = "https://mybinder.org/v2/gh/epfl-lts2/pyunlocbox/master?urlpath=lab/tree/examples/playground.ipynb"
+
+[tool.setuptools.packages.find]
+include = ["pyunlocbox*"]
+
+[tool.setuptools.package-data]
+pyunlocbox = ["tests/*"]
+
+# UV-specific configuration
+[tool.uv]
+dev-dependencies = [
+    # Run the tests.
+    "flake8",
+    "coverage",
+    "coveralls",
+    # Build the documentation.
+    "sphinx",
+    "numpydoc",
+    "sphinxcontrib-bibtex",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+    "matplotlib",
+    # Build and upload packages.
+    "wheel",
+    "twine",
+    # Code quality and formatting.
+    "pre-commit",
+    "black",
+    "isort",
+    "bandit[toml]",
+]
+
+# Ruff configuration for linting (UV integrates well with Ruff)
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black/formatter
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["S101"]  # allow assert in tests
+
+[tool.ruff.lint.isort]
+known-first-party = ["pyunlocbox"]
+
+# Bandit security linting configuration
+[tool.bandit]
+exclude_dirs = ["tests", "doc", ".venv"]
+skips = ["B101"]  # Skip assert_used test
