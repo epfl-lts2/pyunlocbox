@@ -20,7 +20,7 @@ from pyunlocbox import functions  # noqa: F401
 from pyunlocbox import operators  # noqa: F401
 from pyunlocbox import solvers  # noqa: F401
 
-__version__ = "0.5.2"
+__version__ = "0.6.0"
 __release_date__ = "2017-12-15"
 
 

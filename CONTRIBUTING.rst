@@ -48,7 +48,7 @@ granularity, as follows::
 Making a release
 ----------------
 
-#. Update the version number and release date in ``setup.py``,
+#. Update the version number and release date in ``pyproject.toml``,
    ``pyunlocbox/__init__.py`` and ``CHANGELOG.rst``.
 #. Create a git tag with ``git tag -a v0.5.0 -m "PyUNLocBox v0.5.0"``.
 #. Push the tag to GitHub with ``git push github v0.5.0``. The tag should now
