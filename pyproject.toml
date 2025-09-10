@@ -133,6 +133,12 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["pyunlocbox"]
 
+# Flake8 configuration
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]  # E203: whitespace before ':', W503: line break before binary operator
+exclude = [".venv", "build", "dist", "*.egg", "doc"]
+
 # Bandit security linting configuration
 [tool.bandit]
 exclude_dirs = ["tests", "doc", ".venv"]

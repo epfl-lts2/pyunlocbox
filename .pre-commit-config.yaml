@@ -27,13 +27,13 @@ repos:
       - id: isort
         args: [--profile=black]
 
-  # # Linting with flake8
-  # - repo: https://github.com/pycqa/flake8
-  #   rev: 7.1.1
-  #   hooks:
-  #     - id: flake8
-  #       args: [--max-line-length=88, --extend-ignore=E203,W503]
-  #       exclude: ^(doc/|\.venv/)
+  # Linting with flake8
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        args: [--max-line-length=88, --extend-ignore=E203,W503]
+        exclude: ^(doc/|\.venv/)
 
   # Modern Python upgrade suggestions
   - repo: https://github.com/asottile/pyupgrade
