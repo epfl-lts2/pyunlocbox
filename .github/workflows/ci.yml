@@ -45,15 +45,12 @@ jobs:
         # Replicate: flake8 --doctests --exclude=doc, also exclude .venv
         uv run flake8 --doctests --exclude=doc,.venv
 
-    - name: Test with coverage
+    - name: Test with pytest
       run: |
-        uv run coverage run --branch --source pyunlocbox setup.py test
-        uv run coverage report
-        uv run coverage html
-
-    - name: Generate coverage XML for Coveralls
-      if: matrix.python-version == '3.11'
-      run: uv run coverage xml
+        # Set matplotlib backend for headless testing
+        export MPLBACKEND=agg
+        # Run tests with pytest and coverage
+        uv run pytest --cov=pyunlocbox --cov-report=term-missing --cov-report=html --cov-report=xml -v
 
     - name: Upload coverage to Coveralls
       if: matrix.python-version == '3.11'  # Only upload once

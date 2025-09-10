@@ -187,9 +187,20 @@ This will automatically run code formatting and linting checks before each commi
 * **Modern Python**: ``pyupgrade`` for upgrading syntax to newer Python versions
 * **General checks**: trailing whitespace, file endings, YAML/TOML validation
 
-Run tests::
+Run tests with pytest::
 
-    $ uv run python -c "import pyunlocbox.tests; import unittest; unittest.TextTestRunner(verbosity=2).run(pyunlocbox.tests.suite)"
+    $ uv run pytest
+
+Run tests with coverage::
+
+    $ uv run pytest --cov=pyunlocbox --cov-report=html
+
+Run specific test files::
+
+    $ uv run pytest pyunlocbox/tests/test_acceleration.py
+
+**Note**: Tests are being migrated from unittest to pytest. Currently, `test_acceleration.py`
+is fully migrated. Other test files may still use unittest but are discoverable by pytest.
 
 Run pre-commit checks manually::
 

@@ -40,6 +40,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     # Run the tests.
+    "pytest>=6.0",
+    "pytest-cov",
+    "pytest-xdist",  # parallel test execution
     "flake8",
     "coverage",
     "coveralls",
@@ -78,6 +81,9 @@ pyunlocbox = ["tests/*"]
 [tool.uv]
 dev-dependencies = [
     # Run the tests.
+    "pytest>=6.0",
+    "pytest-cov",
+    "pytest-xdist",  # parallel test execution
     "flake8",
     "coverage",
     "coveralls",
@@ -130,3 +136,27 @@ known-first-party = ["pyunlocbox"]
 [tool.bandit]
 exclude_dirs = ["tests", "doc", ".venv"]
 skips = ["B101"]  # Skip assert_used test
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=pyunlocbox",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["pyunlocbox/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
