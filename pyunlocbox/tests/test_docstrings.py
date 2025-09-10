@@ -25,7 +25,7 @@ def test_docstrings_python():
             doctest.testfile(file, module_relative=False, verbose=False)
         except doctest.DocTestFailure as e:
             pytest.fail(f"Doctest failed in {file}: {e}")
-        except Exception as e:
+        except Exception:
             # Some files might not have doctests or might have import issues
             # We'll skip those for now
             pass
@@ -46,7 +46,7 @@ def test_docstrings_rst():
             doctest.testfile(file, module_relative=False, verbose=False)
         except doctest.DocTestFailure as e:
             pytest.fail(f"Doctest failed in {file}: {e}")
-        except Exception as e:
+        except Exception:
             # Some files might not have doctests or might have import issues
             # We'll skip those for now
             pass

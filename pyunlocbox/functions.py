@@ -795,9 +795,7 @@ class norm_tv(norm):
             told = t
             iter += 1
 
-        try:
-            type(crit) == str
-        except NameError:
+        if not isinstance(crit, str):
             crit = "MAX_IT"
 
         t_end = time()
