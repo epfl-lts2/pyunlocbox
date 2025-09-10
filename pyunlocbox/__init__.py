@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 r"""
 The package is mainly organized around two class hierarchies: the functions and
 the solvers. Instantiated functions represent convex functions to optimize.
@@ -17,18 +15,20 @@ The :mod:`pyunlocbox` package is divided into the following modules:
 
 """
 
-from pyunlocbox import functions  # noqa: F401
-from pyunlocbox import solvers  # noqa: F401
 from pyunlocbox import acceleration  # noqa: F401
+from pyunlocbox import functions  # noqa: F401
 from pyunlocbox import operators  # noqa: F401
+from pyunlocbox import solvers  # noqa: F401
 
-__version__ = '0.5.2'
-__release_date__ = '2017-12-15'
+__version__ = "0.5.2"
+__release_date__ = "2017-12-15"
 
 
 def test():  # pragma: no cover
     """Run the test suite."""
     import unittest
+
     # Lazy as it might be slow and require additional dependencies.
     from pyunlocbox.tests import suite
+
     unittest.TextTestRunner(verbosity=2).run(suite)

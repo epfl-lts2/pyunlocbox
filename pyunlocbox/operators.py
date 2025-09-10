@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 r"""
 The :mod:`pyunlocbox.operators` module implements the following operators:
 
@@ -48,9 +46,7 @@ def grad(x, dim=2, **kwargs):
         zeros_shape = list(x.shape)
         zeros_shape[axis] = 1
 
-        diff = np.concatenate((np.diff(x, axis=axis),
-                               np.zeros(zeros_shape)),
-                              axis=axis)
+        diff = np.concatenate((np.diff(x, axis=axis), np.zeros(zeros_shape)), axis=axis)
         try:
             diff *= kwargs[WEIGHT_KEYS[axis]]
         except (KeyError, TypeError):
@@ -100,10 +96,14 @@ def div(*args, **kwargs):
         except KeyError:
             pass
 
-        x = np.concatenate((np.expand_dims(dx[0, ], axis=0),
-                            dx[1:-1, ] - dx[:-2, ],
-                            -np.expand_dims(dx[-2, ], axis=0)),
-                           axis=0)
+        x = np.concatenate(
+            (
+                np.expand_dims(dx[0,], axis=0),
+                dx[1:-1,] - dx[:-2,],
+                -np.expand_dims(dx[-2,], axis=0),
+            ),
+            axis=0,
+        )
 
     if len(args) >= 2:
         dy = args[1]
@@ -112,10 +112,33 @@ def div(*args, **kwargs):
         except KeyError:
             pass
 
-        x += np.concatenate((np.expand_dims(dy[:, 0, ], axis=1),
-                             dy[:, 1:-1, ] - dy[:, :-2, ],
-                             -np.expand_dims(dy[:, -2, ], axis=1)),
-                            axis=1)
+        x += np.concatenate(
+            (
+                np.expand_dims(
+                    dy[
+                        :,
+                        0,
+                    ],
+                    axis=1,
+                ),
+                dy[
+                    :,
+                    1:-1,
+                ]
+                - dy[
+                    :,
+                    :-2,
+                ],
+                -np.expand_dims(
+                    dy[
+                        :,
+                        -2,
+                    ],
+                    axis=1,
+                ),
+            ),
+            axis=1,
+        )
 
     if len(args) >= 3:
         dz = args[2]
@@ -124,10 +147,37 @@ def div(*args, **kwargs):
         except KeyError:
             pass
 
-        x += np.concatenate((np.expand_dims(dz[:, :, 0, ], axis=2),
-                             dz[:, :, 1:-1, ] - dz[:, :, :-2, ],
-                             -np.expand_dims(dz[:, :, -2, ], axis=2)),
-                            axis=2)
+        x += np.concatenate(
+            (
+                np.expand_dims(
+                    dz[
+                        :,
+                        :,
+                        0,
+                    ],
+                    axis=2,
+                ),
+                dz[
+                    :,
+                    :,
+                    1:-1,
+                ]
+                - dz[
+                    :,
+                    :,
+                    :-2,
+                ],
+                -np.expand_dims(
+                    dz[
+                        :,
+                        :,
+                        -2,
+                    ],
+                    axis=2,
+                ),
+            ),
+            axis=2,
+        )
 
     if len(args) >= 4:
         dt = args[3]
@@ -136,8 +186,39 @@ def div(*args, **kwargs):
         except KeyError:
             pass
 
-        x += np.concatenate((np.expand_dims(dt[:, :, :, 0, ], axis=3),
-                             dt[:, :, :, 1:-1, ] - dt[:, :, :, :-2, ],
-                             -np.expand_dims(dt[:, :, :, -2, ], axis=3)),
-                            axis=3)
+        x += np.concatenate(
+            (
+                np.expand_dims(
+                    dt[
+                        :,
+                        :,
+                        :,
+                        0,
+                    ],
+                    axis=3,
+                ),
+                dt[
+                    :,
+                    :,
+                    :,
+                    1:-1,
+                ]
+                - dt[
+                    :,
+                    :,
+                    :,
+                    :-2,
+                ],
+                -np.expand_dims(
+                    dt[
+                        :,
+                        :,
+                        :,
+                        -2,
+                    ],
+                    axis=3,
+                ),
+            ),
+            axis=3,
+        )
     return x

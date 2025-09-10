@@ -14,25 +14,22 @@ clean:
 	jupyter nbconvert --inplace --ClearOutputPreprocessor.enabled=True $(NB)
 
 lint:
-	flake8 --doctests --exclude=doc
+	uv run flake8 --doctests --exclude=doc,.venv
 
 # Matplotlib doesn't print to screen. Also faster.
 export MPLBACKEND = agg
 
 test:
-	coverage run --branch --source pyunlocbox setup.py test
-	coverage report
-	coverage html
+	uv run pytest --cov=pyunlocbox --cov-report=term-missing --cov-report=html --cov-report=xml -v
 
 doc:
-	sphinx-build -b html -d doc/_build/doctrees doc doc/_build/html
-	sphinx-build -b linkcheck -d doc/_build/doctrees doc doc/_build/linkcheck
+	uv run sphinx-build -b html -d doc/_build/doctrees doc doc/_build/html
+	uv run sphinx-build -b linkcheck -d doc/_build/doctrees doc doc/_build/linkcheck
 
 dist: clean
-	python setup.py sdist
-	python setup.py bdist_wheel --universal
+	uv build
 	ls -lh dist/*
-	twine check dist/*
+	uv run twine check dist/*
 
 release: dist
-	twine upload dist/*
+	uv run twine upload dist/*
