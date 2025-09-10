@@ -2,6 +2,7 @@ uv.lock
 .venv/
 coverage.xml
 __pycache__/
+.vscode/
 
 # Packages
 *.egg

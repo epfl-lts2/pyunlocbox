@@ -249,8 +249,10 @@ class TestSolvers:
         nptest.assert_allclose(ret["sol"], x, rtol=1e-2)
 
         # Sanity checks
-        self.assertRaises(ValueError, solver.pre, [f1], x0)
-        self.assertRaises(ValueError, solver.pre, [f2, f1], x0)
+        with pytest.raises(ValueError):
+            solver.pre([f1], x0)
+        with pytest.raises(ValueError):
+            solver.pre([f2, f1], x0)
 
     def test_generalized_forward_backward(self):
         """
@@ -451,9 +453,11 @@ class TestSolvers:
         nptest.assert_allclose(ret["sol"], x, rtol=1e-5)
 
         # Sanity checks
-        self.assertRaises(ValueError, solver.pre, [F], x0)
+        with pytest.raises(ValueError):
+            solver.pre([F], x0)
         solver.sigma = -1.0
-        self.assertRaises(ValueError, solver.pre, [G, F], x0)
+        with pytest.raises(ValueError):
+            solver.pre([G, F], x0)
 
     def test_solver_comparison(self):
         """
