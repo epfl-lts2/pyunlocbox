@@ -49,6 +49,7 @@ Then, derived classes implement various common objective functions.
 
 """
 
+import warnings
 from copy import deepcopy
 from time import time
 
@@ -558,20 +559,21 @@ class norm_nuclear(norm):
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, is_hermitian=False, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
         super().__init__(**kwargs)
+        self.is_hermitian = is_hermitian
 
     def _eval(self, x):
         # TODO: take care of sparse matrices.
-        _, s, _ = np.linalg.svd(x)
+        s = np.linalg.svd(x, compute_uv=False, hermitian=self.is_hermitian)
         return self.lambda_ * np.sum(np.abs(s))
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         # TODO: take care of sparse matrices.
-        U, s, V = np.linalg.svd(x)
+        U, s, V = np.linalg.svd(x, hermitian=self.is_hermitian)
         s = _soft_threshold(s, gamma)
         S = np.diag(s)
         return np.dot(U, np.dot(S, V))
@@ -1113,9 +1115,10 @@ class proj_lineq(proj):
 
         if pinvA is None:
             if A is None:
-                print(
-                    "Are you sure about the parameters?"
-                    + "The projection will return y."
+                warnings.warn(
+                    "Are you sure about the parameters? "
+                    "The projection will return y.",
+                    RuntimeWarning,
                 )
                 self.pinvA = lambda x: x
             else:

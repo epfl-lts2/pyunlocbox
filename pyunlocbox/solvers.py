@@ -35,6 +35,7 @@ Then, derived classes implement various common solvers.
 
 .. autosummary::
 
+    chambolle_pock
     mlfbf
     projection_based
 
@@ -513,6 +514,9 @@ class gradient_descent(solver):
             )
 
     def _algo(self):
+        """
+        x^{k+1} = x^k-λ ∇x^k
+        """
         grad = np.zeros_like(self.sol)
         for f in self.smooth_funs:
             grad += f.grad(self.sol)
@@ -708,6 +712,9 @@ class douglas_rachford(solver):
     ----------
     lambda_ : float, optional
         The update term weight. It should be between 0 and 1. Default is 1.
+    A : array_like, optional
+        Matrix implementing a linear transformation of x in g() as :
+        minimize f(x) + g(Ax)
 
     Notes
     -----
@@ -732,37 +739,124 @@ class douglas_rachford(solver):
     >>> ret['sol']
     array([3.99939034, 4.99923792, 5.99908551, 6.99893309])
 
+    Linearized ADMM:
+
+    >>> import numpy as np
+    >>> from pyunlocbox import functions, solvers
+    >>> y = np.array([4, -9, -13, -4])
+    >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+    >>> max_step = 0.5 / (1 + np.linalg.norm(L, 2))
+    >>> x0 = np.zeros(3)
+    >>> f1 = functions.norm_l1()
+    >>> f2 = functions.norm_l1(y=y)
+    >>> solver = solvers.douglas_rachford(step=max_step*50, A=L)
+    >>> ret = solvers.solve([f1, f2], x0, solver, atol=1e-1, maxit=1000, rtol=1e-5)
+    Solution found after 993 iterations:
+        objective function f(sol) = 8.008191e+00
+        stopping criterion: RTOL
+    >>> ret['sol']
+    array([-4.00133346,  3.00096956, -0.99996531])
+
     """
 
-    def __init__(self, lambda_=1, *args, **kwargs):
+    def __init__(self, lambda_=1, A=None, mu=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.lambda_ = lambda_
+        self._has_A = A is not None
+
+        if A is None:
+            self.A = lambda x: x
+            self.At = lambda x: x
+        else:
+            # Transform matrix form to operator form.
+            self.A = lambda x: A.dot(x)
+            self.At = lambda x: A.T.dot(x)
+
+        if mu is None:
+            if A is not None:
+                self.mu = self.step / (np.linalg.norm(A, 2) ** 2)
+            else:
+                self.mu = 0.5  # Should check this...
 
     def _pre(self, functions, x0):
 
         if self.lambda_ <= 0 or self.lambda_ > 1:
             raise ValueError("Lambda is bounded by 0 and 1.")
+        if self.mu <= 0 or self.mu > 1:
+            raise ValueError("Mu is bounded by 0 and 1.")
 
         if len(functions) != 2:
             raise ValueError("Douglas-Rachford requires two convex functions.")
 
         for f in functions:
-            if "PROX" in f.cap(x0):
+            x1 = np.copy(x0)
+
+            try:
+                f.cap(x1)
+            except ValueError:
+                x1 = self.A(x0)
+
+            if "PROX" in f.cap(x1):
                 self.non_smooth_funs.append(f)
             else:
                 raise ValueError(
                     "Douglas-Rachford requires each " "function to implement prox()."
                 )
 
-        self.z = np.array(x0, copy=True)
+        self.z = np.array(self.A(x0), copy=True)
+        self.u = np.array(self.A(x0), copy=True)
 
     def _algo(self):
-        tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
-        self.z[:] = self.z + self.lambda_ * (tmp - self.sol)
-        self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
+        """
+        Default:
+            x^{k+1} = prox_{θf} (z^k)
+            z^{k+1} = z^k + λ (prox_{θg}(2x^{k+1}−z^k) − x^{k+1})
+        Or equivalently:
+            z^{k+1} = prox_{θg} (x^k + u^k)
+            x^{k+1} = prox_{µf} (z^{k+1} − u^k)
+            u^{k+1} = u^k + λ (x^{k+1} − z^{k+1})
+
+        If linearized:
+            z^{k+1} = prox_{θg} (Ax^k+u^k)
+            x^{k+1} = prox_{µf} (x^k − (µ/θ)A^T(Ax^k−z^{k+1}+u^k))
+            u^{k+1} = u^k + λ (Ax^{k+1} − z^{k+1})
+
+        """
+        if not self._has_A:
+            tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
+            self.z[:] = self.z + self.lambda_ * (
+                tmp - self.sol
+            )  # prox_{λg}(y) != λ prox_{g}(y)
+            self.sol[:] = self.non_smooth_funs[1].prox(self.z, self.step)
+
+        #     # self.z[:] = self.non_smooth_funs[0].prox(self.sol + self.u, self.step)
+        #     # self.sol[:] = self.non_smooth_funs[1].prox(self.z-self.u, self.step)
+        #     # self.u[:] = self.u + self.sol - self.z
+
+        else:
+            # See "Proximal Algorithms. N. Parikh and S. Boyd.
+            # Foundations and Trends in Optimization, 1(3):123-231, 2014."
+            self.z[:] = self.non_smooth_funs[1].prox(
+                self.A(self.sol) + self.u, self.step
+            )
+            self.sol[:] = self.non_smooth_funs[0].prox(
+                self.sol
+                - (self.mu / self.step) * self.At(self.A(self.sol) - self.z + self.u),
+                self.mu,
+            )
+            self.u[:] = self.u + self.lambda_ * (self.A(self.sol) - self.z)
+
+    def _objective(self, x):
+        obj_smooth = [f.eval(x) for f in self.smooth_funs]
+        obj_nonsmooth = [
+            self.non_smooth_funs[0].eval(x),
+            self.non_smooth_funs[1].eval(self.A(x)),
+        ]
+        return obj_nonsmooth + obj_smooth
 
     def _post(self):
         del self.z
+        del self.u
 
 
 class primal_dual(solver):
@@ -896,6 +990,18 @@ class mlfbf(primal_dual):
         self.smooth_funs.append(functions[2])  # h
 
     def _algo(self):
+        """
+        y1 = x^k - λ ∇h(x^k) + L^T(z^k)
+        y2 = z^k + λ L(x^k)
+
+        p1 = prox_{λf} y1
+        p2 = prox_{λg^*} y2
+
+        q1 = p1 - λ ∇h(p1) + L^T(p2)
+        q2 = p2 + λ L(p1)
+
+        with x^k (z^k) the solution (dual-solution) at iteration k.
+        """
         # Forward steps (in both primal and dual spaces)
         y1 = self.sol - self.step * (
             self.smooth_funs[0].grad(self.sol) + self.Lt(self.dual_sol)
@@ -1002,3 +1108,107 @@ class projection_based(primal_dual):
             )
             self.sol[:] = self.sol - theta * s
             self.dual_sol[:] = self.dual_sol - theta * t
+
+
+class chambolle_pock(primal_dual):
+    r"""
+    Chambolle-Pock Primal-Dual Proximal Splitting.
+
+    This algorithm solves convex optimization problems with objective of the
+    form :math:`G(x) + F(Lx)`, where :math:`F` and :math:`G` are proper,
+    convex, lower-semicontinuous functions with easy-to-compute proximity
+    operators, and :math:`L` is a linear operator.
+
+    See generic attributes descriptions of the
+    :class:`pyunlocbox.solvers.primal_dual` base class.
+
+    Notes
+    -----
+    The order of the functions matters: set :math:`G` first on the list and
+    :math:`F` second.
+
+    This algorithm requires the two functions to implement the
+    :meth:`pyunlocbox.functions.func.prox` method.
+
+    The step-size should be in the interval
+    :math:`\left] 0, \frac{1}{\beta + \|L\|_{2}}\right[`.
+
+    See [1]_ for details.
+
+    References
+    ----------
+    .. [1] Antonin Chambolle and Thomas Pock, "A First-order primal-dual
+       algorithm for convex problems with application to imaging," Journal of
+       Mathematical Imaging and Vision, Volume 40, Number 1 (2011), 120-145.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pyunlocbox import functions, solvers
+    >>> y = np.array([4, -9, -13, -4])
+    >>> L = np.array([[5, 9, 3], [7, 8, 5], [4, 4, 9], [0, 1, 7]])
+    >>> max_step = 1 / (1 + np.linalg.norm(L, 2))
+    >>> x0 = np.zeros(3)
+    >>> f = functions.norm_l1(y=y)
+    >>> g = functions.norm_l1()
+    >>> solver = solvers.chambolle_pock(L=L, sigma=max_step/2,
+    ...                                 theta=max_step/2, tau=max_step/2)
+    >>> ret = solvers.solve([g, f], x0, solver, maxit=1000, rtol=None, xtol=None)
+    Solution found after 1000 iterations:
+        objective function f(sol) = 9.068105e+00
+        stopping criterion: MAXIT
+    >>> ret['sol']
+    array([-3.60833292,  2.72982626, -1.02656965])
+
+    """
+
+    def __init__(self, sigma=1.0, tau=1.0, theta=1.0, accel=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.sigma = sigma
+        self.tau = tau
+        self.theta = theta
+        # self.accel = acceleration.dummy() if accel is None else accel
+
+    def _pre(self, functions, x0):
+        super()._pre(functions, x0)
+
+        if self.tau <= 0 or self.tau > 2:
+            raise ValueError("tau is bounded by 0 and 2.")
+        if self.sigma <= 0 or self.sigma > 2:
+            raise ValueError("sigma is bounded by 0 and 2.")
+        if self.theta <= 0 or self.theta > 2:
+            raise ValueError("theta is bounded by 0 and 2.")
+
+        if len(functions) != 2:
+            raise ValueError("Chambolle-Pock requires 2 functions.")
+
+        self.non_smooth_funs.append(functions[0])  # F
+        self.non_smooth_funs.append(functions[1])  # G
+
+        # Initializations
+        self.f = np.array(x0, copy=True)
+        self.g = np.array(self.L(x0), copy=True)
+
+    def _algo(self):
+        """
+        g_{k+1} = prox_{\\sigma F^∗} (g_k+ \\sigma*L(\tilde{f}_k))
+        f_{k+1} = prox_{\tau G} (f_k−\tau L^∗(g_{k+1}) )
+        \tilde{f}_{k+1} = f{k+1}+ \theta*(f_{k+1} − f_k)
+        """
+        # Backward steps
+        self.g = _prox_star(
+            self.non_smooth_funs[1], self.g + self.sigma * self.L(self.sol), self.sigma
+        )
+        self.fp1 = self.non_smooth_funs[0].prox(
+            self.f - self.tau * self.Lt(self.g), self.tau
+        )
+
+        # Update solution
+        self.sol[:] = self.fp1 + self.theta * (self.fp1 - self.f)
+
+        # update
+        self.f = np.copy(self.fp1)
+
+    def _post(self):
+        del self.g, self.fp1, self.f

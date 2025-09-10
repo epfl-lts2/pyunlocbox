@@ -9,6 +9,16 @@ and this project adheres to `Semantic Versioning <https://semver.org>`_.
 0.6.0 (2025-09-10)
 ------------------
 
+* New functions: :class:`~pyunlocbox.functions.proj_lineq`,
+  :class:`~pyunlocbox.functions.proj_sdsp`,
+  :class:`~pyunlocbox.functions.proj_positive`,
+  :class:`~pyunlocbox.functions.structured_sparsity`.
+* Parameter ``is_hermitian`` added to
+  :class:`~pyunlocbox.functions.norm_nuclear` to benefit from the hermitian
+  property of :func:`numpy.linalg.svd`.
+* New solver: Linearized Douglas-Rachford (or ADMM) added to
+  :class:`~pyunlocbox.solvers.douglas_rachford`.
+* New solver :class:`~pyunlocbox.solvers.chambolle_pock`.
 * Update to use pytest instead of unittest.
 * Update to use UV instead of conda.
 * New function: `proj_lineq`.
