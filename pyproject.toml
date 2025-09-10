@@ -34,6 +34,7 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "numpy",
+    "pytest-cov>=5.0.0",
     "scipy",
 ]
 
@@ -149,6 +150,7 @@ addopts = [
     "--cov-report=html",
     "--cov-report=xml",
 ]
+required_plugins = ["pytest-cov"]  # helpful guardrail
 testpaths = ["pyunlocbox/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]

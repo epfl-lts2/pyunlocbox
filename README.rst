@@ -199,8 +199,9 @@ Run specific test files::
 
     $ uv run pytest pyunlocbox/tests/test_acceleration.py
 
-**Note**: Tests are being migrated from unittest to pytest. Currently, `test_acceleration.py`
-is fully migrated. Other test files may still use unittest but are discoverable by pytest.
+**Note**: Tests are being migrated from unittest to pytest. Currently, `test_acceleration.py`,
+`test_functions.py`, `test_operators.py`, and `test_docstrings.py` are fully migrated. Only
+`test_solvers.py` still uses unittest but is discoverable by pytest.
 
 Run pre-commit checks manually::
 
