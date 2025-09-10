@@ -62,6 +62,8 @@ dev = [
     "black",
     "isort",
     "bandit[toml]",
+    "nbconvert",
+    "jupyter",
 ]
 
 [project.urls]
@@ -103,6 +105,8 @@ dev-dependencies = [
     "black",
     "isort",
     "bandit[toml]",
+    "nbconvert",
+    "jupyter",
 ]
 
 # Ruff configuration for linting (UV integrates well with Ruff)

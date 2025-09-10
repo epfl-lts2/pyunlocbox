@@ -695,6 +695,8 @@ class norm_tv(norm):
             print("Proximal TV Operator")
 
         iter = 0
+        crit = "MAX_IT"
+
         while iter <= maxit:
             # Current Solution
             if self.dim == 1:
@@ -794,9 +796,6 @@ class norm_tv(norm):
 
             told = t
             iter += 1
-
-        if not isinstance(crit, str):
-            crit = "MAX_IT"
 
         t_end = time()
         exec_time = t_end - t_init
