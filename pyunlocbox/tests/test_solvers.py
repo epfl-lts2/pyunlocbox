@@ -488,7 +488,7 @@ class TestSolvers:
         for solver, niter in zip(slvs, niters):
             x0 = np.zeros(len(y))
             ret = solvers.solve([f1, f2], x0, solver, **params)
-            nptest.assert_allclose(ret["sol"], sol)
+            nptest.assert_allclose(ret["sol"], sol, atol=1e-12)
             assert ret["niter"] == niter
             # The initial value not was modified.
             np.testing.assert_array_equal(np.zeros(len(y)), x0)

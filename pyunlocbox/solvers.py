@@ -764,23 +764,18 @@ class douglas_rachford(solver):
         self.lambda_ = lambda_
 
         if A is None:
-            self.A = None
+            self.A = lambda x: x
+            self.At = lambda x: x
         else:
             # Transform matrix form to operator form.
             self.A = lambda x: A.dot(x)
             self.At = lambda x: A.T.dot(x)
 
-        # if A is None:
-        #     self.A = lambda x: x
-        #     self.At = lambda x: x
-        # else:
-        #     # Transform matrix form to operator form.
-        #     self.A = lambda x: A.dot(x)
-        #     self.At = lambda x: A.T.dot(x)
-
-        self.mu = 0.5
-        if mu is None and A is not None:
-            self.mu = self.step / (np.linalg.norm(A, 2) ** 2)
+        if mu is None:
+            if A is not None:
+                self.mu = self.step / (np.linalg.norm(A, 2) ** 2)
+            else:
+                self.mu = 0.5  # Should check this...
 
     def _pre(self, functions, x0):
 
