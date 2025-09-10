@@ -14,9 +14,15 @@ The package can be set up (ideally in a fresh virtual environment) for local
 development with the following::
 
     $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ cd pyunlocbox
+    $ uv sync --dev
+    $ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+Or with pip (legacy method)::
+
     $ pip install --upgrade --editable pyunlocbox[dev]
 
-The ``dev`` "extras requirement" ensures that dependencies required for
+The ``dev`` dependencies ensure that packages required for
 development (to run the test suite and build the documentation) are installed.
 
 You can improve or add solvers, functions, and acceleration schemes in
@@ -30,7 +36,7 @@ short example in ``examples``.
 Update ``README.rst`` and ``CHANGELOG.rst`` if applicable.
 
 After making any change, please check the style, run the tests, and build the
-documentation with the following (enforced by Travis CI)::
+documentation with the following (enforced by GitHub Actions)::
 
     $ make lint
     $ make test
@@ -42,8 +48,8 @@ tests reasonably cover the changes you've introduced.
 To iterate faster, you can partially run the test suite, at various degrees of
 granularity, as follows::
 
-   $ python -m unittest pyunlocbox.tests.test_functions
-   $ python -m unittest pyunlocbox.tests.test_functions.TestCase.test_norm_l1
+   $ uv run pytest pyunlocbox/tests/test_functions.py
+   $ uv run pytest pyunlocbox/tests/test_functions.py::TestFunctions::test_norm_l1
 
 Making a release
 ----------------
@@ -51,22 +57,22 @@ Making a release
 #. Update the version number and release date in ``pyproject.toml``,
    ``pyunlocbox/__init__.py`` and ``CHANGELOG.rst``.
 #. Create a git tag with ``git tag -a v0.5.0 -m "PyUNLocBox v0.5.0"``.
-#. Push the tag to GitHub with ``git push github v0.5.0``. The tag should now
+#. Push the tag to GitHub with ``git push origin v0.5.0``. The tag should now
    appear in the releases and tags tab.
 #. `Create a release <https://github.com/epfl-lts2/pygsp/releases/new>`_ on
    GitHub and select the created tag. A DOI should then be issued by Zenodo.
 #. Go on Zenodo and fix the metadata if necessary.
-#. Build the distribution with ``make dist`` and check that the
+#. Build the distribution with ``make dist`` (or ``uv build``) and check that the
    ``dist/pyunlocbox-0.5.0.tar.gz`` source archive contains all required files.
    The binary wheel should be found as
-   ``dist/pyunlocbox-0.5.0-py2.py3-none-any.whl``.
+   ``dist/pyunlocbox-0.5.0-py3-none-any.whl``.
 #. Test the upload and installation process::
 
-    $ twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-    $ pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pyunlocbox
+    $ uv run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    $ uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple pyunlocbox
 
    Log in as the LTS2 user.
-#. Build and upload the distribution to the real PyPI with ``make release``.
+#. Build and upload the distribution to the real PyPI with ``make release`` (or ``uv run twine upload dist/*``).
 #. Update the conda feedstock (at least the version number and sha256 in
    ``recipe/meta.yaml``) by sending a PR to
    `conda-forge <https://github.com/conda-forge/pyunlocbox-feedstock>`_.
