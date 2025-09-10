@@ -1,24 +1,28 @@
-language: python
+# DEPRECATED: This project has migrated to GitHub Actions
+# See .github/workflows/ci.yml for the new CI configuration
+# This file is kept for reference and can be removed once migration is complete
 
-python:
-  - 3.6
-  - 3.7
-  - 3.8
-  - 3.9
-
-addons:
-  apt:
-    packages:
-      - graphviz  # sphinx inheritance diagrams
-
-install:
-  - pip install --upgrade pip setuptools wheel  # install with latest tools
-  - pip install --upgrade --upgrade-strategy eager .[dev]  # get latest deps
-
-script:
-  - make lint
-  - make test
-  - make doc
-
-after_success:
-  - coveralls
+# language: python
+#
+# python:
+#   - 3.6
+#   - 3.7
+#   - 3.8
+#   - 3.9
+#
+# addons:
+#   apt:
+#     packages:
+#       - graphviz  # sphinx inheritance diagrams
+#
+# install:
+#   - pip install --upgrade pip setuptools wheel  # install with latest tools
+#   - pip install --upgrade --upgrade-strategy eager .[dev]  # get latest deps
+#
+# script:
+#   - make lint
+#   - make test
+#   - make doc
+#
+# after_success:
+#   - coveralls

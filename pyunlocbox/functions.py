@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 r"""
 The :mod:`pyunlocbox.functions` module implements an interface for solvers to
 access the functions to be optimized as well as common objective functions.
@@ -51,11 +49,9 @@ Then, derived classes implement various common objective functions.
 
 """
 
-from __future__ import division
-
-from time import time
-from copy import deepcopy
 import warnings
+from copy import deepcopy
+from time import time
 
 import numpy as np
 from scipy.optimize import minimize
@@ -102,8 +98,8 @@ def _soft_threshold(z, T, handle_complex=True):
         # Transform to float to avoid integer division.
         # In our case 0 divided by 0 should be 0, not NaN, and is not an error.
         # It corresponds to 0 thresholded by 0, which is 0.
-        old_err_state = np.seterr(invalid='ignore')
-        sz[:] = np.nan_to_num(1. * sz / (sz + T) * z)
+        old_err_state = np.seterr(invalid="ignore")
+        sz[:] = np.nan_to_num(1.0 * sz / (sz + T) * z)
         np.seterr(**old_err_state)
 
     return sz
@@ -121,7 +117,7 @@ def _prox_star(func, z, T):
     return z - T * func.prox(z / T, 1 / T)
 
 
-class func(object):
+class func:
     r"""
     This class defines the function object interface.
 
@@ -176,8 +172,9 @@ class func(object):
 
     """
 
-    def __init__(self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3,
-                 maxit=200, **kwargs):
+    def __init__(
+        self, y=0, A=None, At=None, tight=True, nu=1, tol=1e-3, maxit=200, **kwargs
+    ):
 
         if callable(y):
             self.y = lambda: np.asarray(y())
@@ -212,7 +209,7 @@ class func(object):
         self.maxit = maxit
 
         # Should be initialized if called alone, updated by solve().
-        self.verbosity = 'NONE'
+        self.verbosity = "NONE"
 
     def eval(self, x):
         r"""
@@ -240,9 +237,9 @@ class func(object):
 
         """
         sol = self._eval(np.asarray(x))
-        if self.verbosity in ['LOW', 'HIGH']:
+        if self.verbosity in ["LOW", "HIGH"]:
             name = self.__class__.__name__
-            print('    {} evaluation: {:e}'.format(name, sol))
+            print(f"    {name} evaluation: {sol:e}")
         return sol
 
     def _eval(self, x):
@@ -334,20 +331,20 @@ class func(object):
 
         """
         tmp = self.verbosity
-        self.verbosity = 'NONE'
-        cap = ['EVAL', 'GRAD', 'PROX']
+        self.verbosity = "NONE"
+        cap = ["EVAL", "GRAD", "PROX"]
         try:
             self.eval(x)
         except NotImplementedError:
-            cap.remove('EVAL')
+            cap.remove("EVAL")
         try:
             self.grad(x)
         except NotImplementedError:
-            cap.remove('GRAD')
+            cap.remove("GRAD")
         try:
             self.prox(x, 1)
         except NotImplementedError:
-            cap.remove('PROX')
+            cap.remove("PROX")
         self.verbosity = tmp
         return cap
 
@@ -375,7 +372,7 @@ class dummy(func):
 
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(dummy, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _eval(self, x):
         return 0
@@ -404,7 +401,7 @@ class norm(func):
     """
 
     def __init__(self, lambda_=1, w=1, **kwargs):
-        super(norm, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.lambda_ = lambda_
         self.w = np.asarray(w)
 
@@ -439,7 +436,7 @@ class norm_l1(norm):
 
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(norm_l1, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _eval(self, x):
         sol = self.A(x) - self.y()
@@ -454,7 +451,7 @@ class norm_l1(norm):
             sol = _soft_threshold(sol, gamma * self.nu * self.w) - sol
             sol = x + self.At(sol) / self.nu
         else:
-            raise NotImplementedError('Not implemented for non-tight frame.')
+            raise NotImplementedError("Not implemented for non-tight frame.")
         return sol
 
 
@@ -492,7 +489,7 @@ class norm_l2(norm):
 
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(norm_l2, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if self.tight:
             if self.w.size > 1:
                 raise ValueError(
@@ -503,25 +500,28 @@ class norm_l2(norm):
 
     def _eval(self, x):
         sol = self.A(x) - self.y()
-        return self.lambda_ * np.sum((self.w * sol)**2)
+        return self.lambda_ * np.sum((self.w * sol) ** 2)
 
     def _prox(self, x, T):
         # Gamma is T in the matlab UNLocBox implementation.
         gamma = self.lambda_ * T
         if self.tight:
-            sol = x + 2. * gamma * self.At(self.y() * self.w**2)
-            sol /= 1. + 2. * gamma * self.nu * self.w**2
+            sol = x + 2.0 * gamma * self.At(self.y() * self.w**2)
+            sol /= 1.0 + 2.0 * gamma * self.nu * self.w**2
         else:
-            res = minimize(fun=lambda z: 0.5 * np.sum((z - x)**2) + gamma *
-                           np.sum((self.w * (self.A(z) - self.y()))**2),
-                           x0=x,
-                           method='BFGS',
-                           jac=lambda z: z - x + 2. * gamma *
-                           self.At((self.w**2) * (self.A(z) - self.y())))
+            res = minimize(
+                fun=lambda z: 0.5 * np.sum((z - x) ** 2)
+                + gamma * np.sum((self.w * (self.A(z) - self.y())) ** 2),
+                x0=x,
+                method="BFGS",
+                jac=lambda z: z
+                - x
+                + 2.0 * gamma * self.At((self.w**2) * (self.A(z) - self.y())),
+            )
             if res.success:
                 sol = res.x
             else:
-                raise RuntimeError('norm_l2.prox: ' + res.message)
+                raise RuntimeError("norm_l2.prox: " + res.message)
         return sol
 
     def _grad(self, x):
@@ -561,7 +561,7 @@ class norm_nuclear(norm):
 
     def __init__(self, is_hermitian=False, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(norm_nuclear, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.is_hermitian = is_hermitian
 
     def _eval(self, x):
@@ -606,8 +606,8 @@ class norm_tv(norm):
 
     """
 
-    def __init__(self, dim=2, verbosity='LOW', **kwargs):
-        super(norm_tv, self).__init__(**kwargs)
+    def __init__(self, dim=2, verbosity="LOW", **kwargs):
+        super().__init__(**kwargs)
         self.kwargs = kwargs
         self.dim = dim
         self.verbosity = verbosity
@@ -660,29 +660,29 @@ class norm_tv(norm):
         if self.dim >= 4:
             uold = u
 
-        told, prev_obj = 1., 0.
+        told, prev_obj = 1.0, 0.0
 
         # Initialization for weights
         if self.dim >= 1:
             try:
                 wx = self.kwargs["wx"]
             except (KeyError, TypeError):
-                wx = 1.
+                wx = 1.0
         if self.dim >= 2:
             try:
                 wy = self.kwargs["wy"]
             except (KeyError, TypeError):
-                wy = 1.
+                wy = 1.0
         if self.dim >= 3:
             try:
                 wz = self.kwargs["wz"]
             except (KeyError, TypeError):
-                wz = 1.
+                wz = 1.0
         if self.dim >= 4:
             try:
                 wt = self.kwargs["wt"]
             except (KeyError, TypeError):
-                wt = 1.
+                wt = 1.0
 
         if self.dim == 1:
             mt = wx
@@ -693,10 +693,12 @@ class norm_tv(norm):
         elif self.dim == 4:
             mt = np.maximum(np.maximum(wx, wy), np.maximum(wz, wt))
 
-        if self.verbosity in ['LOW', 'HIGH', 'ALL']:
+        if self.verbosity in ["LOW", "HIGH", "ALL"]:
             print("Proximal TV Operator")
 
         iter = 0
+        crit = "MAX_IT"
+
         while iter <= maxit:
             # Current Solution
             if self.dim == 1:
@@ -709,12 +711,13 @@ class norm_tv(norm):
                 sol = x - T * op.div(rr, ss, kk, uu, **self.kwargs)
 
             #  Objective function value
-            obj = 0.5 * np.power(np.linalg.norm(x[:] - sol[:]), 2) + \
-                T * np.sum(self._eval(sol), axis=0)
+            obj = 0.5 * np.power(np.linalg.norm(x[:] - sol[:]), 2) + T * np.sum(
+                self._eval(sol), axis=0
+            )
             rel_obj = np.abs(obj - prev_obj) / obj
             prev_obj = obj
 
-            if self.verbosity in ['HIGH', 'ALL']:
+            if self.verbosity in ["HIGH", "ALL"]:
                 print("Iter: ", iter, " obj = ", obj, " rel_obj = ", rel_obj)
 
             # Stopping criterion
@@ -725,38 +728,49 @@ class norm_tv(norm):
             #  Update divergence vectors and project
             if self.dim == 1:
                 dx = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= 1. / (4 * T * mt**2) * dx
+                r -= 1.0 / (4 * T * mt**2) * dx
                 weights = np.maximum(1, np.abs(r))
 
             elif self.dim == 2:
                 dx, dy = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= (1. / (8. * T * mt**2.)) * dx
-                s -= (1. / (8. * T * mt**2.)) * dy
-                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
-                                                np.power(np.abs(s), 2)))
+                r -= (1.0 / (8.0 * T * mt**2.0)) * dx
+                s -= (1.0 / (8.0 * T * mt**2.0)) * dy
+                weights = np.maximum(
+                    1, np.sqrt(np.power(np.abs(r), 2) + np.power(np.abs(s), 2))
+                )
 
             elif self.dim == 3:
                 dx, dy, dz = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= 1. / (12. * T * mt**2) * dx
-                s -= 1. / (12. * T * mt**2) * dy
-                k -= 1. / (12. * T * mt**2) * dz
-                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
-                                                np.power(np.abs(s), 2) +
-                                                np.power(np.abs(k), 2)))
+                r -= 1.0 / (12.0 * T * mt**2) * dx
+                s -= 1.0 / (12.0 * T * mt**2) * dy
+                k -= 1.0 / (12.0 * T * mt**2) * dz
+                weights = np.maximum(
+                    1,
+                    np.sqrt(
+                        np.power(np.abs(r), 2)
+                        + np.power(np.abs(s), 2)
+                        + np.power(np.abs(k), 2)
+                    ),
+                )
 
             elif self.dim == 4:
                 dx, dy, dz, dt = op.grad(sol, dim=self.dim, **self.kwargs)
-                r -= 1. / (16 * T * mt**2) * dx
-                s -= 1. / (16 * T * mt**2) * dy
-                k -= 1. / (16 * T * mt**2) * dz
-                u -= 1. / (16 * T * mt**2) * dt
-                weights = np.maximum(1, np.sqrt(np.power(np.abs(r), 2) +
-                                                np.power(np.abs(s), 2) +
-                                                np.power(np.abs(k), 2) +
-                                                np.power(np.abs(u), 2)))
+                r -= 1.0 / (16 * T * mt**2) * dx
+                s -= 1.0 / (16 * T * mt**2) * dy
+                k -= 1.0 / (16 * T * mt**2) * dz
+                u -= 1.0 / (16 * T * mt**2) * dt
+                weights = np.maximum(
+                    1,
+                    np.sqrt(
+                        np.power(np.abs(r), 2)
+                        + np.power(np.abs(s), 2)
+                        + np.power(np.abs(k), 2)
+                        + np.power(np.abs(u), 2)
+                    ),
+                )
 
             # FISTA update
-            t = (1 + np.sqrt(4 * told**2)) / 2.
+            t = (1 + np.sqrt(4 * told**2)) / 2.0
 
             if self.dim >= 1:
                 p = r / weights
@@ -785,17 +799,15 @@ class norm_tv(norm):
             told = t
             iter += 1
 
-        try:
-            type(crit) == str
-        except NameError:
-            crit = "MAX_IT"
-
         t_end = time()
         exec_time = t_end - t_init
 
-        if self.verbosity in ['HIGH', 'ALL']:
-            print("Prox_TV: obj = {0}, rel_obj = {1}, {2}, iter = {3}".format(
-                obj, rel_obj, crit, iter))
+        if self.verbosity in ["HIGH", "ALL"]:
+            print(
+                "Prox_TV: obj = {}, rel_obj = {}, {}, iter = {}".format(
+                    obj, rel_obj, crit, iter
+                )
+            )
             print("exec_time = ", exec_time)
         return sol
 
@@ -812,8 +824,9 @@ class proj(func):
     * All indicator functions (projections) evaluate to zero by definition.
 
     """
+
     def __init__(self, **kwargs):
-        super(proj, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _eval(self, x):
         # Matlab version returns a small delta to avoid division by 0 when
@@ -854,7 +867,7 @@ class proj_positive(proj):
 
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(proj_positive, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _prox(self, x, T):
         return np.clip(x, 0, np.inf)
@@ -892,9 +905,10 @@ class proj_spsd(proj):
     array([0.        , 1.61803399])
 
     """
+
     def __init__(self, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(proj_spsd, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _prox(self, x, T):
         isreal = np.isreal(x).all()
@@ -960,26 +974,27 @@ class proj_b2(proj):
     array([1.70710678, 1.70710678])
 
     """
-    def __init__(self, epsilon=1, method='FISTA', **kwargs):
+
+    def __init__(self, epsilon=1, method="FISTA", **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(proj_b2, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.epsilon = epsilon
         self.method = method
 
     def _prox(self, x, T):
 
         crit = None  # Stopping criterion.
-        niter = 0    # Number of iterations.
+        niter = 0  # Number of iterations.
 
         # Tight frame.
         if self.tight:
             tmp1 = self.A(x) - self.y()
-            with np.errstate(divide='ignore', invalid='ignore'):
+            with np.errstate(divide="ignore", invalid="ignore"):
                 # Avoid 'division by zero' warning
                 scale = self.epsilon / np.sqrt(np.sum(tmp1 * tmp1, axis=0))
             tmp2 = tmp1 * np.minimum(1, scale)  # Scaling.
             sol = x + self.At(tmp2 - tmp1) / self.nu
-            crit = 'TOL'
+            crit = "TOL"
             u = np.nan
 
         # Non tight frame.
@@ -988,20 +1003,20 @@ class proj_b2(proj):
             # Initialization.
             sol = x
             u = np.zeros_like(self.y())
-            if self.method == 'FISTA':
+            if self.method == "FISTA":
                 v_last = u
-                t_last = 1.
-            elif self.method != 'ISTA':
-                raise ValueError('The method should be either FISTA or ISTA.')
+                t_last = 1.0
+            elif self.method != "ISTA":
+                raise ValueError("The method should be either FISTA or ISTA.")
 
             # Tolerance around the L2-ball.
-            epsilon_low = self.epsilon / (1. + self.tol)
-            epsilon_up = self.epsilon / (1. - self.tol)
+            epsilon_low = self.epsilon / (1.0 + self.tol)
+            epsilon_up = self.epsilon / (1.0 - self.tol)
 
             # Check if we are already in the L2-ball.
             norm_res = np.linalg.norm(self.y() - self.A(sol), 2)
             if norm_res <= epsilon_up:
-                crit = 'INBALL'
+                crit = "INBALL"
 
             # Projection onto the L2-ball
             while not crit:
@@ -1012,21 +1027,22 @@ class proj_b2(proj):
                 res = self.A(sol) - self.y()
                 norm_res = np.linalg.norm(res, 2)
 
-                if self.verbosity == 'HIGH':
-                    print('    proj_b2 iteration {:3d}: epsilon = {:.2e}, '
-                          '||y-A(z)||_2 = {:.2e}'.format(niter, self.epsilon,
-                                                         norm_res))
+                if self.verbosity == "HIGH":
+                    print(
+                        "    proj_b2 iteration {:3d}: epsilon = {:.2e}, "
+                        "||y-A(z)||_2 = {:.2e}".format(niter, self.epsilon, norm_res)
+                    )
 
                 # Scaling for projection.
                 res += u * self.nu
                 norm_proj = np.linalg.norm(res, 2)
 
                 ratio = min(1, self.epsilon / norm_proj)
-                v = 1. / self.nu * (res - res * ratio)
+                v = 1.0 / self.nu * (res - res * ratio)
 
-                if self.method == 'FISTA':
-                    t = (1. + np.sqrt(1. + 4. * t_last**2.)) / 2.  # Time step.
-                    u = v + (t_last - 1.) / t * (v - v_last)
+                if self.method == "FISTA":
+                    t = (1.0 + np.sqrt(1.0 + 4.0 * t_last**2.0)) / 2.0  # Time step.
+                    u = v + (t_last - 1.0) / t * (v - v_last)
                     v_last = v
                     t_last = t
                 else:
@@ -1037,15 +1053,16 @@ class proj_b2(proj):
 
                 # Stopping criterion.
                 if norm_res >= epsilon_low and norm_res <= epsilon_up:
-                    crit = 'TOL'
+                    crit = "TOL"
                 elif niter >= self.maxit:
-                    crit = 'MAXIT'
+                    crit = "MAXIT"
 
-            if self.verbosity in ['LOW', 'HIGH']:
+            if self.verbosity in ["LOW", "HIGH"]:
                 norm_res = np.linalg.norm(self.y() - self.A(sol), 2)
-                print('    proj_b2: epsilon = {:.2e}, ||y-A(z)||_2 = {:.2e}, '
-                      '{}, niter = {}'.format(self.epsilon, norm_res, crit,
-                                              niter))
+                print(
+                    "    proj_b2: epsilon = {:.2e}, ||y-A(z)||_2 = {:.2e}, "
+                    "{}, niter = {}".format(self.epsilon, norm_res, crit, niter)
+                )
 
         return sol
 
@@ -1091,19 +1108,22 @@ class proj_lineq(proj):
     array([ True])
 
     """
+
     def __init__(self, A=None, pinvA=None, **kwargs):
         # Constructor takes keyword-only parameters to prevent user errors.
-        super(proj_lineq, self).__init__(A=A, **kwargs)
+        super().__init__(A=A, **kwargs)
 
         if pinvA is None:
             if A is None:
-                warnings.warn("Are you sure about the parameters? "
-                              "The projection will return y.", RuntimeWarning)
+                warnings.warn(
+                    "Are you sure about the parameters? "
+                    "The projection will return y.",
+                    RuntimeWarning,
+                )
                 self.pinvA = lambda x: x
             else:
                 if callable(A):
-                    raise ValueError(
-                            "Provide A as a numpy array or provide pinvA.")
+                    raise ValueError("Provide A as a numpy array or provide pinvA.")
                 else:
                     # Transform matrix form to operator form.
                     self._pinvA = np.linalg.pinv(A)
@@ -1162,24 +1182,22 @@ class structured_sparsity(func):
     """
 
     def __init__(self, lambda_=1, groups=[[]], weights=[0], **kwargs):
-        super(structured_sparsity, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         if lambda_ < 0:
-            raise ValueError('The scaling factor must be non-negative.')
+            raise ValueError("The scaling factor must be non-negative.")
         self.lambda_ = lambda_
 
         if not isinstance(groups, list):
-            raise TypeError('The groups must be defined as a list of lists.')
+            raise TypeError("The groups must be defined as a list of lists.")
         self.groups = groups
 
         if len(weights) != len(groups):
-            raise ValueError('Length of weights must be equal to number of '
-                             'groups.')
+            raise ValueError("Length of weights must be equal to number of " "groups.")
         self.weights = weights
 
     def _eval(self, x):
-        costs = [w * np.linalg.norm(x[g])
-                 for g, w in zip(self.groups, self.weights)]
+        costs = [w * np.linalg.norm(x[g]) for g, w in zip(self.groups, self.weights)]
         return self.lambda_ * np.sum(costs)
 
     def _prox(self, x, T):

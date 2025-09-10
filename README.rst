@@ -125,9 +125,32 @@ for an exhaustive documentation of the API. Enjoy!
 Installation
 ------------
 
+UV (Recommended)
+~~~~~~~~~~~~~~~~
+
+For the fastest installation and dependency management, use `UV <https://docs.astral.sh/uv/>`_::
+
+    $ uv add pyunlocbox
+
+Or install directly::
+
+    $ uv pip install pyunlocbox
+
+To set up a development environment with UV::
+
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ cd pyunlocbox
+    $ uv sync --dev
+
+Pip
+~~~
+
 The PyUNLocBoX is available on PyPI::
 
     $ pip install pyunlocbox
+
+Conda
+~~~~~
 
 The PyUNLocBoX is available on `conda-forge <https://github.com/conda-forge/pyunlocbox-feedstock>`_::
 
@@ -137,6 +160,77 @@ Contributing
 ------------
 
 See the guidelines for contributing in ``CONTRIBUTING.rst``.
+
+For development, we recommend using UV for fast dependency management::
+
+    $ git clone https://github.com/epfl-lts2/pyunlocbox.git
+    $ cd pyunlocbox
+    $ uv sync --dev
+    $ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+**Quick setup with just** (modern command runner)::
+
+    $ just setup  # Installs dependencies and sets up pre-commit hooks
+
+Set up pre-commit hooks (recommended)::
+
+    $ uv run pre-commit install
+
+This will automatically run code formatting and linting checks before each commit.
+
+**Pre-commit hooks include:**
+
+* **Code formatting**: ``black`` for consistent Python code style
+* **Import sorting**: ``isort`` for organized imports
+* **Linting**: ``flake8`` for code quality and style checks
+* **Security scanning**: ``bandit`` for common security issues
+* **Modern Python**: ``pyupgrade`` for upgrading syntax to newer Python versions
+* **General checks**: trailing whitespace, file endings, YAML/TOML validation
+
+Run tests with pytest::
+
+    $ uv run pytest
+
+Run tests with coverage::
+
+    $ uv run pytest --cov=pyunlocbox --cov-report=html
+
+Run specific test files::
+
+    $ uv run pytest pyunlocbox/tests/test_acceleration.py
+
+**Note**: All tests have been successfully migrated from unittest to pytest! The complete test
+suite now uses modern pytest conventions: `test_acceleration.py`, `test_functions.py`,
+`test_operators.py`, `test_solvers.py`, and `test_docstrings.py`.
+
+Run pre-commit checks manually::
+
+    $ uv run pre-commit run --all-files
+
+Run linting::
+
+    $ uv run flake8 --doctests --exclude=doc,.venv
+
+Format code::
+
+    $ uv run black .
+    $ uv run isort .
+
+Build documentation::
+
+    $ uv run sphinx-build -b html doc/ doc/_build/
+
+Note: This project has migrated from Travis CI to GitHub Actions. The ``.travis.yml`` file can be removed once the migration is complete.
+
+Similar libraries
+-----------------
+
+Other proximal based algorithms and operators can be found in:
+
+* http://proximity-operator.net/
+* https://gitlab.gwdg.de/nam/ProxPython
+
+Furthermore, many proximal operators are availlable in the `proxop <https://pypi.org/project/proxop/>`_ python library.
 
 Acknowledgments
 ---------------
