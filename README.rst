@@ -11,13 +11,13 @@ and development takes place on
 `GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
 A (mostly unmaintained) `Matlab version <https://epfl-lts2.github.io/unlocbox-html>`_ exists.
 
-+-----------------------------------+
-| |doc|  |pypi|  |conda|  |binder|  |
-+-----------------------------------+
-| |zenodo|  |license|  |pyversions| |
-+-----------------------------------+
-| |travis|  |coveralls|  |github|   |
-+-----------------------------------+
++-----------------------------------------+
+| |doc|  |pypi|  |conda|  |binder|        |
++-----------------------------------------+
+| |zenodo|  |license|  |pyversions|       |
++-----------------------------------------+
+| |github-actions|  |coveralls|  |github| |
++-----------------------------------------+
 
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
@@ -29,8 +29,8 @@ A (mostly unmaintained) `Matlab version <https://epfl-lts2.github.io/unlocbox-ht
    :target: https://github.com/epfl-lts2/pyunlocbox/blob/master/LICENSE.txt
 .. |pyversions| image:: https://img.shields.io/pypi/pyversions/pyunlocbox.svg
    :target: https://pypi.org/project/pyunlocbox
-.. |travis| image:: https://img.shields.io/travis/com/epfl-lts2/pyunlocbox.svg
-   :target: https://app.travis-ci.com/github/epfl-lts2/pyunlocbox
+.. |github-actions| image:: https://github.com/epfl-lts2/pyunlocbox/workflows/CI/badge.svg
+   :target: https://github.com/epfl-lts2/pyunlocbox/actions
 .. |coveralls| image:: https://img.shields.io/coveralls/github/epfl-lts2/pyunlocbox.svg
    :target: https://coveralls.io/github/epfl-lts2/pyunlocbox
 .. |github| image:: https://img.shields.io/github/stars/epfl-lts2/pyunlocbox.svg?style=social
@@ -220,7 +220,7 @@ Build documentation::
 
     $ uv run sphinx-build -b html doc/ doc/_build/
 
-Note: This project has migrated from Travis CI to GitHub Actions. The ``.travis.yml`` file can be removed once the migration is complete.
+Note: This project uses GitHub Actions for continuous integration and deployment.
 
 Similar libraries
 -----------------
