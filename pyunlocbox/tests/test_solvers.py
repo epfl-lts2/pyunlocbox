@@ -222,11 +222,20 @@ class TestSolvers:
         # Sanity checks
         x0 = np.zeros((4,))
         solver.lambda_ = 2.0
+        solver.mu = 0.5
         with pytest.raises(ValueError):
             solver.pre([f1, f2], x0)
-        solver.lambda_ = -2.0
+        solver.lambda_ = -1.0
         with pytest.raises(ValueError):
             solver.pre([f1, f2], x0)
+        solver.lambda_ = 0.5
+        solver.mu = -1.0
+        with pytest.raises(ValueError):
+            solver.pre([f1, f2], x0)
+        solver.mu = 2.0
+        with pytest.raises(ValueError):
+            solver.pre([f1, f2], x0)
+        solver.mu = 0.5
         with pytest.raises(ValueError):
             solver.pre([f1, f2, f1], x0)
 
@@ -249,6 +258,7 @@ class TestSolvers:
         nptest.assert_allclose(ret["sol"], x, rtol=1e-2)
 
         # Sanity checks
+        solver.lambda_ = 2.0
         with pytest.raises(ValueError):
             solver.pre([f1], x0)
         with pytest.raises(ValueError):
@@ -488,7 +498,7 @@ class TestSolvers:
         for solver, niter in zip(slvs, niters):
             x0 = np.zeros(len(y))
             ret = solvers.solve([f1, f2], x0, solver, **params)
-            nptest.assert_allclose(ret["sol"], sol, atol=1e-12)
+            nptest.assert_allclose(ret["sol"], sol)
             assert ret["niter"] == niter
             # The initial value not was modified.
             np.testing.assert_array_equal(np.zeros(len(y)), x0)

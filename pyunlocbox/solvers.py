@@ -762,6 +762,7 @@ class douglas_rachford(solver):
     def __init__(self, lambda_=1, A=None, mu=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.lambda_ = lambda_
+        self._has_A = A is not None
 
         if A is None:
             self.A = lambda x: x
@@ -821,7 +822,7 @@ class douglas_rachford(solver):
             u^{k+1} = u^k + λ (Ax^{k+1} − z^{k+1})
 
         """
-        if self.A is None:
+        if not self._has_A:
             tmp = self.non_smooth_funs[0].prox(2 * self.sol - self.z, self.step)
             self.z[:] = self.z + self.lambda_ * (
                 tmp - self.sol
