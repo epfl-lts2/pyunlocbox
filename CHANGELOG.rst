@@ -6,14 +6,16 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_
 and this project adheres to `Semantic Versioning <https://semver.org>`_.
 
-Unreleased
-----------
+0.6.0 (2025-09-10)
+------------------
 
-* New function: proj_lineq.
-* New function: proj_sdsp.
-* New function: proj_positive.
-* New function: structured_sparsity.
-* Continuous integration with Python 3.6, 3.7, 3.8, 3.9. Dropped 2.7, 3.4, 3.5.
+* Update to use pytest instead of unittest.
+* Update to use UV instead of conda.
+* New function: `proj_lineq`.
+* New function: `proj_sdsp`.
+* New function: `proj_positive`.
+* New function: `structured_sparsity`.
+* Continuous integration with Python 3.8 to 3.13.
 * Merged all the extra requirements in a single dev requirement.
 
 0.5.2 (2017-12-15)
