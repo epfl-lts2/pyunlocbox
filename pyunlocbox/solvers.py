@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 r"""
 The :mod:`pyunlocbox.solvers` module implements a solving function (which will
 minimize your objective function) as well as common solvers.
@@ -49,12 +47,22 @@ import time
 
 import numpy as np
 
-from pyunlocbox.functions import dummy, _prox_star
 from pyunlocbox import acceleration
+from pyunlocbox.functions import _prox_star, dummy
 
 
-def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
-          xtol=None, maxit=200, verbosity='LOW', inplace=False):
+def solve(
+    functions,
+    x0,
+    solver=None,
+    atol=None,
+    dtol=None,
+    rtol=1e-3,
+    xtol=None,
+    maxit=200,
+    verbosity="LOW",
+    inplace=False,
+):
     r"""
     Solve an optimization problem whose objective function is the sum of some
     convex functions.
@@ -201,45 +209,42 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
     """
     # to prevent any modification of the input
-    if not(inplace):
+    if not (inplace):
         x0 = x0.copy()
 
-    if verbosity not in ['NONE', 'LOW', 'HIGH', 'ALL']:
-        raise ValueError('Verbosity should be either NONE, LOW, HIGH or ALL.')
+    if verbosity not in ["NONE", "LOW", "HIGH", "ALL"]:
+        raise ValueError("Verbosity should be either NONE, LOW, HIGH or ALL.")
 
     # Add a second dummy convex function if only one function is provided.
     if len(functions) < 1:
-        raise ValueError('At least 1 convex function should be provided.')
+        raise ValueError("At least 1 convex function should be provided.")
     elif len(functions) == 1:
         functions.append(dummy())
-        if verbosity in ['LOW', 'HIGH', 'ALL']:
-            print('INFO: Dummy objective function added.')
+        if verbosity in ["LOW", "HIGH", "ALL"]:
+            print("INFO: Dummy objective function added.")
 
     # Choose a solver if none provided.
     if not solver:
         if len(functions) == 2:
-            fb0 = 'GRAD' in functions[0].cap(x0) and \
-                  'PROX' in functions[1].cap(x0)
-            fb1 = 'GRAD' in functions[1].cap(x0) and \
-                  'PROX' in functions[0].cap(x0)
-            dg0 = 'PROX' in functions[0].cap(x0) and \
-                  'PROX' in functions[1].cap(x0)
+            fb0 = "GRAD" in functions[0].cap(x0) and "PROX" in functions[1].cap(x0)
+            fb1 = "GRAD" in functions[1].cap(x0) and "PROX" in functions[0].cap(x0)
+            dg0 = "PROX" in functions[0].cap(x0) and "PROX" in functions[1].cap(x0)
             if fb0 or fb1:
                 solver = forward_backward()  # Need one prox and 1 grad.
             elif dg0:
                 solver = douglas_rachford()  # Need two prox.
             else:
-                raise ValueError('No suitable solver for the given functions.')
+                raise ValueError("No suitable solver for the given functions.")
         elif len(functions) > 2:
             solver = generalized_forward_backward()
-        if verbosity in ['LOW', 'HIGH', 'ALL']:
+        if verbosity in ["LOW", "HIGH", "ALL"]:
             name = solver.__class__.__name__
-            print('INFO: Selected solver: {}'.format(name))
+            print(f"INFO: Selected solver: {name}")
 
     # Set solver and functions verbosity.
-    translation = {'ALL': 'HIGH', 'HIGH': 'HIGH', 'LOW': 'LOW', 'NONE': 'NONE'}
+    translation = {"ALL": "HIGH", "HIGH": "HIGH", "LOW": "LOW", "NONE": "NONE"}
     solver.verbosity = translation[verbosity]
-    translation = {'ALL': 'HIGH', 'HIGH': 'LOW', 'LOW': 'NONE', 'NONE': 'NONE'}
+    translation = {"ALL": "HIGH", "HIGH": "LOW", "LOW": "NONE", "NONE": "NONE"}
     functions_verbosity = []
     for f in functions:
         functions_verbosity.append(f.verbosity)
@@ -263,9 +268,9 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
         if xtol is not None:
             last_sol = np.array(solver.sol, copy=True)
 
-        if verbosity in ['HIGH', 'ALL']:
+        if verbosity in ["HIGH", "ALL"]:
             name = solver.__class__.__name__
-            print('Iteration {} of {}:'.format(niter, name))
+            print(f"Iteration {niter} of {name}:")
 
         # Solver iterative algorithm.
         solver.algo(objective, niter)
@@ -276,14 +281,14 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
 
         # Verify stopping criteria.
         if atol is not None and current < atol:
-            crit = 'ATOL'
+            crit = "ATOL"
         if dtol is not None and np.abs(current - last) < dtol:
-            crit = 'DTOL'
+            crit = "DTOL"
         if rtol is not None:
             div = current  # Prevent division by 0.
             if div == 0:
-                if verbosity in ['LOW', 'HIGH', 'ALL']:
-                    print('WARNING: (rtol) objective function is equal to 0 !')
+                if verbosity in ["LOW", "HIGH", "ALL"]:
+                    print("WARNING: (rtol) objective function is equal to 0 !")
                 if last != 0:
                     div = last
                 else:
@@ -292,37 +297,39 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
                 rtol_only_zeros = False
             relative = np.abs((current - last) / div)
             if relative < rtol and not rtol_only_zeros:
-                crit = 'RTOL'
+                crit = "RTOL"
         if xtol is not None:
             err = np.linalg.norm(solver.sol - last_sol)
             err /= np.sqrt(last_sol.size)
             if err < xtol:
-                crit = 'XTOL'
+                crit = "XTOL"
         if maxit is not None and niter >= maxit:
-            crit = 'MAXIT'
+            crit = "MAXIT"
 
-        if verbosity in ['HIGH', 'ALL']:
-            print('    objective = {:.2e}'.format(current))
+        if verbosity in ["HIGH", "ALL"]:
+            print(f"    objective = {current:.2e}")
 
     # Restore verbosity for functions. In case they are called outside solve().
     for k, f in enumerate(functions):
         f.verbosity = functions_verbosity[k]
 
-    if verbosity in ['LOW', 'HIGH', 'ALL']:
-        print('Solution found after {} iterations:'.format(niter))
-        print('    objective function f(sol) = {:e}'.format(current))
-        print('    stopping criterion: {}'.format(crit))
+    if verbosity in ["LOW", "HIGH", "ALL"]:
+        print(f"Solution found after {niter} iterations:")
+        print(f"    objective function f(sol) = {current:e}")
+        print(f"    stopping criterion: {crit}")
 
     # Returned dictionary.
-    result = {'sol':       solver.sol,
-              'solver':    solver.__class__.__name__,  # algo for consistency ?
-              'crit':      crit,
-              'niter':     niter,
-              'time':      time.time() - tstart,
-              'objective': objective}
+    result = {
+        "sol": solver.sol,
+        "solver": solver.__class__.__name__,  # algo for consistency ?
+        "crit": crit,
+        "niter": niter,
+        "time": time.time() - tstart,
+        "objective": objective,
+    }
     try:
         # Update dictionary for primal-dual solvers
-        result['dual_sol'] = solver.dual_sol
+        result["dual_sol"] = solver.dual_sol
     except AttributeError:
         pass
 
@@ -332,7 +339,7 @@ def solve(functions, x0, solver=None, atol=None, dtol=None, rtol=1e-3,
     return result
 
 
-class solver(object):
+class solver:
     r"""
     Defines the solver object interface.
 
@@ -357,9 +364,9 @@ class solver(object):
 
     """
 
-    def __init__(self, step=1., accel=None):
+    def __init__(self, step=1.0, accel=None):
         if step < 0:
-            raise ValueError('Step should be a positive number.')
+            raise ValueError("Step should be a positive number.")
         self.step = step
         self.accel = acceleration.dummy() if accel is None else accel
 
@@ -487,20 +494,23 @@ class gradient_descent(solver):
     """
 
     def __init__(self, **kwargs):
-        super(gradient_descent, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def _pre(self, functions, x0):
 
         for f in functions:
-            if 'GRAD' in f.cap(x0):
+            if "GRAD" in f.cap(x0):
                 self.smooth_funs.append(f)
             else:
-                raise ValueError('Gradient descent requires each function to '
-                                 'implement grad().')
+                raise ValueError(
+                    "Gradient descent requires each function to " "implement grad()."
+                )
 
-        if self.verbosity == 'HIGH':
-            print('INFO: Gradient descent minimizing {} smooth '
-                  'functions.'.format(len(self.smooth_funs)))
+        if self.verbosity == "HIGH":
+            print(
+                "INFO: Gradient descent minimizing {} smooth "
+                "functions.".format(len(self.smooth_funs))
+            )
 
     def _algo(self):
         grad = np.zeros_like(self.sol)
@@ -558,25 +568,27 @@ class forward_backward(solver):
     """
 
     def __init__(self, accel=acceleration.fista(), **kwargs):
-        super(forward_backward, self).__init__(accel=accel, **kwargs)
+        super().__init__(accel=accel, **kwargs)
 
     def _pre(self, functions, x0):
 
-        if self.verbosity == 'HIGH':
-            print('INFO: Forward-backward method')
+        if self.verbosity == "HIGH":
+            print("INFO: Forward-backward method")
 
         if len(functions) != 2:
-            raise ValueError('Forward-backward requires two convex functions.')
+            raise ValueError("Forward-backward requires two convex functions.")
 
-        if 'PROX' in functions[0].cap(x0) and 'GRAD' in functions[1].cap(x0):
+        if "PROX" in functions[0].cap(x0) and "GRAD" in functions[1].cap(x0):
             self.smooth_funs.append(functions[1])
             self.non_smooth_funs.append(functions[0])
-        elif 'PROX' in functions[1].cap(x0) and 'GRAD' in functions[0].cap(x0):
+        elif "PROX" in functions[1].cap(x0) and "GRAD" in functions[0].cap(x0):
             self.smooth_funs.append(functions[0])
             self.non_smooth_funs.append(functions[1])
         else:
-            raise ValueError('Forward-backward requires a function to '
-                             'implement prox() and the other grad().')
+            raise ValueError(
+                "Forward-backward requires a function to "
+                "implement prox() and the other grad()."
+            )
 
     def _algo(self):
         # Forward step
@@ -630,29 +642,34 @@ class generalized_forward_backward(solver):
     """
 
     def __init__(self, lambda_=1, *args, **kwargs):
-        super(generalized_forward_backward, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.lambda_ = lambda_
 
     def _pre(self, functions, x0):
 
         if self.lambda_ <= 0 or self.lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
+            raise ValueError("Lambda is bounded by 0 and 1.")
 
         self.z = []
         for f in functions:
-            if 'GRAD' in f.cap(x0):
+            if "GRAD" in f.cap(x0):
                 self.smooth_funs.append(f)
-            elif 'PROX' in f.cap(x0):
+            elif "PROX" in f.cap(x0):
                 self.non_smooth_funs.append(f)
                 self.z.append(np.array(x0, copy=True))
             else:
-                raise ValueError('Generalized forward-backward requires each '
-                                 'function to implement prox() or grad().')
+                raise ValueError(
+                    "Generalized forward-backward requires each "
+                    "function to implement prox() or grad()."
+                )
 
-        if self.verbosity == 'HIGH':
-            print('INFO: Generalized forward-backward minimizing {} smooth '
-                  'functions and {} non-smooth functions.'.format(
-                      len(self.smooth_funs), len(self.non_smooth_funs)))
+        if self.verbosity == "HIGH":
+            print(
+                "INFO: Generalized forward-backward minimizing {} smooth "
+                "functions and {} non-smooth functions.".format(
+                    len(self.smooth_funs), len(self.non_smooth_funs)
+                )
+            )
 
     def _algo(self):
 
@@ -670,7 +687,7 @@ class generalized_forward_backward(solver):
                 tmp = 2 * self.sol - self.z[i] - self.step * grad
                 tmp[:] = g.prox(tmp, self.step * len(self.non_smooth_funs))
                 self.z[i] += self.lambda_ * (tmp - self.sol)
-                sol += 1. * self.z[i] / len(self.non_smooth_funs)
+                sol += 1.0 * self.z[i] / len(self.non_smooth_funs)
             self.sol[:] = sol
 
     def _post(self):
@@ -718,23 +735,24 @@ class douglas_rachford(solver):
     """
 
     def __init__(self, lambda_=1, *args, **kwargs):
-        super(douglas_rachford, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.lambda_ = lambda_
 
     def _pre(self, functions, x0):
 
         if self.lambda_ <= 0 or self.lambda_ > 1:
-            raise ValueError('Lambda is bounded by 0 and 1.')
+            raise ValueError("Lambda is bounded by 0 and 1.")
 
         if len(functions) != 2:
-            raise ValueError('Douglas-Rachford requires two convex functions.')
+            raise ValueError("Douglas-Rachford requires two convex functions.")
 
         for f in functions:
-            if 'PROX' in f.cap(x0):
+            if "PROX" in f.cap(x0):
                 self.non_smooth_funs.append(f)
             else:
-                raise ValueError('Douglas-Rachford requires each '
-                                 'function to implement prox().')
+                raise ValueError(
+                    "Douglas-Rachford requires each " "function to implement prox()."
+                )
 
         self.z = np.array(x0, copy=True)
 
@@ -771,7 +789,7 @@ class primal_dual(solver):
     """
 
     def __init__(self, L=None, Lt=None, d0=None, *args, **kwargs):
-        super(primal_dual, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if L is None:
             self.L = lambda x: x
@@ -811,8 +829,10 @@ class primal_dual(solver):
 
     def _objective(self, x):
         obj_smooth = [f.eval(x) for f in self.smooth_funs]
-        obj_nonsmooth = [self.non_smooth_funs[0].eval(x),
-                         self.non_smooth_funs[1].eval(self.L(x))]
+        obj_nonsmooth = [
+            self.non_smooth_funs[0].eval(x),
+            self.non_smooth_funs[1].eval(self.L(x)),
+        ]
         return obj_nonsmooth + obj_smooth
 
 
@@ -866,19 +886,20 @@ class mlfbf(primal_dual):
     """
 
     def _pre(self, functions, x0):
-        super(mlfbf, self)._pre(functions, x0)
+        super()._pre(functions, x0)
 
         if len(functions) != 3:
-            raise ValueError('MLFBF requires 3 convex functions.')
+            raise ValueError("MLFBF requires 3 convex functions.")
 
-        self.non_smooth_funs.append(functions[0])   # f
-        self.non_smooth_funs.append(functions[1])   # g
-        self.smooth_funs.append(functions[2])       # h
+        self.non_smooth_funs.append(functions[0])  # f
+        self.non_smooth_funs.append(functions[1])  # g
+        self.smooth_funs.append(functions[2])  # h
 
     def _algo(self):
         # Forward steps (in both primal and dual spaces)
-        y1 = self.sol - self.step * (self.smooth_funs[0].grad(self.sol) +
-                                     self.Lt(self.dual_sol))
+        y1 = self.sol - self.step * (
+            self.smooth_funs[0].grad(self.sol) + self.Lt(self.dual_sol)
+        )
         y2 = self.dual_sol + self.step * self.L(self.sol)
 
         # Backward steps (in both primal and dual spaces)
@@ -942,28 +963,28 @@ class projection_based(primal_dual):
 
     """
 
-    def __init__(self, lambda_=1., *args, **kwargs):
-        super(projection_based, self).__init__(*args, **kwargs)
+    def __init__(self, lambda_=1.0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.lambda_ = lambda_
 
     def _pre(self, functions, x0):
-        super(projection_based, self)._pre(functions, x0)
+        super()._pre(functions, x0)
 
         if self.lambda_ <= 0 or self.lambda_ > 2:
-            raise ValueError('Lambda is bounded by 0 and 2.')
+            raise ValueError("Lambda is bounded by 0 and 2.")
 
         if len(functions) != 2:
-            raise ValueError('projection_based requires 2 convex functions.')
+            raise ValueError("projection_based requires 2 convex functions.")
 
-        self.non_smooth_funs.append(functions[0])   # f
-        self.non_smooth_funs.append(functions[1])   # g
+        self.non_smooth_funs.append(functions[0])  # f
+        self.non_smooth_funs.append(functions[1])  # g
 
     def _algo(self):
-        a = self.non_smooth_funs[0].prox(self.sol - self.step *
-                                         self.Lt(self.dual_sol), self.step)
+        a = self.non_smooth_funs[0].prox(
+            self.sol - self.step * self.Lt(self.dual_sol), self.step
+        )
         ell = self.L(self.sol)
-        b = self.non_smooth_funs[1].prox(ell + self.step * self.dual_sol,
-                                         self.step)
+        b = self.non_smooth_funs[1].prox(ell + self.step * self.dual_sol, self.step)
         s = (self.sol - a) / self.step + self.Lt(ell - b) / self.step
         t = b - self.L(a)
         tau = np.sum(s**2) + np.sum(t**2)
@@ -971,7 +992,13 @@ class projection_based(primal_dual):
             self.sol[:] = a
             self.dual_sol[:] = self.dual_sol + (ell - b) / self.step
         else:
-            theta = self.lambda_ * (np.sum((self.sol - a)**2) / self.step +
-                                    np.sum((ell - b)**2) / self.step) / tau
+            theta = (
+                self.lambda_
+                * (
+                    np.sum((self.sol - a) ** 2) / self.step
+                    + np.sum((ell - b) ** 2) / self.step
+                )
+                / tau
+            )
             self.sol[:] = self.sol - theta * s
             self.dual_sol[:] = self.dual_sol - theta * t
