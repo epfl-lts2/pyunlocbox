@@ -11,13 +11,13 @@ and development takes place on
 `GitHub <https://github.com/epfl-lts2/pyunlocbox>`_.
 A (mostly unmaintained) `Matlab version <https://epfl-lts2.github.io/unlocbox-html>`_ exists.
 
-+-----------------------------------+
-| |doc|  |pypi|  |conda|  |binder|  |
-+-----------------------------------+
-| |zenodo|  |license|  |pyversions| |
-+-----------------------------------+
-| |github-actions|  |coveralls|  |github|   |
-+-----------------------------------+
++-----------------------------------------+
+| |doc|  |pypi|  |conda|  |binder|        |
++-----------------------------------------+
+| |zenodo|  |license|  |pyversions|       |
++-----------------------------------------+
+| |github-actions|  |coveralls|  |github| |
++-----------------------------------------+
 
 .. |doc| image:: https://readthedocs.org/projects/pyunlocbox/badge/?version=latest
    :target: https://pyunlocbox.readthedocs.io
