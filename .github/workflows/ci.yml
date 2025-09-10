@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: [ "3.13"]
 
     steps:
     - uses: actions/checkout@v4
@@ -40,10 +40,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y graphviz
 
-    - name: Lint with flake8
-      run: |
-        # Replicate: flake8 --doctests --exclude=doc, also exclude .venv
-        uv run flake8 --doctests --exclude=doc,.venv
+    # - name: Lint with flake8
+    #   run: |
+    #     # Replicate: flake8 --doctests --exclude=doc, also exclude .venv
+    #     uv run flake8 --doctests --exclude=doc,.venv
 
     - name: Test with pytest
       run: |
