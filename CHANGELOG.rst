@@ -9,10 +9,21 @@ and this project adheres to `Semantic Versioning <https://semver.org>`_.
 Unreleased
 ----------
 
-* New function: proj_lineq.
-* New function: proj_sdsp.
-* New function: proj_positive.
-* New function: structured_sparsity.
+New features:
+
+* New functions: :class:`~pyunlocbox.functions.proj_lineq`,
+  :class:`~pyunlocbox.functions.proj_sdsp`,
+  :class:`~pyunlocbox.functions.proj_positive`,
+  :class:`~pyunlocbox.functions.structured_sparsity`.
+* Parameter ``is_hermitian`` added to
+  :class:`~pyunlocbox.functions.norm_nuclear` to benefit from the hermitian
+  property of :func:`numpy.linalg.svd`.
+* New solver: Linearized Douglas-Rachford (or ADMM) added to
+  :class:`~pyunlocbox.solvers.douglas_rachford`.
+* New solver :class:`~pyunlocbox.solvers.chambolle_pock`.
+
+Infrastructure:
+
 * Continuous integration with Python 3.6, 3.7, 3.8, 3.9. Dropped 2.7, 3.4, 3.5.
 * Merged all the extra requirements in a single dev requirement.
 
