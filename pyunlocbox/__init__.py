@@ -20,8 +20,8 @@ from pyunlocbox import functions  # noqa: F401
 from pyunlocbox import operators  # noqa: F401
 from pyunlocbox import solvers  # noqa: F401
 
-__version__ = "0.6.0"
-__release_date__ = "2017-12-15"
+__version__ = "0.6.1"
+__release_date__ = "2025-09-11"
 
 
 def test():  # pragma: no cover
